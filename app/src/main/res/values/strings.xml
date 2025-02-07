@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App -->
+    <string name="app_name">Tracking Plugin</string>
+    <!-- description -->
+    <string name="app_desc">This plugin is used to track devices based on their signal emissions. (Bluetooth only for now.)</string>
+
+
+
+
+</resources>
