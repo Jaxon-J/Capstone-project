@@ -84,3 +84,14 @@ Setting up Android device
 - To get Android Studio to detect your device, it needs to be connected to the computer under `Photo Transfer Mode`.
 - Select your phone from the dropdown on the top, click the Play button aka `Run`.
 - Open ATAK, in the side menu go under `Plugins`, click the refresh button, load and enable the plugin.
+
+Linking SDK JavaDoc
+- In the left-side file viewer, select the "Project" view.
+- Under `External Libraries`, locate the library that contains `main.jar` when expanded. This is likely called `Gradle: C`.
+- Right click the library, go to `Library Properties...`.
+- Click the + on the farthest left. Upon hovering, it should say `Add`.
+- Navigate to the SDK folder, locate and select `atak-javadoc.jar` and click Ok.
+- If prompted, select `JavaDocs` for the item category.
+- Click Ok, now the JavaDoc will be listed. Click Ok again, and the JavaDoc is now accessible.
+- To access, hover over a token, say `AtakClass` and click `'AtakClass' on Localhost`.
+- If there's no pop-up upon hovering over the token, make sure `Settings > Editor > Code Editing > Show quick documentation on hover` is checked.
