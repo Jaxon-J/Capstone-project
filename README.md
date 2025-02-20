@@ -40,6 +40,7 @@ Setting up dev environment
   - Make sure it's the JDK 11 *zip* that matches your computer architecture (x64, typically)
 - Download ATAK SDK: https://tak.gov/products/atak-civ
   - requires login, under "Downloadable Resources > Developer Resources"
+  - this plugin was developed using the SDK version ATAK CIV 5.3.0.11
 
 - Unzip ATAK SDK, within the SDK folder, create a `plugins` folder, then clone this repository into that folder.
 ```
