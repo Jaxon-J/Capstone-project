@@ -17,7 +17,7 @@
     - Right click the new branch under `Local` and click `Checkout` to start working under this branch.
 - Back to Github
   - Development: Assign the newly created branch to the issue.
-  - Further issues being worked on under this branch can also be assigned to this branch.
+  - Other created issues can also be assigned to this branch.
 
 - This branch can be re-utilized for multiple issues, it's just an alternative path for development. 
 
@@ -26,3 +26,5 @@
 - If you want to update the main branch, get onto Github, navigate to your branch, click the `Contribute` button and `Open Pull Request`.
 - If it's a big PR, add me (lith-x) as a `Reviewer`, I'll take a look at it and see if there are any issues.
 - Development: please put any issues that are resolved by the PR, remove the ones that aren't. Any listed issues are auto-closed with notes that it was closed via PR.
+
+Remember to pull, commit, fetch decently often to keep up to date.
