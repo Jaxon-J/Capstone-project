@@ -1,3 +1,6 @@
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // PLUGIN_VERSION is the common version name when describing the plugin.
@@ -239,7 +242,7 @@ android {
             }
         } else { 
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a", "x86"
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             }
         }
     }
@@ -262,15 +265,15 @@ afterEvaluate {
 def getCommandFlavor() {
     String  tskReqStr = getGradle().getStartParameter().getTaskRequests().toString()
 
-    java.util.regex.Pattern pattern
+    Pattern pattern
     if( tskReqStr.contains( "assemble" ) )
-        pattern = java.util.regex.Pattern.compile("assemble(\\w+)(Release|Debug)")
+        pattern = Pattern.compile("assemble(\\w+)(Release|Debug)")
     else if( tskReqStr.contains( "install" ) )
-        pattern = java.util.regex.Pattern.compile("install(\\w+)(Release|Debug)")
+        pattern = Pattern.compile("install(\\w+)(Release|Debug)")
     else
-        pattern = java.util.regex.Pattern.compile("generate(\\w+)(Release|Debug)")
+        pattern = Pattern.compile("generate(\\w+)(Release|Debug)")
 
-    java.util.regex.Matcher matcher = pattern.matcher(tskReqStr)
+    Matcher matcher = pattern.matcher(tskReqStr)
 
     if( matcher.find() ) {
         return matcher.group(1)

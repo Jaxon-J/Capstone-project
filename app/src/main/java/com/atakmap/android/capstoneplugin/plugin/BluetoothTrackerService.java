@@ -27,7 +27,7 @@ public class BluetoothTrackerService extends Service {
 
     // Constant strings
     public static final String DEVICE_FOUND = BluetoothTrackerService.class.getName() + ".DEVICE_FOUND";
-    private static final String TAG = BluetoothTrackerService.class.getSimpleName();
+    private static final String TAG = Constants.TAG_PREFIX + "BTService";
 
     private final ArrayList<BluetoothDevice> discovered = new ArrayList<>();
     private boolean isScanning = false;
@@ -37,10 +37,10 @@ public class BluetoothTrackerService extends Service {
 
 
     /**
+     * Allows activities to get an instance of the service.
+     * @removable
      * @noinspection unused
      */
-    // Allows activities to get an instance of the service.
-    // @removable
     public static Intent getServiceIntent(Context context) {
         return new Intent(context, BluetoothTrackerService.class);
     }

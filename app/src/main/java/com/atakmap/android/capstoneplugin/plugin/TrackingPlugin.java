@@ -2,6 +2,7 @@
 package com.atakmap.android.capstoneplugin.plugin;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.atak.plugins.impl.PluginContextProvider;
 import com.atak.plugins.impl.PluginLayoutInflater;
@@ -15,15 +16,16 @@ import gov.tak.api.ui.ToolbarItem;
 import gov.tak.api.ui.ToolbarItemAdapter;
 import gov.tak.platform.marshal.MarshalManager;
 
-public class PluginTemplate implements IPlugin {
+public class TrackingPlugin implements IPlugin {
 
+    public static final String TAG = Constants.TAG_PREFIX + "Main";
     IServiceController serviceController;
     Context pluginContext;
     IHostUIService uiService;
     ToolbarItem toolbarItem;
     Pane templatePane;
 
-    public PluginTemplate(IServiceController serviceController) {
+    public TrackingPlugin(IServiceController serviceController) {
         this.serviceController = serviceController;
         final PluginContextProvider ctxProvider = serviceController
                 .getService(PluginContextProvider.class);
@@ -41,7 +43,7 @@ public class PluginTemplate implements IPlugin {
         toolbarItem = new ToolbarItem.Builder(
                 pluginContext.getString(R.string.app_name),
                 MarshalManager.marshal(
-                        pluginContext.getResources().getDrawable(R.drawable.ic_launcher),
+                        pluginContext.getResources().getDrawable(R.drawable.ic_launcher, null),
                         android.graphics.drawable.Drawable.class,
                         gov.tak.api.commons.graphics.Bitmap.class))
                 .setListener(new ToolbarItemAdapter() {
@@ -92,6 +94,7 @@ public class PluginTemplate implements IPlugin {
 
         // if the plugin pane is not visible, show it!
         if(!uiService.isPaneVisible(templatePane)) {
+            Log.d(TAG, "Plugin pane opened");
             uiService.showPane(templatePane, null);
         }
     }
