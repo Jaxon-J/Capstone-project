@@ -16,35 +16,39 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
-// TODO: find means of removing devices from "discovered"
-// speed up start/stop bluetooth discovery as a "poll rate"?
-// refactor behavior out of onDestroy to "stopTracking" and call it from bluetoothReceiver to
-// get that going potentially.
-// TODO: rename class to something more distinct.
-// don't want naming conflicts with any normal android stuff, even if just for logs.
+// @removable = unsure if code is doing anything useful, might be removed later
 
-public class BluetoothService extends Service {
+// TODO: test behavior of this service, see if it works as expected.
+// Also want to figure out when android events "actions" are triggered, might need to
+// modify code based on how these events are timed
+// https://developer.android.com/develop/connectivity/bluetooth/find-bluetooth-devices#discover-devices
 
-    public static final String DEVICE_FOUND = String.format("%s.DEVICE_FOUND", BluetoothService.class.getName());
+public class BluetoothTrackerService extends Service {
+
     // Constant strings
-    private static final String TAG = BluetoothService.class.getSimpleName();
+    public static final String DEVICE_FOUND = BluetoothTrackerService.class.getName() + ".DEVICE_FOUND";
+    private static final String TAG = BluetoothTrackerService.class.getSimpleName();
+
     private final ArrayList<BluetoothDevice> discovered = new ArrayList<>();
     private boolean isScanning = false;
     private BluetoothAdapter bluetoothAdapter;
     private BroadcastReceiver bluetoothReceiver;
+    private int discoveryRounds = 0;
 
-    // Allows activities to get an instance of the service with provided context.
-    // Might be unnecessary.
-    /** @noinspection unused */
+
+    /**
+     * @noinspection unused
+     */
+    // Allows activities to get an instance of the service.
+    // @removable
     public static Intent getServiceIntent(Context context) {
-        return new Intent(context, BluetoothService.class);
+        return new Intent(context, BluetoothTrackerService.class);
     }
 
     // Triggered when service is started.
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "Starting Bluetooth scanning...");
-        isScanning = true;
+        // @removable
         discovered.clear();
 
         // Initialize adapter
@@ -56,11 +60,12 @@ public class BluetoothService extends Service {
     }
 
     // Triggered when service is created.
+    @Override
     @SuppressLint("MissingPermission")
     public void onCreate() {
         super.onCreate();
 
-        // Initialize receiver that'll go off on ACTION_FOUND and ACTION_DISCOVERY_FINISHED
+        // Initialize action receiver that'll respond to bluetooth events
         bluetoothReceiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
@@ -70,15 +75,18 @@ public class BluetoothService extends Service {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     if (device != null && !discovered.contains(device)) {
                         Log.d(TAG, String.format("Device found (name: %s, mac: %s)", device.getName(), device.getAddress()));
-                        discovered.add(device);
-                        broadcastDeviceFound(device);
+                        discovered.add(device); // Add device to store
+                        // Create and send our own DEVICE_FOUND intent (event), for other receivers
+                        // @removable
+                        Intent deviceFoundIntent = new Intent(DEVICE_FOUND);
+                        deviceFoundIntent.putExtra("device", device);
+                        sendBroadcast(deviceFoundIntent);
                     }
-                    // ACTION_DISCOVER_FINISHED behavior
+                    // ACTION_DISCOVERY_FINISHED behavior
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                    Log.d(TAG, "Discovery cycle ended.");
-                    if (isScanning) {
-                        startDiscovery();
-                    }
+                    Log.d(TAG, "Discovery cycle ended. Clearing found devices.");
+                    discovered.clear();
+                    startDiscovery();
                 }
             }
         };
@@ -92,6 +100,10 @@ public class BluetoothService extends Service {
 
     @SuppressLint("MissingPermission")
     private void startDiscovery() {
+        isScanning = true;
+        discoveryRounds += 1;
+        Log.d(TAG, String.format("Starting Bluetooth discovery (round %d)...", discoveryRounds));
+
         if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         }
@@ -100,29 +112,27 @@ public class BluetoothService extends Service {
         }
     }
 
-    // Triggered when service is destroyed.
-    @Override
     @SuppressLint("MissingPermission")
-    public void onDestroy() {
+    public void stopTracking() {
         if (!isScanning) return;
-
         isScanning = false;
         Log.d(TAG, "Stopping Bluetooth scanning...");
         if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         }
+    }
+
+    // Triggered when service is destroyed.
+    @Override
+    @SuppressLint("MissingPermission")
+    public void onDestroy() {
+        isScanning = true; // bypass isScanning check in stopTracking. feels hacky.
+        stopTracking();
         if (bluetoothReceiver != null) {
             unregisterReceiver(bluetoothReceiver);
             bluetoothReceiver = null;
         }
         super.onDestroy();
-    }
-
-    // For onReceive() discoverability, for other potential receivers. (May be unnecessary.)
-    private void broadcastDeviceFound(BluetoothDevice device) {
-        Intent intent = new Intent(DEVICE_FOUND);
-        intent.putExtra("device", device);
-        sendBroadcast(intent);
     }
 
     // "Binding" allows other apps to use this service. Nope.
@@ -132,4 +142,3 @@ public class BluetoothService extends Service {
         return null;
     }
 }
-
