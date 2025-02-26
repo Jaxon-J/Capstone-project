@@ -96,3 +96,31 @@ Linking SDK JavaDoc
 - Click Ok, now the JavaDoc will be listed. Click Ok again, and the JavaDoc is now accessible.
 - To access, hover over a token, say `AtakClass` and click `'AtakClass' on Localhost`.
 - If there's no pop-up upon hovering over the token, make sure `Settings > Editor > Code Editing > Show quick documentation on hover` is checked.
+
+Setting up an emulator
+- Create new virtual device
+  - Device Manager on right navbar or Tools > Device Manager
+    - Click the "+" then "Create New Device"
+  - Choose a device definition
+    - I go with the generic "Medium Phone" but this is mostly cosmetic.
+  - Select a system image
+    - Pick any SDK under the "x86 Images" list with the following attributes:
+      - ABI: x86_64
+      - Type: Default Android System Image
+  - Verify Configuration
+    - Click "Show Advanced Settings"
+    - VM heap - minimum: 512, recommended: 640
+    - Internal storage - minimum: 2048, recommended: 2560
+    - The rest of the defaults are fine, most can be changed later.
+- Device Manager
+  - Click Play
+    - 3 dots on the navbar above the emulator screen
+    - Settings
+      - OpenGL ES renderer: SwiftShader
+      - OpenGL ES API level: Renderer maximum (up to OpenGL ES 3.1)
+  - Restart the emulator (back to device manager, stop then play)
+  - Drag and drop the `atak.apk` file from the SDK folder onto the emulator screen
+  - In case it's not on the home screen, drag up from the bottom of the screen to get all applications. Click, hold, drag to home screen for a shortcut.
+- Once you've opened ATAK, you can run the plugin build, and it will prompt you to add.
+- Debugging is going to be done exclusively through logcat (where the `Log.d`, `Log.e` messages go).
+  - You can filter to our plugin's logs by filtering by `tag:[tag-prefix]`. The prefix is defined in `Constants.java`
