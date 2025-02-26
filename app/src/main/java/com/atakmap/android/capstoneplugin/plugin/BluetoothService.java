@@ -19,6 +19,7 @@ import android.util.Log;
 
 public class BluetoothService extends Service {
 
+    private static final String TAG = "BS";
     private BluetoothAdapter bluetoothAdapter;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +42,7 @@ public class BluetoothService extends Service {
         }
         if (bluetoothAdapter.startDiscovery()) {
             // Discovery started successfully
-            Log.d("BS","Started Discovery");
+            Log.d(TAG,"Started Discovery");
         }
     }
 
@@ -60,8 +61,8 @@ public class BluetoothService extends Service {
 
                     String deviceName = device.getName();
                     String deviceHardwareAddress = device.getAddress(); // MAC address
-                    Log.d("BS",deviceName);
-                    Log.d("BS",deviceHardwareAddress);
+                    Log.d(TAG,deviceName);
+                    Log.d(TAG,deviceHardwareAddress);
                 }
             }
         }
