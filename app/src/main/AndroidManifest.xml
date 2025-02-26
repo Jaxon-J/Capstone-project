@@ -3,7 +3,10 @@
     package="com.atakmap.android.capstoneplugin.plugin"
     tools:ignore="GoogleAppIndexingWarning">
 
-    <application 
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <application
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
