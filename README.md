@@ -135,7 +135,7 @@ Hello world ATAK plugin created and set up for all devs.
 
 - Bluetooth branch
   In progress: of setting up an initial bluetooth listening program
-  Goal: Make a proces that continuously listens for bluetooth signatures
+  Goal: Make a process that continuously listens for bluetooth signatures
   
 - UI branch
   In progress: updated wireframe to fit client description
