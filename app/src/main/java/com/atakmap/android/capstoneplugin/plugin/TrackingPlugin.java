@@ -1,6 +1,7 @@
 package com.atakmap.android.capstoneplugin.plugin;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -102,6 +103,7 @@ public class TrackingPlugin implements IPlugin {
     }
 
     private void onTrackDebugButtonClick(View v) {
+        Log.d(TAG, "Debug tracking button pressed");
         Button trackBtn = (Button) v;
         if (debug_scanning) {
             trackBtn.setText("Start Tracking");
@@ -111,7 +113,11 @@ public class TrackingPlugin implements IPlugin {
         }
         trackBtn.setText("Stop Tracking");
         debug_scanning = true;
-        pluginContext.startService(BluetoothTrackerService.getServiceIntent(pluginContext));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            pluginContext.startForegroundService(BluetoothTrackerService.getServiceIntent(pluginContext));
+        } else {
+            pluginContext.startService(BluetoothTrackerService.getServiceIntent(pluginContext));
+        }
     }
 
     private static void onPinDebugButtonClick(View v) {

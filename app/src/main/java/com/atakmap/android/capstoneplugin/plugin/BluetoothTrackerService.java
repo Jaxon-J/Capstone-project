@@ -1,5 +1,7 @@
 package com.atakmap.android.capstoneplugin.plugin;
 
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE;
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -45,12 +47,7 @@ public class BluetoothTrackerService extends Service {
     private int discoveryRounds = 0;
     private String thisDeviceId;
 
-    /**
-     * Allows activities to get an instance of the service.
-     *
-     * @removable
-     * @noinspection unused
-     */
+    // Allows activities to get an instance of the service.
     public static Intent getServiceIntent(Context context) {
         return new Intent(context, BluetoothTrackerService.class);
     }
@@ -58,6 +55,7 @@ public class BluetoothTrackerService extends Service {
     // Triggered when service is started.
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand() called");
         // @removable
         discovered.clear();
         thisDeviceId = UUID.randomUUID().toString();
@@ -75,6 +73,7 @@ public class BluetoothTrackerService extends Service {
     @Override
     @SuppressLint("MissingPermission")
     public void onCreate() {
+        Log.d(TAG, "onCreate() called");
         super.onCreate();
 
         bluetoothReceiver = new BroadcastReceiver() {
@@ -154,6 +153,7 @@ public class BluetoothTrackerService extends Service {
     @Override
     @SuppressLint("MissingPermission")
     public void onDestroy() {
+        Log.d(TAG, "onDestroy() called");
         isScanning = true; // bypass isScanning check in stopTracking. feels hacky.
         stopTracking();
         if (bluetoothReceiver != null) {

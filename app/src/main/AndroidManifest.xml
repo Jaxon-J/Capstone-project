@@ -29,7 +29,15 @@
            </intent-filter>
        </activity>
 
-
+        <service
+            android:name=".BluetoothTrackerService"
+            android:label="ATAK Bluetooth Tracker Service"
+            android:exported="true"
+            android:foregroundServiceType="specialUse">
+            <intent-filter>
+                <action android:name="com.atakmap.android.capstoneplugin.plugin.BluetoothTrackerService"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
