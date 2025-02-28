@@ -120,7 +120,24 @@ Setting up an emulator
       - OpenGL ES API level: Renderer maximum (up to OpenGL ES 3.1)
   - Restart the emulator (back to device manager, stop then play)
   - Drag and drop the `atak.apk` file from the SDK folder onto the emulator screen
+  - 
+
+  
   - In case it's not on the home screen, drag up from the bottom of the screen to get all applications. Click, hold, drag to home screen for a shortcut.
 - Once you've opened ATAK, you can run the plugin build, and it will prompt you to add.
 - Debugging is going to be done exclusively through logcat (where the `Log.d`, `Log.e` messages go).
   - You can filter to our plugin's logs by filtering by `tag:[tag-prefix]`. The prefix is defined in `Constants.java`
+
+____________________________________________________________________________________________________________________________________________________________
+RELEASE NOTES
+Milestone 1
+Hello world ATAK plugin created and set up for all devs. 
+
+- Bluetooth branch
+  In progress: of setting up an initial bluetooth listening program
+  Goal: Make a proces that continuously listens for bluetooth signatures
+  
+- UI branch
+  In progress: updated wireframe to fit client description
+               implementing wireframe to display (nonfunctional)
+  Goal: Fully visible UI in accordance to client description
