@@ -1,6 +1,7 @@
 package com.atakmap.android.capstoneplugin.plugin;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 import android.view.View;
@@ -108,15 +109,16 @@ public class TrackingPlugin implements IPlugin {
         if (debug_scanning) {
             trackBtn.setText("Start Tracking");
             debug_scanning = false;
-            pluginContext.stopService(BluetoothTrackerService.getServiceIntent(pluginContext));
+            pluginContext.stopService(BluetoothTrackerService.createIntent(pluginContext, BluetoothTrackerService.ACTION_STOP_SCANNING));
             return;
         }
         trackBtn.setText("Stop Tracking");
         debug_scanning = true;
+        Intent startScanIntent = BluetoothTrackerService.createIntent(pluginContext, BluetoothTrackerService.ACTION_START_SCANNING);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            pluginContext.startForegroundService(BluetoothTrackerService.getServiceIntent(pluginContext));
+            pluginContext.startForegroundService(startScanIntent);
         } else {
-            pluginContext.startService(BluetoothTrackerService.getServiceIntent(pluginContext));
+            pluginContext.startService(startScanIntent);
         }
     }
 

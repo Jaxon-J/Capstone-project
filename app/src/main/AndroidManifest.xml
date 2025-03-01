@@ -3,6 +3,17 @@
     package="com.atakmap.android.capstoneplugin.plugin"
     tools:ignore="GoogleAppIndexingWarning">
 
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="false" />
+
     <!-- suppressed allowBackup deprecation with ignore:DataExtractionRules -->
     <application
         android:allowBackup="false"
