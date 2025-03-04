@@ -112,7 +112,7 @@ public class TrackingPlugin implements IPlugin {
         if (!getPerms()) return;
         Log.d(TAG, "Debug tracking button pressed");
         Button trackBtn = (Button) v;
-        Intent btServiceIntent = new Intent(pluginContext, AtakBtService.class);
+        Intent btServiceIntent = new Intent(pluginContext, BluetoothTrackerService.class);
         if (debug_scanning) {
             trackBtn.setText("Start Tracking");
             debug_scanning = false;

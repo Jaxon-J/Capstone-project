@@ -1,5 +1,8 @@
 package com.atakmap.android.capstoneplugin.plugin;
 
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE;
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -25,7 +28,10 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
+
+import com.atakmap.app.BackgroundServices;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -66,7 +72,7 @@ public class BluetoothTrackerService extends Service {
     private boolean isScanning = false;
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bleScanner;
-    private BroadcastReceiver bluetoothReceiver;
+    private BroadcastReceiver intentReceiver;
     private int discoveryRounds = 0;
     private String thisDeviceId;
     private PowerManager.WakeLock wakeLock;
@@ -119,10 +125,24 @@ public class BluetoothTrackerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand() called");
         // Critical checks that must happen at startup
         if (!hasRequiredPermissions()) {
             stopSelf();
             return START_NOT_STICKY;
+        }
+
+        // Create and display notification to run as foreground service
+        createNotificationChannel();
+        Notification notif = createNotification();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Log.d(TAG, "STARTED FOREGROUND WITH TYPE");
+
+            startForeground(NOTIF_ID, notif, FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE/*| FOREGROUND_SERVICE_TYPE_LOCATION*/);
+
+            } else {
+            Log.d(TAG, "STARTED FOREGROUND WITHOUT TYPE");
+            startForeground(NOTIF_ID, notif);
         }
 
         // Initialize device ID if not already set
@@ -236,30 +256,25 @@ public class BluetoothTrackerService extends Service {
 
         // Set up Bluetooth broadcast receiver
         setupBluetoothReceiver();
-
-        // Create and display notification to run as foreground service
-        createNotificationChannel();
-        startForeground(NOTIF_ID, createNotification());
     }
 
     private void setupBluetoothReceiver() {
         Log.d(TAG, "setupBluetoothReceiver() called");
-        bluetoothReceiver = new BroadcastReceiver() {
+        intentReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
                 if (action == null) return;
-
                 switch (action) {
                     case BluetoothDevice.ACTION_FOUND: {
                         // Handle classic Bluetooth discovery
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
-                                    != PackageManager.PERMISSION_GRANTED) {
-                                return;
-                            }
-                        }
-
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+//                                    != PackageManager.PERMISSION_GRANTED) {
+//                                return;
+//                            }
+//                        }
+                        Log.d(TAG, "INTENT: ACTION_FOUND RECEIVED");
                         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                         if (device != null && !discoveredClassicDevices.contains(device)) {
                             String deviceName = safeGetDeviceName(device);
@@ -308,11 +323,11 @@ public class BluetoothTrackerService extends Service {
         };
 
         // Register for relevant Bluetooth events
-        IntentFilter filter = new IntentFilter();
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(bluetoothReceiver, filter);
+        registerReceiver(intentReceiver, filter);
     }
 
     private void createNotificationChannel() {
@@ -321,7 +336,7 @@ public class BluetoothTrackerService extends Service {
             NotificationChannel channel = new NotificationChannel(
                     NOTIF_CHANNEL_ID,
                     NOTIF_CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_LOW);  // Use LOW importance to reduce visual disruption
+                    NotificationManager.IMPORTANCE_HIGH);  // Use LOW importance to reduce visual disruption
 
             channel.setDescription("Used for Bluetooth device tracking");
             NotificationManager manager = getSystemService(NotificationManager.class);
@@ -404,6 +419,7 @@ public class BluetoothTrackerService extends Service {
     /**
      * Start BLE scanning
      */
+    @SuppressLint("MissingPermission")
     private void startBleScan() {
         Log.d(TAG, "startBleScan() called");
         if (bluetoothNotInitialized()) return;
@@ -418,24 +434,14 @@ public class BluetoothTrackerService extends Service {
 
         Log.d(TAG, "Starting BLE scanning...");
 
-        try {
-            // Configure BLE scan settings for continuous scanning
-            ScanSettings settings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // Use highest power mode for continuous discovery
-                    .setReportDelay(0) // Report immediately
-                    .build();
+        // Configure BLE scan settings for continuous scanning
+        ScanSettings settings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // Use highest power mode for continuous discovery
+                .setReportDelay(0) // Report immediately
+                .build();
 
-            // Start the scan
-            bleScanner.startScan(null, settings, bleScanCallback);
-        } catch (SecurityException e) {
-            Log.e(TAG, "Security exception when starting BLE scan", e);
-        } catch (IllegalStateException e) {
-            Log.e(TAG, "BLE adapter in incorrect state", e);
-            // Try to recover
-            handler.postDelayed(() -> {
-                if (isScanning) startBleScan();
-            }, 5000);
-        }
+        // Start the scan
+        bleScanner.startScan(null, settings, bleScanCallback);
     }
 
     /**
@@ -503,13 +509,13 @@ public class BluetoothTrackerService extends Service {
         stopScanning();
 
         // Unregister receiver
-        if (bluetoothReceiver != null) {
+        if (intentReceiver != null) {
             try {
-                unregisterReceiver(bluetoothReceiver);
+                unregisterReceiver(intentReceiver);
             } catch (IllegalArgumentException e) {
                 Log.w(TAG, "Receiver not registered or already unregistered", e);
             }
-            bluetoothReceiver = null;
+            intentReceiver = null;
         }
 
         // Release wake lock

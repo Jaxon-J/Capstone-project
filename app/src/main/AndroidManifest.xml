@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />-->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <uses-feature
@@ -37,7 +39,7 @@
 
 
         <!-- This fictitious activity entry allow for ATAK 4.6.0.2 and newer to perform
-             plugin discovery  android devices.  If this is removed, the plugin will
+             plugin discovery for android devices.  If this is removed, the plugin will
              not be able to be discovered or loaded.  -->
         <!-- Added suppression below, component is intentionally non-existent -->
         <!--suppress AndroidDomInspection -->
@@ -53,7 +55,8 @@
         <service
             android:name=".BluetoothTrackerService"
             android:exported="true"
-            android:label="ATAK Bluetooth Tracker Service">
+            android:label="ATAK Bluetooth Tracker Service"
+            android:foregroundServiceType="connectedDevice">
             <intent-filter>
                 <action android:name="com.atakmap.tracking.actions.START_SCANNING" />
                 <action android:name="com.atakmap.tracking.actions.STOP_SCANNING" />

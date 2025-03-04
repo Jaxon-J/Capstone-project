@@ -51,7 +51,5 @@ public class PluginNativeLoader {
         } else {
             throw new IllegalArgumentException("NativeLoader not initialized");
         }
-
     }
-
 }
