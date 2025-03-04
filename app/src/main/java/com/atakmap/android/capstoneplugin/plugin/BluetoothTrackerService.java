@@ -28,10 +28,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
-
-import com.atakmap.app.BackgroundServices;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -137,10 +134,8 @@ public class BluetoothTrackerService extends Service {
         Notification notif = createNotification();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             Log.d(TAG, "STARTED FOREGROUND WITH TYPE");
-
             startForeground(NOTIF_ID, notif, FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE/*| FOREGROUND_SERVICE_TYPE_LOCATION*/);
-
-            } else {
+        } else {
             Log.d(TAG, "STARTED FOREGROUND WITHOUT TYPE");
             startForeground(NOTIF_ID, notif);
         }
@@ -267,13 +262,6 @@ public class BluetoothTrackerService extends Service {
                 if (action == null) return;
                 switch (action) {
                     case BluetoothDevice.ACTION_FOUND: {
-                        // Handle classic Bluetooth discovery
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
-//                                    != PackageManager.PERMISSION_GRANTED) {
-//                                return;
-//                            }
-//                        }
                         Log.d(TAG, "INTENT: ACTION_FOUND RECEIVED");
                         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                         if (device != null && !discoveredClassicDevices.contains(device)) {

@@ -62,7 +62,8 @@
                 <action android:name="com.atakmap.tracking.actions.STOP_SCANNING" />
             </intent-filter>
         </service>
-        <service android:name=".AtakBtService" android:exported="true"/>
+        <service android:name=".TestForegroundService"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -11,12 +11,14 @@ import android.widget.Button;
 
 import com.atak.plugins.impl.PluginContextProvider;
 import com.atak.plugins.impl.PluginLayoutInflater;
-import com.atakmap.android.maps.MapView;
-import com.atakmap.android.maps.Marker;
-import com.atakmap.android.user.PlacePointTool;
-import com.atakmap.coremap.maps.coords.GeoPoint;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import gov.tak.api.plugin.IPlugin;
@@ -31,19 +33,24 @@ import gov.tak.platform.marshal.MarshalManager;
 public class TrackingPlugin implements IPlugin {
 
     public static final String TAG = Constants.TAG_PREFIX + "Main";
+    private static int DEBUG_PIN_COUNT;
     IServiceController serviceController;
-
     Context pluginContext;
     IHostUIService uiService;
     ToolbarItem toolbarItem;
     Pane pluginViewPane;
-    private static int DEBUG_PIN_COUNT;
     private boolean debug_scanning = false;
+    private boolean testServiceRunning = false;
 
     public TrackingPlugin(IServiceController serviceController) {
         this.serviceController = serviceController;
-        final PluginContextProvider ctxProvider = serviceController.getService(PluginContextProvider.class);
+        final PluginContextProvider ctxProvider =
+                serviceController.getService(PluginContextProvider.class);
+        OpaqueClassInspector inspector = new OpaqueClassInspector();
+        inspector.inspectObject(serviceController, "ServiceController");
+        inspector.inspectObject(ctxProvider, "PluginContextProvider");
         if (ctxProvider != null) {
+            Log.d(TAG, "CONTEXT WAS NULL");
             pluginContext = ctxProvider.getPluginContext();
             pluginContext.setTheme(R.style.ATAKPluginTheme);
         }
@@ -54,7 +61,11 @@ public class TrackingPlugin implements IPlugin {
         // initialize the toolbar button for the plugin
 
         // create the button
-        toolbarItem = new ToolbarItem.Builder(pluginContext.getString(R.string.app_name), MarshalManager.marshal(pluginContext.getResources().getDrawable(R.drawable.ic_launcher, null), android.graphics.drawable.Drawable.class, gov.tak.api.commons.graphics.Bitmap.class)).setListener(new ToolbarItemAdapter() {
+        toolbarItem = new ToolbarItem.Builder(pluginContext.getString(R.string.app_name),
+                MarshalManager.marshal(pluginContext.getResources()
+                .getDrawable(R.drawable.ic_launcher, null),
+                        android.graphics.drawable.Drawable.class,
+                        gov.tak.api.commons.graphics.Bitmap.class)).setListener(new ToolbarItemAdapter() {
             @Override
             public void onClick(ToolbarItem item) {
                 showPane();
@@ -85,7 +96,8 @@ public class TrackingPlugin implements IPlugin {
             // In this case, using it is not necessary - but I am putting it here to remind
             // developers to look at this Inflator
 
-            pluginViewPane = new PaneBuilder(PluginLayoutInflater.inflate(pluginContext, R.layout.main_layout, null))
+            pluginViewPane = new PaneBuilder(PluginLayoutInflater.inflate(pluginContext,
+                    R.layout.main_layout, null))
                     // relative location is set to default; pane will switch location dependent on
                     // current orientation of device screen
                     .setMetaValue(Pane.RELATIVE_LOCATION, Pane.Location.Default)
@@ -102,10 +114,32 @@ public class TrackingPlugin implements IPlugin {
         }
 
         View pluginView = MarshalManager.marshal(pluginViewPane, Pane.class, View.class);
-        final Button getPermsBtn = pluginView.findViewById(R.id.grantPermissionsDebugButton);
-        final Button trackDebugBtn = pluginView.findViewById(R.id.trackingStartDebugButton);
-        getPermsBtn.setOnClickListener(this::onGetPermsButtonClick);
-        trackDebugBtn.setOnClickListener(this::onTrackDebugButtonClick);
+        pluginView.findViewById(R.id.grantPermissionsDebugButton)
+                .setOnClickListener(this::onGetPermsButtonClick);
+        pluginView.findViewById(R.id.trackDebugButton)
+                .setOnClickListener(this::onTrackDebugButtonClick);
+        pluginView.findViewById(R.id.startTestForegroundButton).setOnClickListener((View v) -> {
+            Button btn = (Button) v;
+            Intent testServiceIntent = new Intent(pluginContext, TestForegroundService.class);
+            if (testServiceRunning) {
+                pluginContext.stopService(testServiceIntent);
+                btn.setText("Start Test Service");
+                testServiceRunning = false;
+                return;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                pluginContext.startForegroundService(testServiceIntent);
+            } else {
+                pluginContext.startService(testServiceIntent);
+            }
+            btn.setText("Stop Test Service");
+            testServiceRunning = true;
+        });
+        pluginView.findViewById(R.id.incrementButton)
+                .setOnClickListener((View v) -> pluginContext.sendBroadcast(new Intent(TestForegroundService.INCREMENT)));
+        pluginView.findViewById(R.id.decrementButton)
+                .setOnClickListener((View v) -> pluginContext.sendBroadcast(new Intent(TestForegroundService.DECREMENT)));
+
     }
 
     private void onTrackDebugButtonClick(View v) {
@@ -136,16 +170,12 @@ public class TrackingPlugin implements IPlugin {
         Set<String> missingPerms = new HashSet<>();
         Set<String> neededPerms;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            neededPerms = Set.of(
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.WAKE_LOCK);
+            neededPerms = Set.of(Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.WAKE_LOCK);
         } else {
-            neededPerms = Set.of(
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.WAKE_LOCK);
+            neededPerms = Set.of(Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.ACCESS_FINE_LOCATION
+                    , Manifest.permission.WAKE_LOCK);
         }
         for (String perm : neededPerms) {
             if (pluginContext.checkSelfPermission(perm) == PackageManager.PERMISSION_GRANTED)
@@ -156,7 +186,8 @@ public class TrackingPlugin implements IPlugin {
         if (!hasPerms) {
 
             MarshalManager.marshal(pluginViewPane, Pane.class, View.class);
-            Log.e(TAG, "Cannot start service. Missing permissions: " + String.join(",", missingPerms));
+            Log.e(TAG, "Cannot start service. Missing permissions: " + String.join(",",
+                    missingPerms));
         }
         return hasPerms;
     }
@@ -166,19 +197,157 @@ public class TrackingPlugin implements IPlugin {
         // request permissions here? might need a PermissionsHandler or something
     }
 
-//    private static void placePinButtonClick(View v) {
-//        MapView mapView = MapView.getMapView();
-//        GeoPoint myLocation = mapView.getSelfMarker().getPoint();
-//        double diameter = 0.5;
-//        double angle = Math.random() * Math.PI * 2;
-//        GeoPoint newLocation = new GeoPoint(myLocation.getLatitude() + diameter * Math.cos(angle), myLocation.getLongitude() + diameter * Math.sin(angle));
-//        PlacePointTool.MarkerCreator creator = new PlacePointTool.MarkerCreator(newLocation)
-//                .setColor((int) Math.floor(Math.random() * 0xFFFFFF))
-//                .setCallsign("DEBUG" + DEBUG_PIN_COUNT)
-//                .setUid("tracking:debug-point-" + DEBUG_PIN_COUNT++)
-//                .setType("a-u-G")
-//                .setHow("bluetooth pickup from " + mapView.getSelfMarker().getUID());
-//        Marker marker = creator.placePoint();
-//        marker.getMetaString("", "");
-//    }
+
+    // something claude spit out to help me out with understanding classes.
+    // pass in any "[Class].class" to inspectObject and it will spit everything out in logs.
+    static class OpaqueClassInspector {
+        /**
+         * Logs comprehensive information about an object of unknown type
+         *
+         * @param obj   The object to inspect
+         * @param label A descriptive label for the log output
+         */
+        public void inspectObject(Object obj, String label) {
+            if (obj == null) {
+                Log.i(TAG, label + ": Object is null");
+                return;
+            }
+
+            Class<?> clazz = obj.getClass();
+
+            // Basic information
+            Log.i(TAG, "======== " + label + " (" + clazz.getName() + ") ========");
+            Log.i(TAG, "toString(): " + obj);
+            Log.i(TAG, "hashCode(): " + obj.hashCode());
+
+            // Class hierarchy
+            logClassHierarchy(clazz);
+
+            // Fields and their values
+            logFields(obj);
+
+            // Available methods
+            logMethods(clazz);
+
+            // Try common getter methods
+            logCommonGetters(obj);
+
+            Log.i(TAG, "======== End of " + label + " inspection ========");
+        }
+
+        /**
+         * Logs the complete class hierarchy
+         */
+        private void logClassHierarchy(Class<?> clazz) {
+            StringBuilder hierarchy = new StringBuilder("Class hierarchy: ");
+            Class<?> current = clazz;
+
+            while (current != null) {
+                hierarchy.append(current.getName());
+                current = current.getSuperclass();
+                if (current != null) {
+                    hierarchy.append(" -> ");
+                }
+            }
+
+            Log.i(TAG, hierarchy.toString());
+
+            // Log interfaces
+            Class<?>[] interfaces = clazz.getInterfaces();
+            if (interfaces.length > 0) {
+                Log.i(TAG, "Implemented interfaces: " + Arrays.toString(interfaces));
+            }
+        }
+
+        /**
+         * Logs all fields and their values using reflection
+         */
+        private void logFields(Object obj) {
+            Class<?> clazz = obj.getClass();
+            Log.i(TAG, "--- Fields ---");
+
+            try {
+                // Get all fields including private/protected ones from the class and its
+                // superclasses
+                Map<String, Field> fieldMap = new HashMap<>();
+                Class<?> currentClass = clazz;
+
+                while (currentClass != null) {
+                    Field[] fields = currentClass.getDeclaredFields();
+                    for (Field field : fields) {
+                        if (!fieldMap.containsKey(field.getName())) {
+                            fieldMap.put(field.getName(), field);
+                        }
+                    }
+                    currentClass = currentClass.getSuperclass();
+                }
+
+                for (Field field : fieldMap.values()) {
+                    field.setAccessible(true);
+                    String modifiers = Modifier.toString(field.getModifiers());
+                    try {
+                        Object value = field.get(obj);
+                        String valueStr = (value != null) ? (value.getClass()
+                                .isArray() ? Arrays.deepToString((Object[]) value) :
+                                value.toString()) : "null";
+                        Log.i(TAG, modifiers + " " + field.getType()
+                                .getName() + " " + field.getName() + " " + "= " + valueStr);
+                    } catch (Exception e) {
+                        Log.i(TAG, modifiers + " " + field.getType()
+                                .getName() + " " + field.getName() + " " + "= [Could not access " +
+                                "value: " + e.getMessage() + "]");
+                    }
+                }
+            } catch (SecurityException e) {
+                Log.w(TAG, "Security manager prevented access to fields");
+                Log.w(TAG, e.toString());
+            }
+        }
+
+        /**
+         * Logs all available methods
+         */
+        private void logMethods(Class<?> clazz) {
+            Log.i(TAG, "--- Methods ---");
+            Method[] methods = clazz.getMethods();
+
+            for (Method method : methods) {
+                String params = Arrays.toString(method.getParameterTypes())
+                        .replace("[", "(")
+                        .replace("]", ")")
+                        .replace("class ", "");
+
+                Log.i(TAG, Modifier.toString(method.getModifiers()) + " " + method.getReturnType()
+                        .getSimpleName() + " " + method.getName() + params);
+            }
+        }
+
+        /**
+         * Attempts to call common getter methods
+         */
+        private void logCommonGetters(Object obj) {
+            Log.i(TAG, "--- Common Getter Results ---");
+            Method[] methods = obj.getClass().getMethods();
+
+            for (Method method : methods) {
+                // Only try no-arg methods that start with "get" or "is" and aren't getClass()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (method.getParameterCount() == 0 && !method.getName()
+                            .equals("getClass") && (method.getName()
+                            .startsWith("get") || method.getName().startsWith("is"))) {
+                        try {
+                            method.setAccessible(true);
+                            Object result = method.invoke(obj);
+                            Log.i(TAG, method.getName() + "() = " + (result != null ?
+                                    result.toString() : "null"));
+                        } catch (Exception e) {
+                            // Just log and continue
+                            Log.i(TAG, method.getName() + "() = [Exception: " + e.getMessage() +
+                                    "]");
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
