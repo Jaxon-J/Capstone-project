@@ -49,14 +49,13 @@
                 android:layout_weight="1" />
 
             <Button
-                android:id="@+id/pinPlaceDebugButton"
+                android:id="@+id/grantPermissionsDebugButton"
                 style="@style/darkButton"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="5"
-                android:text="Place pin"
-                android:visibility="gone"
-                tools:visibility="gone" />
+                android:text="Get Permissions"
+                android:visibility="visible" />
 
             <Space
                 android:layout_width="wrap_content"

@@ -70,12 +70,13 @@ public class BluetoothTrackerService extends Service {
     private int discoveryRounds = 0;
     private String thisDeviceId;
     private PowerManager.WakeLock wakeLock;
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
     // BLE scan callback
     private final ScanCallback bleScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
+            Log.d(TAG, "onScanResult() called");
             BluetoothDevice device = result.getDevice();
             if (device != null && !discoveredBleDevices.contains(device)) {
                 String deviceName = safeGetDeviceName(device);
@@ -110,6 +111,7 @@ public class BluetoothTrackerService extends Service {
      */
     public static Intent createIntent(Context context, String action) {
         // Validation here?
+        Log.d(TAG, "createIntent() called");
         Intent intent = new Intent(context, BluetoothTrackerService.class);
         intent.setAction(action);
         return intent;
@@ -117,11 +119,8 @@ public class BluetoothTrackerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand() called");
-
         // Critical checks that must happen at startup
         if (!hasRequiredPermissions()) {
-            Log.e(TAG, "Missing required Bluetooth permissions. Service cannot run.");
             stopSelf();
             return START_NOT_STICKY;
         }
@@ -157,20 +156,24 @@ public class BluetoothTrackerService extends Service {
      * @return true if adapter initialized successfully, false otherwise
      */
     private boolean initializeBluetoothAdapter() {
+        Log.d(TAG, "initializeBluetoothAdapter() called");
+        if (bluetoothAdapter != null && bleScanner != null)
+            return true;
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        if (bluetoothManager == null) {
+            Log.e(TAG, "BluetoothManager not available. Service cannot run.");
+            return false;
+        }
+        bluetoothAdapter = bluetoothManager.getAdapter();
         if (bluetoothAdapter == null) {
-            BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-            if (bluetoothManager == null) {
-                Log.e(TAG, "BluetoothManager not available. Service cannot run.");
-                return false;
-            }
-            bluetoothAdapter = bluetoothManager.getAdapter();
-            if (bluetoothAdapter == null) {
-                Log.e(TAG, "Bluetooth is not supported on this device. Service cannot run.");
-                return false;
-            }
-            if (bluetoothAdapter.isEnabled()) {
-                bleScanner = bluetoothAdapter.getBluetoothLeScanner();
-            }
+            Log.e(TAG, "Bluetooth is not supported on this device. Service cannot run.");
+            return false;
+        }
+        if (bluetoothAdapter.isEnabled()) {
+            bleScanner = bluetoothAdapter.getBluetoothLeScanner();
+        } else {
+            Log.e(TAG, "Bluetooth must be enabled for service to run.");
+            return false;
         }
         return true;
     }
@@ -179,6 +182,7 @@ public class BluetoothTrackerService extends Service {
      * Check if Bluetooth is ready (adapter exists and is enabled)
      */
     private boolean bluetoothNotInitialized() {
+        Log.d(TAG, "bluetoothNotInitialized() called");
         return bluetoothAdapter == null || !bluetoothAdapter.isEnabled();
     }
 
@@ -186,6 +190,7 @@ public class BluetoothTrackerService extends Service {
      * Safely get device name with appropriate permission checks
      */
     private String safeGetDeviceName(BluetoothDevice device) {
+        Log.d(TAG, "safeGetDeviceName() called");
         String deviceName = "Unknown";
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -199,13 +204,14 @@ public class BluetoothTrackerService extends Service {
         } catch (Exception e) {
             Log.w(TAG, "Error getting device name", e);
         }
-        return deviceName != null ? deviceName : "Unknown";
+        return deviceName;
     }
 
     /**
      * Requests exemption from battery optimization to keep service running
      */
     private void requestBatteryOptimizationExemption() {
+        Log.d(TAG, "requestBatteryOptimizationExemption() called");
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         String packageName = getPackageName();
         if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
@@ -215,9 +221,10 @@ public class BluetoothTrackerService extends Service {
         }
     }
 
-    @SuppressLint("WakelockTimeout")
+    @SuppressLint({"WakelockTimeout", "ForegroundServiceType"})
     @Override
     public void onCreate() {
+        Log.d(TAG, "onCreate() called");
         super.onCreate();
 
         // Create wake lock to keep CPU running for this service
@@ -236,6 +243,7 @@ public class BluetoothTrackerService extends Service {
     }
 
     private void setupBluetoothReceiver() {
+        Log.d(TAG, "setupBluetoothReceiver() called");
         bluetoothReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -308,6 +316,7 @@ public class BluetoothTrackerService extends Service {
     }
 
     private void createNotificationChannel() {
+        Log.d(TAG, "createNotificationChannel() called");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     NOTIF_CHANNEL_ID,
@@ -323,6 +332,7 @@ public class BluetoothTrackerService extends Service {
     }
 
     private Notification createNotification() {
+        Log.d(TAG, "createNotification() called");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             return new Notification.Builder(this, NOTIF_CHANNEL_ID)
                     .setContentTitle("ATAK Tracker Service")
@@ -344,6 +354,7 @@ public class BluetoothTrackerService extends Service {
      * Start both Classic and BLE scanning
      */
     private void startScanning() {
+        Log.d(TAG, "startScanning() called");
         if (bluetoothNotInitialized()) {
             Log.e(TAG, "Bluetooth adapter not available or disabled");
             return;
@@ -372,6 +383,7 @@ public class BluetoothTrackerService extends Service {
      * Start Classic Bluetooth discovery
      */
     private void startClassicDiscovery() {
+        Log.d(TAG, "startClassicDiscovery() called");
         if (bluetoothNotInitialized()) return;
 
         discoveryRounds++;
@@ -393,6 +405,7 @@ public class BluetoothTrackerService extends Service {
      * Start BLE scanning
      */
     private void startBleScan() {
+        Log.d(TAG, "startBleScan() called");
         if (bluetoothNotInitialized()) return;
 
         if (bleScanner == null) {
@@ -427,10 +440,11 @@ public class BluetoothTrackerService extends Service {
 
     /**
      * Restart BLE scanning (can help prevent scan timeouts)
-     * Every code path is subsequent to permission checks.
      */
     @SuppressLint("MissingPermission")
     private void restartBleScanning() {
+        Log.d(TAG, "restartBleScanning() called");
+        // Every code path is subsequent to permission checks, no need to do it here.
         if (bleScanner != null) {
             try {
                 // Stop existing scan
@@ -452,6 +466,7 @@ public class BluetoothTrackerService extends Service {
      * Stop all Bluetooth scanning
      */
     private void stopScanning() {
+        Log.d(TAG, "stopScanning() called");
         if (!isScanning) return;
 
         isScanning = false;
@@ -483,6 +498,7 @@ public class BluetoothTrackerService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy() called");
         // Stop all scanning
         stopScanning();
 
@@ -506,13 +522,14 @@ public class BluetoothTrackerService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        Log.d(TAG, "onTaskRemoved called. Service will continue running.");
+        Log.d(TAG, "onTaskRemoved() called. Service will continue running.");
         super.onTaskRemoved(rootIntent);
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(TAG, "onBind() called");
         // This service doesn't support binding
         return null;
     }
@@ -521,20 +538,32 @@ public class BluetoothTrackerService extends Service {
      * Checks if the app has all required permissions for Bluetooth operations
      */
     private boolean hasRequiredPermissions() {
+        // may be refactoring permission handling into its own class.
+        Log.d(TAG, "hasRequiredPermissions() called");
+        boolean hasPerms = true;
+        Set<String> missingPerms = new HashSet<>();
+        Set<String> neededPerms;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Android 12+ requires BLUETOOTH_SCAN and BLUETOOTH_CONNECT
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
-                    == PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
-                    == PackageManager.PERMISSION_GRANTED;
+            neededPerms = Set.of(
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.WAKE_LOCK);
         } else {
-            // Android 6.0-11 requires BLUETOOTH, BLUETOOTH_ADMIN, and FINE_LOCATION
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH)
-                    == PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
-                    == PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED;
+            neededPerms = Set.of(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.WAKE_LOCK);
         }
+        for (String perm : neededPerms) {
+            if (checkSelfPermission(perm) == PackageManager.PERMISSION_GRANTED)
+                continue;
+            missingPerms.add(perm);
+            hasPerms = false;
+        }
+        if (!hasPerms) {
+            Log.e(TAG, "Cannot start service. Missing permissions: " + String.join(",", missingPerms));
+        }
+        return hasPerms;
     }
 }
