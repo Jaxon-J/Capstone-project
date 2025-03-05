@@ -1,10 +1,12 @@
 
-package com.atakmap.android.capstoneplugin.plugin;
+package com.atakmap.android.trackingplugin.plugin;
 
 import java.io.File;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+
+import com.atakmap.android.trackingplugin.Constants;
 
 /**
  * Boilerplate code for loading native.
