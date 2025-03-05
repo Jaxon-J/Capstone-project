@@ -19,48 +19,33 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/trackingButton1"
+                android:id="@+id/trackingButton3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Tracking" />
 
             <Button
-                android:id="@+id/devicesButton1"
+                android:id="@+id/devicesButton3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Devices" />
 
             <Button
-                android:id="@+id/sensorsButton1"
+                android:id="@+id/sensorsButton3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Sensors" />
+
         </LinearLayout>
 
-        <RadioButton
-            android:id="@+id/radioButton2"
+        <TextView
+            android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bluetooth" />
-
-        <RadioButton
-            android:id="@+id/radioButton3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Wi-Fi" />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="205dp" />
-
-        <Button
-            android:id="@+id/button5"
-            android:layout_width="match_parent"
-            android:layout_height="75dp"
-            android:text="Start Tracking" />
+            android:text="LIST SENSORS HERE" />
 
     </LinearLayout>
 </ScrollView>
