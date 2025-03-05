@@ -1,4 +1,4 @@
-package com.atakmap.android.capstoneplugin.plugin;
+package com.atakmap.android.trackingplugin.old;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -14,6 +14,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.atakmap.android.trackingplugin.Constants;
+
 import java.util.ArrayList;
 
 // @removable = unsure if code is doing anything useful, might be removed later
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 // modify code based on how these events are timed
 // https://developer.android.com/develop/connectivity/bluetooth/find-bluetooth-devices#discover-devices
 
+@Deprecated
 public class BluetoothTrackerService extends Service {
 
     // Constant strings

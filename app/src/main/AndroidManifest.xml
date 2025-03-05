@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.atakmap.android.capstoneplugin.plugin"
+    package="com.atakmap.android.trackingplugin.plugin"
     tools:ignore="GoogleAppIndexingWarning">
 
     <!-- suppressed allowBackup deprecation with ignore:DataExtractionRules -->

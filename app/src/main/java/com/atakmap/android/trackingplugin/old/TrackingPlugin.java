@@ -1,11 +1,13 @@
 
-package com.atakmap.android.capstoneplugin.plugin;
+package com.atakmap.android.trackingplugin.old;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.atak.plugins.impl.PluginContextProvider;
 import com.atak.plugins.impl.PluginLayoutInflater;
+import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.plugin.R;
 
 import gov.tak.api.plugin.IPlugin;
 import gov.tak.api.plugin.IServiceController;
@@ -16,6 +18,7 @@ import gov.tak.api.ui.ToolbarItem;
 import gov.tak.api.ui.ToolbarItemAdapter;
 import gov.tak.platform.marshal.MarshalManager;
 
+@Deprecated
 public class TrackingPlugin implements IPlugin {
 
     public static final String TAG = Constants.TAG_PREFIX + "Main";
