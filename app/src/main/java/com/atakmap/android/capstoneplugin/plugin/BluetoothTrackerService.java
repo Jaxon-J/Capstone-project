@@ -30,6 +30,9 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.atakmap.android.ipc.AtakBroadcast;
+import com.atakmap.android.util.ATAKConstants;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -311,7 +314,8 @@ public class BluetoothTrackerService extends Service {
         };
 
         // Register for relevant Bluetooth events
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        AtakBroadcast.DocumentedIntentFilter filter = new AtakBroadcast.DocumentedIntentFilter();
+//        IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
@@ -559,5 +563,14 @@ public class BluetoothTrackerService extends Service {
             Log.e(TAG, "Cannot start service. Missing permissions: " + String.join(",", missingPerms));
         }
         return hasPerms;
+    }
+
+    public static void start(Context context) {
+        Intent intent = new Intent(context, BluetoothTrackerService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
+        }
     }
 }

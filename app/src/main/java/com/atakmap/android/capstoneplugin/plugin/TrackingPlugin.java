@@ -12,13 +12,7 @@ import android.widget.Button;
 import com.atak.plugins.impl.PluginContextProvider;
 import com.atak.plugins.impl.PluginLayoutInflater;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import gov.tak.api.plugin.IPlugin;
@@ -33,7 +27,6 @@ import gov.tak.platform.marshal.MarshalManager;
 public class TrackingPlugin implements IPlugin {
 
     public static final String TAG = Constants.TAG_PREFIX + "Main";
-    private static int DEBUG_PIN_COUNT;
     IServiceController serviceController;
     Context pluginContext;
     IHostUIService uiService;
@@ -46,9 +39,6 @@ public class TrackingPlugin implements IPlugin {
         this.serviceController = serviceController;
         final PluginContextProvider ctxProvider =
                 serviceController.getService(PluginContextProvider.class);
-        OpaqueClassInspector inspector = new OpaqueClassInspector();
-        inspector.inspectObject(serviceController, "ServiceController");
-        inspector.inspectObject(ctxProvider, "PluginContextProvider");
         if (ctxProvider != null) {
             Log.d(TAG, "CONTEXT WAS NULL");
             pluginContext = ctxProvider.getPluginContext();
@@ -59,7 +49,6 @@ public class TrackingPlugin implements IPlugin {
         uiService = serviceController.getService(IHostUIService.class);
 
         // initialize the toolbar button for the plugin
-
         // create the button
         toolbarItem = new ToolbarItem.Builder(pluginContext.getString(R.string.app_name),
                 MarshalManager.marshal(pluginContext.getResources()
@@ -139,7 +128,6 @@ public class TrackingPlugin implements IPlugin {
                 .setOnClickListener((View v) -> pluginContext.sendBroadcast(new Intent(TestForegroundService.INCREMENT)));
         pluginView.findViewById(R.id.decrementButton)
                 .setOnClickListener((View v) -> pluginContext.sendBroadcast(new Intent(TestForegroundService.DECREMENT)));
-
     }
 
     private void onTrackDebugButtonClick(View v) {
@@ -195,159 +183,5 @@ public class TrackingPlugin implements IPlugin {
 
     private void onGetPermsButtonClick(View v) {
         // request permissions here? might need a PermissionsHandler or something
-    }
-
-
-    // something claude spit out to help me out with understanding classes.
-    // pass in any "[Class].class" to inspectObject and it will spit everything out in logs.
-    static class OpaqueClassInspector {
-        /**
-         * Logs comprehensive information about an object of unknown type
-         *
-         * @param obj   The object to inspect
-         * @param label A descriptive label for the log output
-         */
-        public void inspectObject(Object obj, String label) {
-            if (obj == null) {
-                Log.i(TAG, label + ": Object is null");
-                return;
-            }
-
-            Class<?> clazz = obj.getClass();
-
-            // Basic information
-            Log.i(TAG, "======== " + label + " (" + clazz.getName() + ") ========");
-            Log.i(TAG, "toString(): " + obj);
-            Log.i(TAG, "hashCode(): " + obj.hashCode());
-
-            // Class hierarchy
-            logClassHierarchy(clazz);
-
-            // Fields and their values
-            logFields(obj);
-
-            // Available methods
-            logMethods(clazz);
-
-            // Try common getter methods
-            logCommonGetters(obj);
-
-            Log.i(TAG, "======== End of " + label + " inspection ========");
-        }
-
-        /**
-         * Logs the complete class hierarchy
-         */
-        private void logClassHierarchy(Class<?> clazz) {
-            StringBuilder hierarchy = new StringBuilder("Class hierarchy: ");
-            Class<?> current = clazz;
-
-            while (current != null) {
-                hierarchy.append(current.getName());
-                current = current.getSuperclass();
-                if (current != null) {
-                    hierarchy.append(" -> ");
-                }
-            }
-
-            Log.i(TAG, hierarchy.toString());
-
-            // Log interfaces
-            Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces.length > 0) {
-                Log.i(TAG, "Implemented interfaces: " + Arrays.toString(interfaces));
-            }
-        }
-
-        /**
-         * Logs all fields and their values using reflection
-         */
-        private void logFields(Object obj) {
-            Class<?> clazz = obj.getClass();
-            Log.i(TAG, "--- Fields ---");
-
-            try {
-                // Get all fields including private/protected ones from the class and its
-                // superclasses
-                Map<String, Field> fieldMap = new HashMap<>();
-                Class<?> currentClass = clazz;
-
-                while (currentClass != null) {
-                    Field[] fields = currentClass.getDeclaredFields();
-                    for (Field field : fields) {
-                        if (!fieldMap.containsKey(field.getName())) {
-                            fieldMap.put(field.getName(), field);
-                        }
-                    }
-                    currentClass = currentClass.getSuperclass();
-                }
-
-                for (Field field : fieldMap.values()) {
-                    field.setAccessible(true);
-                    String modifiers = Modifier.toString(field.getModifiers());
-                    try {
-                        Object value = field.get(obj);
-                        String valueStr = (value != null) ? (value.getClass()
-                                .isArray() ? Arrays.deepToString((Object[]) value) :
-                                value.toString()) : "null";
-                        Log.i(TAG, modifiers + " " + field.getType()
-                                .getName() + " " + field.getName() + " " + "= " + valueStr);
-                    } catch (Exception e) {
-                        Log.i(TAG, modifiers + " " + field.getType()
-                                .getName() + " " + field.getName() + " " + "= [Could not access " +
-                                "value: " + e.getMessage() + "]");
-                    }
-                }
-            } catch (SecurityException e) {
-                Log.w(TAG, "Security manager prevented access to fields");
-                Log.w(TAG, e.toString());
-            }
-        }
-
-        /**
-         * Logs all available methods
-         */
-        private void logMethods(Class<?> clazz) {
-            Log.i(TAG, "--- Methods ---");
-            Method[] methods = clazz.getMethods();
-
-            for (Method method : methods) {
-                String params = Arrays.toString(method.getParameterTypes())
-                        .replace("[", "(")
-                        .replace("]", ")")
-                        .replace("class ", "");
-
-                Log.i(TAG, Modifier.toString(method.getModifiers()) + " " + method.getReturnType()
-                        .getSimpleName() + " " + method.getName() + params);
-            }
-        }
-
-        /**
-         * Attempts to call common getter methods
-         */
-        private void logCommonGetters(Object obj) {
-            Log.i(TAG, "--- Common Getter Results ---");
-            Method[] methods = obj.getClass().getMethods();
-
-            for (Method method : methods) {
-                // Only try no-arg methods that start with "get" or "is" and aren't getClass()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    if (method.getParameterCount() == 0 && !method.getName()
-                            .equals("getClass") && (method.getName()
-                            .startsWith("get") || method.getName().startsWith("is"))) {
-                        try {
-                            method.setAccessible(true);
-                            Object result = method.invoke(obj);
-                            Log.i(TAG, method.getName() + "() = " + (result != null ?
-                                    result.toString() : "null"));
-                        } catch (Exception e) {
-                            // Just log and continue
-                            Log.i(TAG, method.getName() + "() = [Exception: " + e.getMessage() +
-                                    "]");
-                        }
-                    }
-                }
-            }
-        }
     }
 }

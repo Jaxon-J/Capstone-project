@@ -63,7 +63,7 @@
             </intent-filter>
         </service>
         <service android:name=".TestForegroundService"
-            android:exported="false"/>
+            android:exported="true"/>
     </application>
 
 </manifest>
