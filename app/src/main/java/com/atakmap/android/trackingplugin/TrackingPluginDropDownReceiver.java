@@ -51,6 +51,8 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
         mainView.findViewById(R.id.trackDebugButton).setOnClickListener((View v) -> {
+            // TODO: need to update UI as a response to a scan status, which may change outside
+            //  of user input (i.e. host device locks)
             Button b = (Button) v;
             boolean isEnabled = b.getText().equals(pluginContext.getString(R.string.scan_enabled));
             if (isEnabled) {
@@ -85,7 +87,7 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
     protected void disposeImpl() {
         if (btReceiver != null) {
             AtakBroadcast.getInstance().unregisterReceiver(btReceiver);
-           btReceiver = null;
+            btReceiver = null;
         }
     }
 
