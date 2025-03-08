@@ -12,6 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+// TODO: if we're still looking for a foreground service, look into hooking this receiver up with
+//  AtakBroadcast, then passing it to a bound service? idk tbh
+
 public class BluetoothReceiver extends BroadcastReceiver {
     private static final String TAG = Constants.createTag(BluetoothReceiver.class);
     private final BluetoothLeScanner scanner;
@@ -34,7 +37,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
         BluetoothManager manager =
                 (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = manager.getAdapter();
-        scanner = btAdapter.getBluetoothLeScanner();
+        this.scanner = btAdapter.getBluetoothLeScanner();
     }
 
     @SuppressLint("MissingPermission")
@@ -50,11 +53,11 @@ public class BluetoothReceiver extends BroadcastReceiver {
                 // TODO: when we get the whitelist going, use that as a ScanFilter list and pass to
                 //  startScan, documentation says it'll keep going even if locked if we provide
                 //  this filter. Also look into ScanSettings, has some good stuff.
-                scanner.startScan(scanCallback);
+                this.scanner.startScan(scanCallback);
                 break;
             case ACTIONS.STOP_SCAN:
                 Log.d(TAG, "STOP_SCAN");
-                scanner.stopScan(scanCallback);
+                this.scanner.stopScan(scanCallback);
                 break;
         }
     }

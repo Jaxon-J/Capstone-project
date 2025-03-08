@@ -46,9 +46,6 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         DocumentedIntentFilter btIntentFilter = new DocumentedIntentFilter();
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.START_SCAN);
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.STOP_SCAN);
-        btIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-        btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
 
         mainView.findViewById(R.id.trackDebugButton).setOnClickListener((View v) -> {
