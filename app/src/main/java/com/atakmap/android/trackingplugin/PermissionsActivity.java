@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: do we even need this anymore?
 public class PermissionsActivity extends Activity {
     private static final String TAG = Constants.createTag(PermissionsActivity.class);
 

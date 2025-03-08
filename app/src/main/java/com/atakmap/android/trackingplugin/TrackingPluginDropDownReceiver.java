@@ -10,6 +10,7 @@ import android.widget.Button;
 import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.ipc.AtakBroadcast;
+import com.atakmap.android.ipc.AtakBroadcast.DocumentedIntentFilter;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.plugin.R;
@@ -42,17 +43,18 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
 
         // BLUETOOTH SCANNING
         btReceiver = new BluetoothReceiver(pluginContext);
-        AtakBroadcast.DocumentedIntentFilter btIntentFilter =
-                new AtakBroadcast.DocumentedIntentFilter();
+        DocumentedIntentFilter btIntentFilter = new DocumentedIntentFilter();
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.START_SCAN);
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.STOP_SCAN);
         btIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
+
         mainView.findViewById(R.id.trackDebugButton).setOnClickListener((View v) -> {
             // TODO: need to update UI as a response to a scan status, which may change outside
-            //  of user input (i.e. host device locks)
+            //  of user input (i.e. host device locks). this could also be refactored into a
+            //  standalone function, probably.
             Button b = (Button) v;
             boolean isEnabled = b.getText().equals(pluginContext.getString(R.string.scan_enabled));
             if (isEnabled) {
