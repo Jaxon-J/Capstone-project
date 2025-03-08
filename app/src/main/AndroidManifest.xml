@@ -3,16 +3,16 @@
     package="com.atakmap.android.trackingplugin.plugin"
     tools:ignore="GoogleAppIndexingWarning">
 
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+<!--    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />-->
+<!--    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
+<!--    <uses-permission android:name="android.permission.BLUETOOTH" />-->
+<!--    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />-->
+<!--    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />-->
+<!--    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />-->
+<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />-->
+<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />-->
 <!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />-->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+<!--    <uses-permission android:name="android.permission.WAKE_LOCK" />-->
 
     <uses-feature
         android:name="android.hardware.bluetooth"
@@ -38,10 +38,15 @@
             android:value="@string/app_desc" />
 
 
-        <!-- This fictitious activity entry allow for ATAK 4.6.0.2 and newer to perform
-             plugin discovery for android devices.  If this is removed, the plugin will
-             not be able to be discovered or loaded.  -->
-        <!-- Added suppression below, component is intentionally non-existent -->
+        <service android:name="com.atakmap.android.trackingplugin.BluetoothService"
+            android:label="Bluetooth scanning service"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.atakmap.android.trackingplugin.PING_BLUETOOTH"/>
+            </intent-filter>
+        </service>
+
+        <!-- Boilerplate for ATAK plugin discovery -->
         <!--suppress AndroidDomInspection -->
         <activity
             android:name="com.atakmap.app.component"
@@ -52,18 +57,7 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".BluetoothTrackerService"
-            android:exported="true"
-            android:label="ATAK Bluetooth Tracker Service"
-            android:foregroundServiceType="connectedDevice">
-            <intent-filter>
-                <action android:name="com.atakmap.tracking.actions.START_SCANNING" />
-                <action android:name="com.atakmap.tracking.actions.STOP_SCANNING" />
-            </intent-filter>
-        </service>
-        <service android:name=".TestForegroundService"
-            android:exported="true"/>
+
     </application>
 
 </manifest>

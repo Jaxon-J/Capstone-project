@@ -72,7 +72,7 @@
             android:gravity="center_horizontal"
             android:paddingTop="40dp"
             android:paddingBottom="15dp"
-            android:text="Test Foreground Service"
+            android:text="Map interaction"
             android:textSize="24sp" />
 
         <LinearLayout
@@ -86,41 +86,15 @@
                 android:layout_weight="1" />
 
             <Button
-                android:id="@+id/startTestForegroundButton"
+                android:id="@+id/debugPlacePinButton"
                 style="@style/darkButton"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="Start Test Service" />
+                android:text="Place Pin" />
 
             <Space
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/incrementButton"
-                style="@style/darkButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="+" />
-
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/decrementButton"
-                style="@style/darkButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="-" />
-
-            <Space
-                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
