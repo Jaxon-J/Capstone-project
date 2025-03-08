@@ -1,7 +1,5 @@
 package com.atakmap.android.trackingplugin;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
