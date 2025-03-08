@@ -10,7 +10,6 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.user.PlacePointTool;
-import com.atakmap.coremap.maps.coords.ErrorCategory;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
 public class TrackingPluginDropDownReceiver extends DropDownReceiver {
@@ -28,8 +27,7 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
             GeoPoint selfPoint = MapView.getMapView().getSelfMarker().getPoint();
             GeoPoint trackedPoint = new GeoPoint(selfPoint.getLatitude(), // 0.0000035 = 10ft
                     selfPoint.getLongitude(), selfPoint.getAltitude(),
-                    selfPoint.getAltitudeReference(), ErrorCategory.CAT2.getValue(),
-                    ErrorCategory.CAT2.getValue());
+                    selfPoint.getAltitudeReference(), 11, 11);
             PlacePointTool.MarkerCreator mc = new PlacePointTool.MarkerCreator(trackedPoint);
             mc.setType("a-u-G");
             mc.setCallsign("tracked");
