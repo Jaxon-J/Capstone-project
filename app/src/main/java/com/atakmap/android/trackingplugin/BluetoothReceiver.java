@@ -25,11 +25,19 @@ public class BluetoothReceiver extends BroadcastReceiver {
         @SuppressLint("MissingPermission")
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            BtUtil.logDeviceFromScanResult(result);
+            BluetoothDevice device = result.getDevice();
+            Log.d(TAG, String.format("Logged Device (name: %s - mac: %s)", device.getName(),
+                    device.getAddress()));
+            // device info is here. need to pass into somewhere.
+            // probably class variable passed in via constructor
         }
     };
 
     public BluetoothReceiver(Context context) {
+        // add null checks in here, log on error. set private variable
+        // canScan, update UI behavior based what the getter of canScan returns
+        // maybe have a refresh button that will do the check again and updates
+        // canScan
         BluetoothManager manager =
                 (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = manager.getAdapter();
@@ -57,12 +65,13 @@ public class BluetoothReceiver extends BroadcastReceiver {
             perms.add(Manifest.permission.BLUETOOTH);
             perms.add(Manifest.permission.BLUETOOTH_ADMIN);
         }
+        List<String> missingPerms = new ArrayList<>();
         for (String perm : perms)
             if (context.checkSelfPermission(perm) == PackageManager.PERMISSION_DENIED) {
                 Log.e(TAG, "Don't have permission: " + perm);
-                return false;
+                missingPerms.add(perm);
             }
-        return true;
+        return missingPerms.isEmpty();
     }
 
     @SuppressLint("MissingPermission")
@@ -73,10 +82,6 @@ public class BluetoothReceiver extends BroadcastReceiver {
         if (action == null || !hasAllBtPerms(context)) return;
 
         switch (action) {
-            case BluetoothDevice.ACTION_FOUND:
-                Log.d(TAG, "ACTION_FOUND");
-                BtUtil.logDeviceFromIntent(intent, context);
-                break;
             case ACTIONS.START_SCAN:
                 Log.d(TAG, "START_SCAN");
                 // when we get the whitelist going, use that as a scanfilter and pass to
