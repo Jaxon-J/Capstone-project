@@ -64,12 +64,12 @@ public class BluetoothReceiver extends BroadcastReceiver {
                     "device.");
             return;
         }
-        btAdapter = manager.getAdapter();
-        if (btAdapter == null) {
+        this.btAdapter = manager.getAdapter();
+        if (this.btAdapter == null) {
             Log.e(TAG, "Could not get bluetooth adapter for some reason.");
             return;
         }
-        this.scanner = btAdapter.getBluetoothLeScanner();
+        this.scanner = this.btAdapter.getBluetoothLeScanner();
     }
 
     private static void deviceLog(String name, String address) {
@@ -86,8 +86,8 @@ public class BluetoothReceiver extends BroadcastReceiver {
         } else if (!PermissionsActivity.hasAllBtPermissions(context)) {
             Log.e(TAG, "Returning..."); // hasAllBtPermissions does logging
             return;
-        } else if (scanner == null) {
-            Log.w(TAG, "Scanner was not initialized properly. Returning...");
+        } else if (this.btAdapter == null || this.scanner == null) {
+            Log.w(TAG, "Receiver was not initialized properly. Returning...");
             return;
         }
 
@@ -105,8 +105,13 @@ public class BluetoothReceiver extends BroadcastReceiver {
                 break;
             case ACTIONS.CLASSIC_START_DISCOVERY:
                 Log.d(TAG, "CLASSIC_START_DISCOVERY");
+                if (!this.btAdapter.isEnabled()) {
+                    Log.w(TAG, "Tried to start discovery when bluetooth was disabled.");
+                    return;
+                }
                 boolean btStarted = this.btAdapter.startDiscovery();
                 if (!btStarted) Log.e(TAG, "Could not start classic discovery for some reason.");
+                else Log.d(TAG, "Discovery process starting...");
                 isScanning = true;
                 break;
             case ACTIONS.CLASSIC_STOP_DISCOVERY:
@@ -120,7 +125,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
                 break;
             case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                 Log.d(TAG, "Classic discovery finished. Restarting...");
-                if (isScanning) btAdapter.startDiscovery();
+                if (isScanning && this.btAdapter.isEnabled()) this.btAdapter.startDiscovery();
                 else Log.d(TAG, "Just kidding we're stopping now");
                 break;
             case BluetoothDevice.ACTION_FOUND:
