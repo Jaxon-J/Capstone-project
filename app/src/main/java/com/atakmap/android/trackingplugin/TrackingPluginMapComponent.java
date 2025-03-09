@@ -20,6 +20,13 @@ public class TrackingPluginMapComponent extends DropDownMapComponent {
         context.setTheme(R.style.ATAKPluginTheme);
         super.onCreate(context, intent, view);
         pluginContext = context;
+        try {
+            Class.forName("dalvik.system.CloseGuard")
+                    .getMethod("setEnabled", boolean.class)
+                    .invoke(null, true);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
 
         mainDdr = new TrackingPluginDropDownReceiver(view, context);
         Log.d(TAG, "Registering TrackingPluginDropDownReceiver");
