@@ -54,31 +54,37 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
 
         mainView.findViewById(R.id.bleScanDebugButton)
-                .setOnClickListener(getScanClickListener(R.string.ble_scan_enabled,
-                        R.string.ble_scan_disabled, BluetoothReceiver.ACTIONS.BLE_START_SCAN,
-                        BluetoothReceiver.ACTIONS.BLE_STOP_SCAN));
+                .setOnClickListener(this::onBleScanDebugButtonClick);
         mainView.findViewById(R.id.classicScanDebugButton)
-                .setOnClickListener(getScanClickListener(R.string.classic_scan_enabled,
-                        R.string.classic_scan_disabled,
-                        BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY,
-                        BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY));
+                .setOnClickListener(this::onClassicScanDebugButtonClick);
     }
 
-    private View.OnClickListener getScanClickListener(int enabledStringId, int disabledStringId,
-                                                      String enableAction, String disableAction) {
-        return (View v) -> {
-            Button b = (Button) v;
-            boolean isEnabled = b.getText().equals(pluginContext.getString(enabledStringId));
-            if (isEnabled) {
-                Intent stopScanIntent = new Intent(disableAction);
-                AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
-                b.setText(pluginContext.getString(disabledStringId));
-                return;
-            }
-            Intent startScanIntent = new Intent(enableAction);
-            AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
-            b.setText(pluginContext.getString(enabledStringId));
-        };
+    private void onBleScanDebugButtonClick(View v) {
+        Button b = (Button) v;
+        boolean isEnabled = b.getText().equals(pluginContext.getString(R.string.ble_scan_enabled));
+        if (isEnabled) {
+            Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
+            AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
+            b.setText(pluginContext.getString(R.string.ble_scan_disabled));
+            return;
+        }
+        Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
+        AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
+        b.setText(pluginContext.getString(R.string.ble_scan_enabled));
+    }
+
+    private void onClassicScanDebugButtonClick(View v) {
+        Button b = (Button) v;
+        boolean isEnabled = b.getText().equals(pluginContext.getString(R.string.classic_scan_enabled));
+        if (isEnabled) {
+            Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY);
+            AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
+            b.setText(pluginContext.getString(R.string.classic_scan_disabled));
+            return;
+        }
+        Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
+        AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
+        b.setText(pluginContext.getString(R.string.classic_scan_enabled));
     }
 
     @Override
