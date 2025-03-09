@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class BluetoothReceiver extends BroadcastReceiver {
     private static final String TAG = Constants.createTag(BluetoothReceiver.class);
-    private final Map<String, String> deviceMap = new HashMap<>();
+    private static final Map<String, String> deviceMap = new HashMap<>();
 
     private final ScanCallback scanCallback = new ScanCallback() {
         @SuppressLint("MissingPermission")
@@ -30,10 +30,10 @@ public class BluetoothReceiver extends BroadcastReceiver {
             BluetoothDevice device = result.getDevice();
             String macAddr = device.getAddress();
             String name = device.getName();
-            if (deviceMap.get(macAddr) == null || (deviceMap.get(macAddr)
-                    .equals("null") && !name.isEmpty())) {
-                deviceMap.put(device.getAddress(), device.getName());
-                deviceLog(device.getName(), device.getAddress());
+            if (name == null) name = "unknown";
+            if (!deviceMap.containsKey(macAddr) || !deviceMap.get(macAddr).equals(name)) {
+                deviceMap.put(macAddr, name);
+                deviceLog(name, macAddr);
             }
             // TODO: device info is here. need to pass into somewhere.
             //  probably class variable passed in via constructor
@@ -113,6 +113,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
                 break;
             case ACTIONS.BLE_STOP_SCAN:
                 Log.d(TAG, "BLE_STOP_SCAN");
+                deviceMap.clear();
                 this.scanner.stopScan(scanCallback);
                 break;
             case ACTIONS.CLASSIC_START_DISCOVERY:
