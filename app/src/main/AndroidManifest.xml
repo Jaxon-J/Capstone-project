@@ -3,17 +3,6 @@
     package="com.atakmap.android.trackingplugin.plugin"
     tools:ignore="GoogleAppIndexingWarning">
 
-<!--    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />-->
-<!--    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
-<!--    <uses-permission android:name="android.permission.BLUETOOTH" />-->
-<!--    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />-->
-<!--    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />-->
-<!--    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />-->
-<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />-->
-<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />-->
-<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />-->
-<!--    <uses-permission android:name="android.permission.WAKE_LOCK" />-->
-
     <uses-feature
         android:name="android.hardware.bluetooth"
         android:required="true" />
@@ -36,15 +25,6 @@
         <meta-data
             android:name="app_desc"
             android:value="@string/app_desc" />
-
-
-        <service android:name="com.atakmap.android.trackingplugin.BluetoothService"
-            android:label="Bluetooth scanning service"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.atakmap.android.trackingplugin.PING_BLUETOOTH"/>
-            </intent-filter>
-        </service>
 
         <!-- Boilerplate for ATAK plugin discovery -->
         <!--suppress AndroidDomInspection -->
