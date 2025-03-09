@@ -1,5 +1,7 @@
 package com.atakmap.android.trackingplugin;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
@@ -42,26 +44,43 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         // BLUETOOTH SCANNING
         btReceiver = new BluetoothReceiver(pluginContext);
         DocumentedIntentFilter btIntentFilter = new DocumentedIntentFilter();
-        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.START_SCAN);
-        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.STOP_SCAN);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY);
+        btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        btIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
 
-        mainView.findViewById(R.id.trackDebugButton).setOnClickListener((View v) -> {
-            // TODO: need to update UI as a response to a scan status, which may change outside
-            //  of user input (i.e. host device locks). this could also be refactored into a
-            //  standalone function, probably.
+        mainView.findViewById(R.id.bleScanDebugButton).setOnClickListener(getScanListener(
+                R.string.ble_scan_enabled,
+                R.string.ble_scan_disabled,
+                BluetoothReceiver.ACTIONS.BLE_START_SCAN,
+                BluetoothReceiver.ACTIONS.BLE_STOP_SCAN
+        ));
+        mainView.findViewById(R.id.classicScanDebugButton).setOnClickListener(getScanListener(
+                R.string.classic_scan_enabled,
+                R.string.classic_scan_disabled,
+                BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY,
+                BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY
+        ));
+    }
+
+    private View.OnClickListener getScanListener(int enableStringId, int disableStringId, String enableAction, String disableAction) {
+        return (View v) -> {
             Button b = (Button) v;
-            boolean isEnabled = b.getText().equals(pluginContext.getString(R.string.scan_enabled));
+            boolean isEnabled = b.getText().equals(pluginContext.getString(enableStringId));
             if (isEnabled) {
-                Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.STOP_SCAN);
+                Intent stopScanIntent = new Intent(disableAction);
                 AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
-                b.setText(pluginContext.getString(R.string.scan_disabled));
+                b.setText(pluginContext.getString(disableStringId));
                 return;
             }
-            Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.START_SCAN);
+            Intent startScanIntent = new Intent(enableAction);
             AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
-            b.setText(pluginContext.getString(R.string.scan_enabled));
-        });
+            b.setText(pluginContext.getString(enableStringId));
+        };
     }
 
     @Override

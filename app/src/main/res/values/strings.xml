@@ -5,8 +5,9 @@
     <!-- description -->
     <string name="app_desc">This plugin is used to track devices based on their signal emissions. (Bluetooth only for now.)</string>
 
-    <string name="scan_enabled">Stop Scanning</string>
-    <string name="scan_disabled">Start Scanning</string>
-
+    <string name="ble_scan_enabled">Stop BLE Scan</string>
+    <string name="ble_scan_disabled">Start BLE Scan</string>
+    <string name="classic_scan_enabled">Stop Classic Scan</string>
+    <string name="classic_scan_disabled">Start Classic Scan</string>
 
 </resources>

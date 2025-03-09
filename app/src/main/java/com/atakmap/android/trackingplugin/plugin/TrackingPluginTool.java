@@ -11,7 +11,7 @@ public class TrackingPluginTool extends AbstractPluginTool implements Disposable
     public TrackingPluginTool(Context context) {
         super(context,
                 context.getString(R.string.app_name),
-                context.getString(R.string.app_name),
+                context.getString(R.string.app_desc),
                 context.getDrawable(R.drawable.ic_launcher),
                 TrackingPluginDropDownReceiver.ACTIONS.SHOW_PLUGIN);
     }
