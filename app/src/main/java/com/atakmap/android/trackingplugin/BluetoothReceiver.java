@@ -68,18 +68,22 @@ public class BluetoothReceiver extends BroadcastReceiver {
     private boolean isScanning = false;
 
     public BluetoothReceiver(Context context) {
-        BluetoothManager manager =
-                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        if (manager == null) {
-            Log.e(TAG,
-                    "Could not get bluetooth manager. Bluetooth may not be supported on this " +
-                            "device.");
-            return;
-        }
-        this.btAdapter = manager.getAdapter();
-        if (this.btAdapter == null) {
-            Log.e(TAG, "Could not get bluetooth adapter for some reason.");
-            return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            BluetoothManager manager =
+                    (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            if (manager == null) {
+                Log.e(TAG,
+                        "Could not get bluetooth manager. Bluetooth may not be supported on this " +
+                                "device.");
+                return;
+            }
+            this.btAdapter = manager.getAdapter();
+            if (this.btAdapter == null) {
+                Log.e(TAG, "Could not get bluetooth adapter for some reason.");
+                return;
+            }
+        } else {
+            this.btAdapter = BluetoothAdapter.getDefaultAdapter();
         }
         this.scanner = this.btAdapter.getBluetoothLeScanner();
     }
