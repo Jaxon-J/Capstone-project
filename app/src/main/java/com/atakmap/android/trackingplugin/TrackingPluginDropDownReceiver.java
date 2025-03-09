@@ -53,33 +53,31 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         btIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
 
-        mainView.findViewById(R.id.bleScanDebugButton).setOnClickListener(getScanListener(
-                R.string.ble_scan_enabled,
-                R.string.ble_scan_disabled,
-                BluetoothReceiver.ACTIONS.BLE_START_SCAN,
-                BluetoothReceiver.ACTIONS.BLE_STOP_SCAN
-        ));
-        mainView.findViewById(R.id.classicScanDebugButton).setOnClickListener(getScanListener(
-                R.string.classic_scan_enabled,
-                R.string.classic_scan_disabled,
-                BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY,
-                BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY
-        ));
+        mainView.findViewById(R.id.bleScanDebugButton)
+                .setOnClickListener(getScanClickListener(R.string.ble_scan_enabled,
+                        R.string.ble_scan_disabled, BluetoothReceiver.ACTIONS.BLE_START_SCAN,
+                        BluetoothReceiver.ACTIONS.BLE_STOP_SCAN));
+        mainView.findViewById(R.id.classicScanDebugButton)
+                .setOnClickListener(getScanClickListener(R.string.classic_scan_enabled,
+                        R.string.classic_scan_disabled,
+                        BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY,
+                        BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY));
     }
 
-    private View.OnClickListener getScanListener(int enableStringId, int disableStringId, String enableAction, String disableAction) {
+    private View.OnClickListener getScanClickListener(int enabledStringId, int disabledStringId,
+                                                      String enableAction, String disableAction) {
         return (View v) -> {
             Button b = (Button) v;
-            boolean isEnabled = b.getText().equals(pluginContext.getString(enableStringId));
+            boolean isEnabled = b.getText().equals(pluginContext.getString(enabledStringId));
             if (isEnabled) {
                 Intent stopScanIntent = new Intent(disableAction);
                 AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
-                b.setText(pluginContext.getString(disableStringId));
+                b.setText(pluginContext.getString(disabledStringId));
                 return;
             }
             Intent startScanIntent = new Intent(enableAction);
             AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
-            b.setText(pluginContext.getString(enableStringId));
+            b.setText(pluginContext.getString(enabledStringId));
         };
     }
 
