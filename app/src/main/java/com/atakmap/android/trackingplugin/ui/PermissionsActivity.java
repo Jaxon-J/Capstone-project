@@ -1,4 +1,4 @@
-package com.atakmap.android.trackingplugin;
+package com.atakmap.android.trackingplugin.ui;
 
 import android.Manifest;
 import android.app.Activity;
@@ -8,6 +8,8 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import com.atakmap.android.trackingplugin.Constants;
 
 import java.util.ArrayList;
 import java.util.List;

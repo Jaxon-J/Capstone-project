@@ -13,6 +13,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import com.atakmap.android.trackingplugin.ui.PermissionsActivity;
+
 import java.util.HashMap;
 import java.util.Map;
 

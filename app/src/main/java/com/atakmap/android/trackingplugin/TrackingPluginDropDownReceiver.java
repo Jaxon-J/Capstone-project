@@ -44,7 +44,6 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
 
         // tabs logic
         TabLayout tabLayout = mainView.findViewById(R.id.tabLayout);
-        tabLayout.removeAllTabs();
         ViewPager2 pager = mainView.findViewById(R.id.viewPager);
         pager.setAdapter(new TabViewPagerAdapter(pluginContext, tabInfo));
         // set height as the maximum height of any tab
