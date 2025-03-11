@@ -1,5 +1,7 @@
 package com.atakmap.android.trackingplugin;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Pair;
@@ -13,10 +15,12 @@ import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
+import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
+import com.atakmap.android.user.PlacePointTool;
+import com.atakmap.coremap.maps.coords.GeoPoint;
 import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayout.Tab;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.List;
@@ -37,6 +41,8 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         // set up UI, set main layout to be viewed when SHOW_PLUGIN action is triggered
         mainView = PluginLayoutInflater.inflate(context, R.layout.main_layout, null);
         // set up all receivers/UI responses here
+
+        // tabs logic
         TabLayout tabLayout = mainView.findViewById(R.id.tabLayout);
         tabLayout.removeAllTabs();
         ViewPager2 pager = mainView.findViewById(R.id.viewPager);
@@ -58,34 +64,36 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager,
                 (tab, position) -> tab.setText(tabInfo.get(position).first));
         mediator.attach();
-        // PIN/MARKER PLACEMENT
-//        mainView.findViewById(R.id.debugPlacePinButton).setOnClickListener((View v) -> {
-//            GeoPoint selfPoint = MapView.getMapView().getSelfMarker().getPoint();
-//            GeoPoint trackedPoint = new GeoPoint(selfPoint.getLatitude(), // 0.0000035 = 10ft
-//                    selfPoint.getLongitude(), selfPoint.getAltitude(),
-//                    selfPoint.getAltitudeReference(), 11, 11);
-//            PlacePointTool.MarkerCreator mc = new PlacePointTool.MarkerCreator(trackedPoint);
-//            mc.setType("a-u-G");
-//            mc.setCallsign("tracked");
-//            Marker trackedMarker = mc.placePoint();
-//        });
-//
-//        // BLUETOOTH SCANNING
-//        btReceiver = new BluetoothReceiver(pluginContext);
-//        DocumentedIntentFilter btIntentFilter = new DocumentedIntentFilter();
-//        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
-//        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-//        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
-//        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY);
-//        btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-//        btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-//        btIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-//        AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
-//
-//        mainView.findViewById(R.id.bleScanDebugButton)
-//                .setOnClickListener(this::onBleScanDebugButtonClick);
-//        mainView.findViewById(R.id.classicScanDebugButton)
-//                .setOnClickListener(this::onClassicScanDebugButtonClick);
+
+
+        // debug marker placement
+        mainView.findViewById(R.id.debugPlacePinButton).setOnClickListener((View v) -> {
+            GeoPoint selfPoint = MapView.getMapView().getSelfMarker().getPoint();
+            GeoPoint trackedPoint = new GeoPoint(selfPoint.getLatitude(), // 0.0000035 = 10ft
+                    selfPoint.getLongitude(), selfPoint.getAltitude(),
+                    selfPoint.getAltitudeReference(), 11, 11);
+            PlacePointTool.MarkerCreator mc = new PlacePointTool.MarkerCreator(trackedPoint);
+            mc.setType("a-u-G");
+            mc.setCallsign("tracked");
+            Marker trackedMarker = mc.placePoint();
+        });
+
+        // debug bluetooth scanning
+        btReceiver = new BluetoothReceiver(pluginContext);
+        AtakBroadcast.DocumentedIntentFilter btIntentFilter = new AtakBroadcast.DocumentedIntentFilter();
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY);
+        btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        btIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        btIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+        AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
+
+        mainView.findViewById(R.id.bleScanDebugButton)
+                .setOnClickListener(this::onBleScanDebugButtonClick);
+        mainView.findViewById(R.id.classicScanDebugButton)
+                .setOnClickListener(this::onClassicScanDebugButtonClick);
     }
 
     private void onBleScanDebugButtonClick(View v) {
