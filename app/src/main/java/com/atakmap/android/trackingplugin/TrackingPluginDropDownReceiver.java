@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Pair;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.viewpager2.widget.ViewPager2;
@@ -40,6 +41,20 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         tabLayout.removeAllTabs();
         ViewPager2 pager = mainView.findViewById(R.id.viewPager);
         pager.setAdapter(new TabViewPagerAdapter(pluginContext, tabInfo));
+        // set height as the maximum height of any tab
+        pager.post(() -> {
+            int height = 0;
+            for (int i = 0; i < tabInfo.size(); i++) {
+                View view = pager.getChildAt(i);
+                if (view != null) {
+                    view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                    height = Math.max(height, view.getMeasuredHeight());
+                }
+            }
+            ViewGroup.LayoutParams params = pager.getLayoutParams();
+            params.height = height;
+            pager.setLayoutParams(params);
+        });
         TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager,
                 (tab, position) -> tab.setText(tabInfo.get(position).first));
         mediator.attach();
