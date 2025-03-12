@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - -TrapperTesting
   pull_request:
     branches:
       - main
+      - TrapperTesting
 
 jobs:
   build:
