@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # GitHub-hosted Linux runner
 
     steps:
       - name: Checkout Repository
@@ -24,20 +24,13 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Install ATAK SDK
+      - name: Create local.properties
         run: |
-          mkdir -p /home/runner/work/atak-sdk
-          cp -r $GITHUB_WORKSPACE/ATAK-CIV-5.3.0.12-SDK /home/runner/work/atak-sdk
-          echo "ATAK SDK installed"
+          echo "atak.sdk.dir=$GITHUB_WORKSPACE/ATAK-CIV-5.3.0.12-SDK" > local.properties
+          cat local.properties  # Print the file to verify it exists
 
-      - name: Ensure ATAK Plugin Exists
-        run: |
-          ls -al /home/runner/work/atak-sdk
-          echo "Checking if atak-gradle-takdev.jar exists..."
-          if [ ! -f "/home/runner/work/atak-sdk/atak-gradle-takdev.jar" ]; then
-            echo "ERROR: atak-gradle-takdev.jar not found!"
-            exit 1
-          fi
+      - name: Verify SDK Path
+        run: ls -l $GITHUB_WORKSPACE
 
       - name: Grant execute permissions to Gradle
         run: chmod +x gradlew
