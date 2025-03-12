@@ -1,13 +1,9 @@
 package com.atakmap.android.trackingplugin;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -15,25 +11,15 @@ import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
-import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
-import com.atakmap.android.user.PlacePointTool;
-import com.atakmap.coremap.maps.coords.GeoPoint;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
-
-import java.util.List;
 
 public class TrackingPluginDropDownReceiver extends DropDownReceiver {
     private final Context pluginContext;
     private final View mainView;
-    private final List<Pair<String, Integer>> tabInfo = List.of(
-            new Pair<>("Tracking", R.layout.tracking_layout),
-            new Pair<>("Devices", R.layout.devices_layout),
-            new Pair<>("Sensors", R.layout.sensors_layout),
-            new Pair<>("Debug", R.layout.debug_layout));
-    public static BluetoothReceiver btReceiver;
+    public BluetoothReceiver btReceiver;
 
     protected TrackingPluginDropDownReceiver(final MapView mapView, final Context context) {
         super(mapView);
@@ -42,14 +28,17 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         mainView = PluginLayoutInflater.inflate(context, R.layout.main_layout, null);
         // set up all receivers/UI responses here
 
+        // set up logic before UI, so it can get passed in.
+        btReceiver = new BluetoothReceiver(context);
+
         // tabs logic
         TabLayout tabLayout = mainView.findViewById(R.id.tabLayout);
         ViewPager2 pager = mainView.findViewById(R.id.viewPager);
-        pager.setAdapter(new TabViewPagerAdapter(pluginContext, tabInfo));
+        pager.setAdapter(new TabViewPagerAdapter(context, btReceiver));
         // set height as the maximum height of any tab
         pager.post(() -> {
             int height = 0;
-            for (int i = 0; i < tabInfo.size(); i++) {
+            for (int i = 0; i < Constants.TAB_LAYOUTS.size(); i++) {
                 View view = pager.getChildAt(i);
                 if (view != null) {
                     view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -61,10 +50,8 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
             pager.setLayoutParams(params);
         });
         TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager,
-                (tab, position) -> tab.setText(tabInfo.get(position).first));
+                (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
         mediator.attach();
-
-        btReceiver = new BluetoothReceiver(pluginContext);
 
         // debug marker placement
     }

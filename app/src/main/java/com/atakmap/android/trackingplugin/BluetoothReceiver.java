@@ -13,10 +13,13 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.atakmap.android.trackingplugin.ui.PermissionsActivity;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 // TODO: if we're still looking for a foreground service, look into hooking this receiver up with
 //  AtakBroadcast, then passing it to a bound service? idk tbh
@@ -33,7 +36,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
             String macAddr = device.getAddress();
             String name = device.getName();
             if (name == null) name = "unknown";
-            if (!deviceMap.containsKey(macAddr) || !deviceMap.get(macAddr).equals(name)) {
+            if (!deviceMap.containsKey(macAddr) || !Objects.equals(deviceMap.get(macAddr), name)) {
                 deviceMap.put(macAddr, name);
                 deviceLog(name, macAddr);
             }
@@ -74,9 +77,8 @@ public class BluetoothReceiver extends BroadcastReceiver {
             BluetoothManager manager =
                     (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
             if (manager == null) {
-                Log.e(TAG,
-                        "Could not get bluetooth manager. Bluetooth may not be supported on this " +
-                                "device.");
+                Log.e(TAG, "Could not get bluetooth manager. Bluetooth may not be supported on " +
+                        "this " + "device.");
                 return;
             }
             this.btAdapter = manager.getAdapter();
@@ -90,7 +92,8 @@ public class BluetoothReceiver extends BroadcastReceiver {
         this.scanner = this.btAdapter.getBluetoothLeScanner();
     }
 
-    private static void deviceLog(String name, String address) {
+    private static void deviceLog(@Nullable String name, String address) {
+        if (name == null) name = "unknown";
         Log.d(TAG, String.format("Logged Device (name: %s - mac: %s)", name, address));
     }
 
@@ -157,7 +160,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
                 }
                 if (device == null) {
                     Log.w(TAG, "ACTION_FOUND action did not have accompanying EXTRA_DEVICE " +
-                            "parcel" + ".");
+                            "parcel.");
                     return;
                 }
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
@@ -171,9 +174,9 @@ public class BluetoothReceiver extends BroadcastReceiver {
                 ".BLE_START_SCAN";
         public static final String BLE_STOP_SCAN = "com.atakmap.android.trackingplugin" +
                 ".BLE_STOP_SCAN";
-        public static final String CLASSIC_START_DISCOVERY =
-                "com.atakmap.android.trackingplugin" + ".CLASSIC_START_DISCOVERY";
-        public static final String CLASSIC_STOP_DISCOVERY =
-                "com.atakmap.android.trackingplugin" + ".CLASSIC_STOP_DISCOVERY";
+        public static final String CLASSIC_START_DISCOVERY = "com.atakmap.android.trackingplugin" +
+                ".CLASSIC_START_DISCOVERY";
+        public static final String CLASSIC_STOP_DISCOVERY = "com.atakmap.android.trackingplugin" +
+                ".CLASSIC_STOP_DISCOVERY";
     }
 }
