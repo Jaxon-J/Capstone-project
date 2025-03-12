@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
-      - dev
+      - TrapperTesting
   pull_request:
     branches:
       - main
       - ui-dev
       - bt-dev
+      - TrapperTesting
 
 jobs:
   test:
