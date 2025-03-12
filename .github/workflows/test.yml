@@ -1,19 +1,15 @@
-name: Run JUnit Tests for ATAK Plugin
+name: Build & Test ATAK Plugin
 
 on:
   push:
     branches:
       - main
-      - TrapperTesting
   pull_request:
     branches:
       - main
-      - ui-dev
-      - bt-dev
-      - TrapperTesting
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,20 +21,24 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-          cache: gradle  # Enables caching for Gradle dependencies
+
+      - name: Install ATAK SDK
+        run: |
+          mkdir -p /home/runner/work/atak-sdk
+          cp -r $GITHUB_WORKSPACE/ATAK-CIV-5.3.0.12-SDK /home/runner/work/atak-sdk
+          echo "ATAK SDK installed"
+
+      - name: Ensure ATAK Plugin Exists
+        run: |
+          ls -al /home/runner/work/atak-sdk
+          echo "Checking if atak-gradle-takdev.jar exists..."
+          if [ ! -f "/home/runner/work/atak-sdk/atak-gradle-takdev.jar" ]; then
+            echo "ERROR: atak-gradle-takdev.jar not found!"
+            exit 1
+          fi
 
       - name: Grant execute permissions to Gradle
         run: chmod +x gradlew
 
-      - name: Validate Gradle Wrapper
-        run: ./gradlew wrapper --gradle-version 7.5.1
-
-      - name: Run Unit Tests
-        run: ./gradlew test --info --stacktrace
-
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: junit-test-results
-          path: build/reports/tests/
+      - name: Build and Test
+        run: ./gradlew build --info --stacktrace
