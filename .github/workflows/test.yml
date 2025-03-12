@@ -24,26 +24,16 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # ✅ Step 2: Create local.properties (Moved Before Step 1)
       - name: Create local.properties
         run: |
-          echo "atak.sdk.dir=$GITHUB_WORKSPACE/atak-sdk" > local.properties
+          echo "atak.sdk.dir=$GITHUB_WORKSPACE/ATAK-CIV-5.3.0.12-SDK" > local.properties
           cat local.properties  # Print the file to verify it exists
 
-      # ✅ Step 1: Verify ATAK SDK Files Exist
-      - name: Verify ATAK SDK Files
-        run: ls -R $GITHUB_WORKSPACE/atak-sdk
-
-      # ✅ Step 3: Ensure Gradle Can Load atak-gradle-takdev.jar
-      - name: Verify Plugin JAR Exists
-        run: |
-          if [ ! -f "$GITHUB_WORKSPACE/atak-sdk/atak-gradle-takdev.jar" ]; then
-            echo "ERROR: atak-gradle-takdev.jar not found!"
-            exit 1
-          fi
+      - name: Verify SDK Path
+        run: ls -l $GITHUB_WORKSPACE
 
       - name: Grant execute permissions to Gradle
         run: chmod +x gradlew
 
-      - name: Build and Test with Debugging
-        run: ./gradlew build --info --stacktrace --debug
+      - name: Build and Test
+        run: ./gradlew build --info --stacktrace
