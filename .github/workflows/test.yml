@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
-      - TrapperTesting
   pull_request:
     branches:
       - main
-      - TrapperTesting
 
 jobs:
   build:
@@ -24,17 +22,17 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      #Step 1: Verify ATAK SDK Files Exist
-      - name: Verify ATAK SDK Files
-        run: ls -R $GITHUB_WORKSPACE/atak-sdk
-
-      # Step 2: Create local.properties
+      # ✅ Step 2: Create local.properties (Moved Before Step 1)
       - name: Create local.properties
         run: |
           echo "atak.sdk.dir=$GITHUB_WORKSPACE/atak-sdk" > local.properties
           cat local.properties  # Print the file to verify it exists
 
-      # Step 3: Ensure Gradle Can Load atak-gradle-takdev.jar
+      # ✅ Step 1: Verify ATAK SDK Files Exist
+      - name: Verify ATAK SDK Files
+        run: ls -R $GITHUB_WORKSPACE/atak-sdk
+
+      # ✅ Step 3: Ensure Gradle Can Load atak-gradle-takdev.jar
       - name: Verify Plugin JAR Exists
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/atak-sdk/atak-gradle-takdev.jar" ]; then
