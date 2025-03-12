@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - -TrapperTesting
+      - TrapperTesting
   pull_request:
     branches:
       - main
