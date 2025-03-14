@@ -1,7 +1,9 @@
 package com.atakmap.android.trackingplugin;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -17,6 +19,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class TrackingPluginDropDownReceiver extends DropDownReceiver {
+    private static final String TAG = Constants.createTag(TrackingPluginDropDownReceiver.class);
     private final Context pluginContext;
     private final View mainView;
     public BluetoothReceiver btReceiver;
@@ -28,7 +31,6 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         mainView = PluginLayoutInflater.inflate(context, R.layout.main_layout, null);
         // set up all receivers/UI responses here
 
-        // set up logic before UI, so it can get passed in.
         btReceiver = new BluetoothReceiver(context);
 
         // tabs logic
@@ -38,7 +40,7 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         // set height as the maximum height of any tab
         pager.post(() -> {
             int height = 0;
-            for (int i = 0; i < Constants.TAB_LAYOUTS.size(); i++) {
+            for (int i = 0; i < Constants.TAB_COUNT; i++) {
                 View view = pager.getChildAt(i);
                 if (view != null) {
                     view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -49,11 +51,8 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
             params.height = height;
             pager.setLayoutParams(params);
         });
-        TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager,
-                (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
+        TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager, (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
         mediator.attach();
-
-        // debug marker placement
     }
 
     @Override
@@ -83,8 +82,4 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
     public static final class ACTIONS {
         public static final String SHOW_PLUGIN = "com.atakmap.android.trackingplugin.SHOW_PLUGIN";
     }
-
-    // If this ever gets refactored out, it needs the pluginContext and tabInfo passed in as
-    // parameters
-
 }
