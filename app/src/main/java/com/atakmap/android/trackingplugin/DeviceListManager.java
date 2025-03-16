@@ -2,6 +2,7 @@ package com.atakmap.android.trackingplugin;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -11,13 +12,16 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 // TODO: another claude dump, check for functionality. already see errors on a first pass.
 public class DeviceListManager {
+    private static final String TAG = Constants.createTag(DeviceListManager.class);
     private static final Map<Lists, MutableLiveData<List<DeviceInfo>>> deviceListsCache = new HashMap<>();
     // Internal map to maintain MAC address indexing for efficient lookups
     private static final Map<Lists, Map<String, DeviceInfo>> internalMaps = new HashMap<>();
@@ -136,7 +140,7 @@ public class DeviceListManager {
 
     /**
      * Clear all devices from a specific list
-     * @noinspection unused
+     * @noinspection unused, DataFlowIssue
      */
     public static void clearList(Lists listType) {
         checkInitialization();
@@ -196,17 +200,20 @@ public class DeviceListManager {
             for (Iterator<String> it = baseJson.keys(); it.hasNext(); ) {
                 String macAddr = it.next();
                 JSONObject devJsonEntry = baseJson.getJSONObject(macAddr);
-                DeviceInfo info = new DeviceInfo();
+                DeviceInfo devInfo = new DeviceInfo();
                 for (Field field : DeviceInfo.class.getFields()) {
-                    Object fieldVal = devJsonEntry.get(field.getName());
-                    field.set(info, fieldVal);
+                    String fieldVal = devJsonEntry.getString(field.getName()); // why DeviceInfo fields must be strings.
+                    field.setAccessible(true);
+                    field.set(devInfo, fieldVal); // documentation on .set explains why setAccessible is okay here.
                 }
-                devMap.put(macAddr, info);
+                devMap.put(macAddr, devInfo);
             }
             return devMap;
         } catch (JSONException e) {
-            throw new RuntimeException("Could not parse devices from JSON format.");
+            throw new RuntimeException("Improperly handled JSON stuff in parseDevicesFromJson.");
         } catch (IllegalAccessException e) {
+            Log.e(TAG, "Java reflection failed in parseDevicesFromJson.");
+            Log.e(TAG, "    " + json);
             throw new RuntimeException(e);
         }
     }
@@ -224,8 +231,10 @@ public class DeviceListManager {
             }
             return baseJson.toString();
         } catch (JSONException e) {
-            throw new RuntimeException("Could not convert devices to JSON format.");
+            throw new RuntimeException("Improperly handled JSON stuff in convertDevicesToJson.");
         } catch (IllegalAccessException e) {
+            Log.e(TAG, "Java reflection failed in convertDevicesToJson.");
+            Log.e(TAG, "    " + Arrays.toString(devices.keySet().toArray()));
             throw new RuntimeException(e);
         }
     }
@@ -247,15 +256,19 @@ public class DeviceListManager {
     }
 
     /// Direct changes to the fields in this class will not be reflected elsewhere, it must be added to the DeviceListManager.
+    // All public fields in this class must be strings (or else it'll open up an even bigger headache with JSON serialization).
     public static class DeviceInfo {
-        public String name;
-        public String macAddress;
+        public final String name;
+        public final String macAddress;
 
         public DeviceInfo(String macAddress, String name) {
             this.name = name;
             this.macAddress = macAddress;
         }
 
-        public DeviceInfo() {}
+        public DeviceInfo() {
+            this.name = null;
+            this.macAddress = null;
+        }
     }
 }
