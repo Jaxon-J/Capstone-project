@@ -29,8 +29,8 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         this.pluginContext = context;
         // set up UI, set main layout to be viewed when SHOW_PLUGIN action is triggered
         mainView = PluginLayoutInflater.inflate(context, R.layout.main_layout, null);
-        // set up all receivers/UI responses here
 
+        DeviceListManager.initialize(context);
         btReceiver = new BluetoothReceiver(context);
 
         // tabs logic

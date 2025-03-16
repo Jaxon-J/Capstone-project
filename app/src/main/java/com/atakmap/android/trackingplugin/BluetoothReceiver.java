@@ -91,6 +91,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
             this.btAdapter = BluetoothAdapter.getDefaultAdapter();
         }
         this.scanner = this.btAdapter.getBluetoothLeScanner();
+
     }
 
     private static void deviceLog(@Nullable String name, String address) {
