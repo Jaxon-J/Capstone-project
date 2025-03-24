@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import com.atakmap.android.trackingplugin.ui.DeviceFragment;
 import com.atakmap.android.trackingplugin.ui.PermissionsActivity;
 
 import java.util.HashMap;
@@ -39,6 +40,11 @@ public class BluetoothReceiver extends BroadcastReceiver {
             }
             // TODO: device info is here. need to pass into somewhere.
             //  probably class variable passed in via constructor
+            DeviceFragment deviceFragment = DeviceFragment.getInstance();
+            deviceLog(name, macAddr);
+            if (deviceFragment != null) {
+                deviceFragment.addDevice(name, macAddr, result.getRssi());
+            }
         }
 
         @Override
