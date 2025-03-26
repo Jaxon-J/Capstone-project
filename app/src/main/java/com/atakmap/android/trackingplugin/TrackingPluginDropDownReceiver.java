@@ -27,17 +27,19 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
     protected TrackingPluginDropDownReceiver(final MapView mapView, final Context context) {
         super(mapView);
         this.pluginContext = context;
-        // set up UI, set main layout to be viewed when SHOW_PLUGIN action is triggered
+        // get extract main_layout and set it to a view, to be shown on "SHOW_PLUGIN" event
         mainView = PluginLayoutInflater.inflate(context, R.layout.main_layout, null);
 
+        // initialize device data repository
         DeviceListManager.initialize(context);
+        // initialize bluetooth scanner
         btReceiver = new BluetoothReceiver(context);
 
-        // tabs logic
+        // logic for setting up the tabs via TabLayout, ViewPager2, TabLayoutMediator
         TabLayout tabLayout = mainView.findViewById(R.id.tabLayout);
         ViewPager2 pager = mainView.findViewById(R.id.viewPager);
         pager.setAdapter(new TabViewPagerAdapter(context, btReceiver));
-        // set height as the maximum height of any tab
+        // set ViewPager2 component height as the maximum height of all tab layouts, so nothing gets cut off.
         pager.post(() -> {
             int height = 0;
             for (int i = 0; i < Constants.TAB_COUNT; i++) {
@@ -51,6 +53,7 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
             params.height = height;
             pager.setLayoutParams(params);
         });
+        // TabLayoutMediator magic, where the names are actually set
         TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager, (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
         mediator.attach();
     }
@@ -61,7 +64,7 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         if (action == null) return;
 
         switch (action) {
-            case ACTIONS.SHOW_PLUGIN: // UI ENTRY POINT
+            case ACTIONS.SHOW_PLUGIN:
                 if (!isClosed()) unhideDropDown();
                 // showDropDown has several more overloads. if we want to listen to
                 // resize/open/close events,

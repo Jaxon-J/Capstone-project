@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.atakmap.android.ipc.AtakBroadcast;
@@ -18,9 +19,12 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.DeviceListManager;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
+
+import java.util.List;
 
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
@@ -47,9 +51,18 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         Log.d(TAG, "onBindViewHolder: " + Constants.TAB_LAYOUTS.get(position).first);
         // This switch is for putting functionality on each page.
         switch (holder.tabName) {
-            case Constants.TRACKING_TABNAME:
-            case Constants.DEVICES_TABNAME:
+            case Constants.TRACKING_TABNAME: {
+                // Add functionality to UI here.
+                break;
+            }
+            case Constants.DEVICES_TABNAME: {
+                LiveData<List<DeviceListManager.DeviceInfo>> list = DeviceListManager.getDeviceList(DeviceListManager.Lists.WHITELIST);
+                // Add functionality to UI here.
+                break;
+            }
             case Constants.SENSORS_TABNAME: {
+                LiveData<List<DeviceListManager.DeviceInfo>> list = DeviceListManager.getDeviceList(DeviceListManager.Lists.SENSORLIST);
+                // Add functionality to UI here.
                 break;
             }
             case Constants.DEBUG_TABNAME: {
@@ -127,6 +140,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         return position; // passes position to onCreateViewHolder instead of default (0)
     }
 
+    // Basically just here to hold onto a name that we can use on a switch in onBindViewHolder
     public static class TabViewHolder extends RecyclerView.ViewHolder {
         public String tabName;
 
