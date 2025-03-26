@@ -12,11 +12,26 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # GitHub-hosted Linux runner
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      # Step to attempt retrieving cached ATAK SDK
+      - name: Cache ATAK SDK
+        id: cache-atak-sdk
+        uses: actions/cache@v4
+        with:
+          path: ATAK-CIV-5.3.0.12-SDK
+          key: atak-sdk-5.3.0.12
+
+      # Alert you on first run if the SDK is missing
+      - name: Check SDK Cache Hit
+        if: steps.cache-atak-sdk.outputs.cache-hit != 'true'
+        run: |
+          echo "⚠️ Cache miss detected. Please upload the ATAK SDK manually."
+          exit 1
 
       - name: Set up JDK 11
         uses: actions/setup-java@v4
@@ -27,10 +42,7 @@ jobs:
       - name: Create local.properties
         run: |
           echo "atak.sdk.dir=$GITHUB_WORKSPACE/ATAK-CIV-5.3.0.12-SDK" > local.properties
-          cat local.properties  # Print the file to verify it exists
-
-      - name: Verify SDK Path
-        run: ls -l $GITHUB_WORKSPACE
+          cat local.properties
 
       - name: Grant execute permissions to Gradle
         run: chmod +x gradlew
