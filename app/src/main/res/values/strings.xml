@@ -5,10 +5,6 @@
     <!-- description -->
     <string name="app_desc">This plugin is used to track devices based on their signal emissions. (Bluetooth only for now.)</string>
 
-    <string name="tracking_tabname">Tracking</string>
-    <string name="devices_tabname">Devices</string>
-    <string name="sensors_tabname">Sensors</string>
-    <string name="debug_tabname">Debug</string>
     <!-- Debug Tab Strings -->
     <string name="ble_scan_enabled">Stop BLE Scan</string>
     <string name="ble_scan_disabled">Start BLE Scan</string>
