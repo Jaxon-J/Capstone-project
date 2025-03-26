@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.atakmap.android.ipc.AtakBroadcast;
@@ -23,8 +22,6 @@ import com.atakmap.android.trackingplugin.DeviceListManager;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
-
-import java.util.List;
 
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
@@ -42,6 +39,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         Log.d(TAG, "onCreateViewHolder: " + Constants.TAB_LAYOUTS.get(position).first);
         View tabLayout = LayoutInflater.from(this.context)
                 .inflate(Constants.TAB_LAYOUTS.get(position).second, parent, false);
+
         return new TabViewHolder(tabLayout, Constants.TAB_LAYOUTS.get(position).first);
     }
 
@@ -49,20 +47,15 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
     @Override
     public void onBindViewHolder(@NonNull TabViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: " + Constants.TAB_LAYOUTS.get(position).first);
-        // This switch is for putting functionality on each page.
+        // This switch is called: 1) when initialized, 2) every time tab is switched to.
         switch (holder.tabName) {
             case Constants.TRACKING_TABNAME: {
-                // Add functionality to UI here.
                 break;
             }
             case Constants.DEVICES_TABNAME: {
-                LiveData<List<DeviceListManager.DeviceInfo>> list = DeviceListManager.getDeviceList(DeviceListManager.Lists.WHITELIST);
-                // Add functionality to UI here.
                 break;
             }
             case Constants.SENSORS_TABNAME: {
-                LiveData<List<DeviceListManager.DeviceInfo>> list = DeviceListManager.getDeviceList(DeviceListManager.Lists.SENSORLIST);
-                // Add functionality to UI here.
                 break;
             }
             case Constants.DEBUG_TABNAME: {

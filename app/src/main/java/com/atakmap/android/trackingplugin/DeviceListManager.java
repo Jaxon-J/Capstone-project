@@ -4,8 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,16 +12,19 @@ import org.json.JSONObject;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DeviceListManager {
+    private static final String DEVICE_LIST_ENTRY_NAME = "device_list";
     private static final String TAG = Constants.createTag(DeviceListManager.class);
-    private static final Map<Lists, MutableLiveData<List<DeviceInfo>>> deviceListsCache = new HashMap<>();
-    // Internal map to maintain MAC address indexing for efficient lookups
-    private static final Map<Lists, Map<String, DeviceInfo>> internalMaps = new HashMap<>();
+    private static final Map<Lists, Map<String, DeviceInfo>> deviceLists = new HashMap<>();
+    private static final Map<Lists, Set<DeviceListChangeListener>> listeners = new HashMap<>();
     private static Context pluginContext;
 
     // Private constructor to prevent instantiation
@@ -30,9 +32,12 @@ public class DeviceListManager {
         // No instantiation
     }
 
+    public static void addChangeListener(Lists list, DeviceListChangeListener listener) {
+        getListeners(list).add(listener);
+    }
+
     /**
-     * Initialize the DeviceListManager with an application context
-     * Call this once in your Application class or main activity
+     * Initialize the DeviceListManager with the plugin context.
      */
     public static void initialize(Context pluginContext) {
         if (DeviceListManager.pluginContext == null) {
@@ -40,158 +45,84 @@ public class DeviceListManager {
         }
     }
 
-    /**
-     * Ensure the manager has been initialized
-     */
-    private static void checkInitialization() {
-        if (pluginContext == null) {
-            throw new IllegalStateException("DeviceListManager is not initialized. Call DeviceListManager.initialize(context) first.");
-        }
+    public static List<DeviceInfo> getDeviceList(Lists listType) {
+        return Collections.unmodifiableList(new ArrayList<>(getDeviceMap(listType).values()));
     }
 
-    /**
-     * Get LiveData as a List<DeviceInfo> for a specific device list
-     */
-    public static LiveData<List<DeviceInfo>> getDeviceList(Lists listType) {
-        checkInitialization();
-
-        if (!deviceListsCache.containsKey(listType)) {
-            // Create new LiveData for this list
-            MutableLiveData<List<DeviceInfo>> liveData = new MutableLiveData<>();
-
-            // Load initial data - store in internal map and convert to list for LiveData
-            Map<String, DeviceInfo> devicesMap = loadDevicesFromPreferences(listType);
-            internalMaps.put(listType, devicesMap);
-
-            // Convert map to list for LiveData
-            List<DeviceInfo> devicesList = new ArrayList<>(devicesMap.values());
-            liveData.setValue(devicesList);
-
-            // Store in cache
-            deviceListsCache.put(listType, liveData);
-        }
-
-        return deviceListsCache.get(listType);
+    /// If device with MAC Address exists within list, entry will be overwritten.
+    public static void addOrUpdateDevice(Lists listType, DeviceInfo deviceInfo) {
+        Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
+        deviceList.put(deviceInfo.macAddress, deviceInfo);
+        saveDevicesToPreferences(listType, deviceList);
     }
 
-    /**
-     * Add or update a device in a specific list
-     * @noinspection DataFlowIssue
-     */
-    public static void addOrUpdateDevice(Lists listType, String macAddress, DeviceInfo deviceInfo) {
-        checkInitialization();
-
-        // Update internal map
-        ensureInternalMapExists(listType);
-        Map<String, DeviceInfo> devicesMap = internalMaps.get(listType);
-        devicesMap.put(macAddress, deviceInfo);
-
-        // Save to preferences
-        saveDevicesToPreferences(listType, devicesMap);
-
-        // Update LiveData with new list
-        updateLiveDataFromMap(listType);
-    }
-
-    /**
-     * Remove a device from a specific list
-     * @noinspection DataFlowIssue
-     */
+    ///  Returns true if device was present in the list.
     public static void removeDevice(Lists listType, String macAddress) {
-        checkInitialization();
-
-        // Update internal map
-        ensureInternalMapExists(listType);
-        Map<String, DeviceInfo> devicesMap = internalMaps.get(listType);
-        if (devicesMap.containsKey(macAddress)) {
-            devicesMap.remove(macAddress);
-
-            // Save to preferences
-            saveDevicesToPreferences(listType, devicesMap);
-
-            // Update LiveData with new list
-            updateLiveDataFromMap(listType);
-        }
+        Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
+        if (!deviceList.containsKey(macAddress))
+            return;
+        deviceList.remove(macAddress);
+        saveDevicesToPreferences(listType, deviceList);
     }
 
-    /**
-     * Check if a device exists in the specified list
-     * @noinspection DataFlowIssue
-     */
     public static boolean containsDevice(Lists listType, String macAddress) {
-        checkInitialization();
-
-        ensureInternalMapExists(listType);
-        return internalMaps.get(listType).containsKey(macAddress);
+        return getDeviceMap(listType).containsKey(macAddress);
     }
 
-    /**
-     * Get a specific device by MAC address
-     * @noinspection DataFlowIssue
-     */
+    @Nullable
     public static DeviceInfo getDevice(Lists listType, String macAddress) {
-        checkInitialization();
-
-        ensureInternalMapExists(listType);
-        return internalMaps.get(listType).get(macAddress);
+        return getDeviceMap(listType).get(macAddress);
     }
 
-    /**
-     * Clear all devices from a specific list
-     * @noinspection unused, DataFlowIssue
-     */
     public static void clearList(Lists listType) {
+        Map<String, DeviceInfo> empty = new HashMap<>();
+
+        deviceLists.put(listType, empty);
+        saveDevicesToPreferences(listType, empty);
+    }
+
+
+    private static void checkInitialization() {
+        if (pluginContext == null)
+            throw new IllegalStateException("DeviceListManager is not initialized. Call DeviceListManager.initialize(context) first.");
+    }
+
+    private static Set<DeviceListChangeListener> getListeners(Lists list) {
+        if (listeners.containsKey(list)) return listeners.get(list);
+        Set<DeviceListChangeListener> listListeners = new HashSet<>();
+        listeners.put(list, listListeners);
+        return listListeners;
+    }
+
+    private static Map<String, DeviceInfo> getDeviceMap(Lists listType) {
         checkInitialization();
+        if (deviceLists.containsKey(listType)) return deviceLists.get(listType);
 
-        // Clear internal map
-        internalMaps.put(listType, new HashMap<>());
-
-        // Save empty map to preferences
-        saveDevicesToPreferences(listType, new HashMap<>());
-
-        // Update LiveData with empty list
-        ensureLiveDataExists(listType);
-        deviceListsCache.get(listType).setValue(new ArrayList<>());
+        SharedPreferences prefs = pluginContext.getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
+        String json = prefs.getString(DEVICE_LIST_ENTRY_NAME, "{}");
+        Map<String, DeviceInfo> list = parseDevicesFromJson(json);
+        deviceLists.put(listType, list);
+        return list;
     }
 
-    // Helper methods
-    private static void ensureInternalMapExists(Lists listType) {
-        if (!internalMaps.containsKey(listType)) {
-            internalMaps.put(listType, loadDevicesFromPreferences(listType));
-        }
-    }
-
-    private static void ensureLiveDataExists(Lists listType) {
-        if (!deviceListsCache.containsKey(listType)) {
-            MutableLiveData<List<DeviceInfo>> liveData = new MutableLiveData<>();
-            liveData.setValue(new ArrayList<>());
-            deviceListsCache.put(listType, liveData);
-        }
-    }
-
-    /** @noinspection DataFlowIssue*/
-    private static void updateLiveDataFromMap(Lists listType) {
-        ensureLiveDataExists(listType);
-        List<DeviceInfo> devicesList = new ArrayList<>(internalMaps.get(listType).values());
-        deviceListsCache.get(listType).setValue(devicesList);
-    }
-
-    private static Map<String, DeviceInfo> loadDevicesFromPreferences(Lists listType) {
-        SharedPreferences prefs = pluginContext.getSharedPreferences(listType.getSharedPrefsFilename(), Context.MODE_PRIVATE);
-        String json = prefs.getString("device_list", "{}");
-        return parseDevicesFromJson(json);
-    }
 
     private static void saveDevicesToPreferences(Lists listType, Map<String, DeviceInfo> devices) {
+        checkInitialization();
+        SharedPreferences listPref = pluginContext.getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = listPref.edit();
         String json = convertDevicesToJson(devices);
-        pluginContext.getSharedPreferences(listType.getSharedPrefsFilename(), Context.MODE_PRIVATE)
-                .edit()
-                .putString("device_list", json)
-                .apply();
+        editor.putString(DEVICE_LIST_ENTRY_NAME, json);
+        editor.apply();
+
+        // This function is called every time a device list is changed. Notify all listeners.
+        for (DeviceListChangeListener listener : getListeners(listType)) {
+            listener.onDeviceListChange(new ArrayList<>(getDeviceMap(listType).values()));
+        }
     }
 
     // JSON conversion methods
     private static Map<String, DeviceInfo> parseDevicesFromJson(String json) {
+        // if DeviceInfo changes after sharedPreference file is written to, this won't handle that case, will fail.
         try {
             JSONObject baseJson = new JSONObject(json);
             Map<String, DeviceInfo> devMap = new HashMap<>();
@@ -237,37 +168,38 @@ public class DeviceListManager {
         }
     }
 
-    // Your Lists enum
-    public enum Lists {
-        WHITELIST("devices_whitelist"),
-        SENSORLIST("devices_sensors");
 
-        private final String sharedPrefsFilename;
+    public enum Lists {
+        WHITELIST("devices_whitelist"), SENSORLIST("devices_sensors");
+
+        public final String sharedPrefsFilename;
 
         Lists(String sharedPrefsFilename) {
             this.sharedPrefsFilename = sharedPrefsFilename;
         }
-
-        public String getSharedPrefsFilename() {
-            return sharedPrefsFilename;
-        }
     }
 
-    /// Direct changes to the fields in this class will not be reflected elsewhere, it must be added to the DeviceListManager.
+    public interface DeviceListChangeListener {
+        void onDeviceListChange(List<DeviceInfo> devices);
+    }
+
     // All public fields in this class must be strings (or else it'll open up an even bigger headache with JSON serialization).
     public static class DeviceInfo {
         public final String name;
         public final String macAddress;
+        public final String rssi;
 
-        public DeviceInfo(String macAddress, String name) {
+        public DeviceInfo(String macAddress, String name, int rssi) {
             this.name = name;
             this.macAddress = macAddress;
+            this.rssi = Integer.toString(rssi);
         }
 
         // for JSON serialization "parseDevicesFromJson"
         private DeviceInfo() {
             this.name = null;
             this.macAddress = null;
+            this.rssi = "-1";
         }
     }
 }
