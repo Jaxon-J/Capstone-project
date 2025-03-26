@@ -1,15 +1,20 @@
 
-package com.atakmap.android.capstoneplugin.plugin;
+package com.atakmap.android.trackingplugin.plugin;
 
 import java.io.File;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
+
+import com.atakmap.android.trackingplugin.Constants;
 
 /**
  * Boilerplate code for loading native.
+ * @noinspection unused
  */
 public class PluginNativeLoader {
 
-    private static final String TAG = "NativeLoader";
+    private static final String TAG = Constants.TAG_PREFIX + "Loader";
     private static String ndl = null;
 
     /**
@@ -39,6 +44,7 @@ public class PluginNativeLoader {
     * manipulated. Use only validated, sanitized absolute paths.
     */
 
+    @SuppressLint("UnsafeDynamicallyLoadedCode")
     public static void loadLibrary(final String name) {
         if (ndl != null) {
             final String lib = ndl + File.separator

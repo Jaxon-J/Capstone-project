@@ -4,7 +4,7 @@
 
     <extension
         type="gov.tak.api.plugin.IPlugin"
-        impl="com.atakmap.android.capstoneplugin.plugin.PluginTemplate"
+        impl="com.atakmap.android.trackingplugin.plugin.TrackingPluginLifecycle"
         singleton="true" />
 
 </plugin>

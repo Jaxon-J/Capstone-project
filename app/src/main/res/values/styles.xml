@@ -122,5 +122,5 @@
         <item name="android:textSize">@dimen/fontSize</item>
     </style>
 
-
+    <style name="ATAKCompatTheme" parent="Theme.AppCompat" />
 </resources>
