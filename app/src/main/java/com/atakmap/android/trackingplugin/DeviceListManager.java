@@ -56,7 +56,6 @@ public class DeviceListManager {
         saveDevicesToPreferences(listType, deviceList);
     }
 
-    ///  Returns true if device was present in the list.
     public static void removeDevice(ListType listType, String macAddress) {
         Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
         if (!deviceList.containsKey(macAddress))
