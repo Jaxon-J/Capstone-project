@@ -17,15 +17,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-// TODO: another claude dump, check for functionality. already see errors on a first pass.
 public class DeviceListManager {
     private static final String TAG = Constants.createTag(DeviceListManager.class);
     private static final Map<Lists, MutableLiveData<List<DeviceInfo>>> deviceListsCache = new HashMap<>();
     // Internal map to maintain MAC address indexing for efficient lookups
     private static final Map<Lists, Map<String, DeviceInfo>> internalMaps = new HashMap<>();
-    private static Context applicationContext;
+    private static Context pluginContext;
 
     // Private constructor to prevent instantiation
     private DeviceListManager() {
@@ -36,9 +34,9 @@ public class DeviceListManager {
      * Initialize the DeviceListManager with an application context
      * Call this once in your Application class or main activity
      */
-    public static void initialize(Context context) {
-        if (applicationContext == null) {
-            applicationContext = context.getApplicationContext();
+    public static void initialize(Context pluginContext) {
+        if (DeviceListManager.pluginContext == null) {
+            DeviceListManager.pluginContext = pluginContext;
         }
     }
 
@@ -46,7 +44,7 @@ public class DeviceListManager {
      * Ensure the manager has been initialized
      */
     private static void checkInitialization() {
-        if (applicationContext == null) {
+        if (pluginContext == null) {
             throw new IllegalStateException("DeviceListManager is not initialized. Call DeviceListManager.initialize(context) first.");
         }
     }
@@ -179,14 +177,14 @@ public class DeviceListManager {
     }
 
     private static Map<String, DeviceInfo> loadDevicesFromPreferences(Lists listType) {
-        SharedPreferences prefs = applicationContext.getSharedPreferences(listType.getSharedPrefsFilename(), Context.MODE_PRIVATE);
+        SharedPreferences prefs = pluginContext.getSharedPreferences(listType.getSharedPrefsFilename(), Context.MODE_PRIVATE);
         String json = prefs.getString("device_list", "{}");
         return parseDevicesFromJson(json);
     }
 
     private static void saveDevicesToPreferences(Lists listType, Map<String, DeviceInfo> devices) {
         String json = convertDevicesToJson(devices);
-        applicationContext.getSharedPreferences(listType.getSharedPrefsFilename(), Context.MODE_PRIVATE)
+        pluginContext.getSharedPreferences(listType.getSharedPrefsFilename(), Context.MODE_PRIVATE)
                 .edit()
                 .putString("device_list", json)
                 .apply();
@@ -241,8 +239,8 @@ public class DeviceListManager {
 
     // Your Lists enum
     public enum Lists {
-        WHITELIST("devices_whitelist");
-        // Add other list types as needed
+        WHITELIST("devices_whitelist"),
+        SENSORLIST("devices_sensors");
 
         private final String sharedPrefsFilename;
 
@@ -266,7 +264,8 @@ public class DeviceListManager {
             this.macAddress = macAddress;
         }
 
-        public DeviceInfo() {
+        // for JSON serialization "parseDevicesFromJson"
+        private DeviceInfo() {
             this.name = null;
             this.macAddress = null;
         }

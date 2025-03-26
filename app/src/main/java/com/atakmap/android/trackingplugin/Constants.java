@@ -12,7 +12,8 @@ public final class Constants {
     public static final String DEVICES_TABNAME = "Devices";
     public static final String SENSORS_TABNAME = "Sensors";
     public static final String DEBUG_TABNAME = "Debug";
-    // this list order = UI tab order
+
+    // Tab position index determined here, which is why this can't be a map.
     public static final List<Pair<String, Integer>> TAB_LAYOUTS = List.of(
             new Pair<>(TRACKING_TABNAME, R.layout.tracking_layout),
             new Pair<>(DEVICES_TABNAME, R.layout.devices_layout),
