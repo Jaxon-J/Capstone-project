@@ -26,7 +26,7 @@ jobs:
 
       - name: Download ATAK SDK from GitHub Release
         run: |
-          curl -L \
+          curl -L -H "Authorization: token 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" \
             -o ATAK-CIV-5.3.0.12-SDK-Zip.zip \
             https://github.com/Jaxon-J/Capstone-project/releases/download/v1.0.0/ATAK-CIV-5.3.0.12-SDK-Zip.zip
           unzip ATAK-CIV-5.3.0.12-SDK-Zip.zip -d ATAK-CIV-5.3.0.12-SDK
