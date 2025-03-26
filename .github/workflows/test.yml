@@ -18,31 +18,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step to attempt retrieving cached ATAK SDK
-      - name: Cache ATAK SDK
-        id: cache-atak-sdk
-        uses: actions/cache@v4
-        with:
-          path: ATAK-CIV-5.3.0.12-SDK
-          key: atak-sdk-5.3.0.12
-
-      # Alert you on first run if the SDK is missing
-      - name: Check SDK Cache Hit
-        if: steps.cache-atak-sdk.outputs.cache-hit != 'true'
-        run: |
-          echo "⚠️ Cache miss detected. Please upload the ATAK SDK manually."
-          exit 1
-
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Create local.properties
+      - name: Download ATAK SDK from GitHub Release
         run: |
-          echo "atak.sdk.dir=$GITHUB_WORKSPACE/ATAK-CIV-5.3.0.12-SDK" > local.properties
-          cat local.properties
+          curl -L \
+            -o ATAK-CIV-5.3.0.12-SDK-Zip.zip \
+            https://github.com/Jaxon-J/Capstone-project/releases/download/v1.0.0/ATAK-CIV-5.3.0.12-SDK-Zip.zip
+          unzip ATAK-CIV-5.3.0.12-SDK-Zip.zip -d ATAK-CIV-5.3.0.12-SDK
 
       - name: Grant execute permissions to Gradle
         run: chmod +x gradlew
