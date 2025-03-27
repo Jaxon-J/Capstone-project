@@ -12,10 +12,22 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TableLayout
-            android:id="@+id/devicesTableLayout"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="194dp">
+
+            <TableLayout
+                android:id="@+id/devicesTableLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </ScrollView>
+
+        <Button
+            android:id="@+id/addDeviceButton"
+            style="@style/darkButton"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:text="ADD A DEVICE" />
     </LinearLayout>
 
 </FrameLayout>

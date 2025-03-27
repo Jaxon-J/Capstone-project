@@ -1,5 +1,6 @@
 package com.atakmap.android.trackingplugin.ui;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -54,8 +55,10 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         switch (holder.tabName) {
             case Constants.TRACKING_TABNAME:
             case Constants.DEVICES_TABNAME: {
-
-                new DevicesTabHandler(holder.itemView,this.context);
+                if (this.context instanceof Activity) {
+                    Log.d("DeviceTabHandler","context is activity");
+                }
+                new DevicesTabHandler(holder.itemView, this.context);
 
                 break;
             }
