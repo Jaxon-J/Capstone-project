@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.atakmap.android.trackingplugin.plugin.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DevicesTabHandler {
 
@@ -51,17 +52,7 @@ public class DevicesTabHandler {
         if (!tabInitialized) {
 
             Log.d(TAG,"Creating mock devices");
-            ArrayList<MockDevice> mockDevices = MockDevice.getDevices();
             //Log.d(TAG,String.valueOf(mockDevices.size()));
-            if (mockDevices.isEmpty()) {
-                for (int i = 0; i < 20; i++) {
-                    String MAC = "place_holder_MAC_" + Integer.toString(i);
-                    String deviceID = "device_" + Integer.toString(i);
-                    new MockDevice(deviceID, MAC);
-                }
-            }
-
-
 
             devicesTable = this.rootView.findViewById(R.id.devicesTableLayout);
             loadTable(devicesTable);
@@ -97,7 +88,7 @@ public class DevicesTabHandler {
         headerRow.addView(headerCol2);
         headerRow.setBackgroundColor(Color.BLUE);
         tableLayout.addView(headerRow);
-        ArrayList<MockDevice> mockDevices = MockDevice.getDevices();
+        List<MockDevice> mockDevices = MockDevice.getDevices(20);
         //Log.d(TAG,String.valueOf(mockDevices.size()));
 
 
