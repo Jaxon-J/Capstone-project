@@ -1,26 +1,19 @@
 package com.atakmap.android.trackingplugin.ui;
 
-import android.net.MacAddress;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
-import javax.crypto.Mac;
 
 
 public class MockDevice {
 
-    private static ArrayList<MockDevice> devices = new ArrayList<>();
-    private String deviceID;
-    private String MAC;
+    private String deviceName;
+    private String macAddress;
     private static List<MockDevice> mockDeviceList;
 
-    MockDevice(String deviceID, String MAC) {
-        this.deviceID = deviceID;
-        this.MAC = MAC;
-        devices.add(this);
+    MockDevice(String deviceName, String macAddress) {
+        this.deviceName = deviceName;
+        this.macAddress = macAddress;
     }
 
     public static List<MockDevice> getDevices(int numberOfDevices) {
@@ -28,15 +21,15 @@ public class MockDevice {
             mockDeviceList = new ArrayList<>();
             for (int i = 0; i < numberOfDevices; i++) {
                 String name = "mock" + i;
-                String mac = generateMacAddress();
+                Random rand = new Random(System.currentTimeMillis());
+                String mac = generateMacAddress(rand);
                 mockDeviceList.add(new MockDevice(name, mac));
             }
         }
         return mockDeviceList;
     }
 
-    private static String generateMacAddress() {
-        Random rand = new Random(System.currentTimeMillis());
+    private static String generateMacAddress(Random rand) {
         StringBuilder mac = new StringBuilder();
         for (int i = 0; i < 6; i++) {
             mac.append(Integer.toString(rand.nextInt(255), 16));
@@ -46,11 +39,11 @@ public class MockDevice {
     }
 
     public String getID() {
-        return this.deviceID;
+        return this.deviceName;
     }
 
-    public String getMAC() {
-        return this.MAC;
+    public String getMacAddress() {
+        return this.macAddress;
     }
 
 

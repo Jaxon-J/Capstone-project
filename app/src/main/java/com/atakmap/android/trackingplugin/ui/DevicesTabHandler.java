@@ -24,7 +24,6 @@ import androidx.fragment.app.DialogFragment;
 
 import com.atakmap.android.trackingplugin.plugin.R;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DevicesTabHandler extends DialogFragment{
@@ -106,7 +105,7 @@ public class DevicesTabHandler extends DialogFragment{
             MACcol.setTextColor(Color.BLACK);
 
             deviceIDcol.setText(mockDevice.getID());
-            MACcol.setText(mockDevice.getMAC());
+            MACcol.setText(mockDevice.getMacAddress());
 
             row.addView(deviceIDcol);
             row.addView(MACcol);
