@@ -20,13 +20,11 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import androidx.fragment.app.DialogFragment;
-
 import com.atakmap.android.trackingplugin.plugin.R;
 
 import java.util.ArrayList;
 
-public class DevicesTabHandler extends DialogFragment{
+public class DevicesTabHandler {
 
     private final View rootView;
     private final Context context;
@@ -111,6 +109,7 @@ public class DevicesTabHandler extends DialogFragment{
             TextView deviceIDcol = new TextView(this.context);
             TextView MACcol = new TextView(this.context);
 
+
             deviceIDcol.setTextColor(Color.BLACK);
             MACcol.setTextColor(Color.BLACK);
 
@@ -161,14 +160,10 @@ public class DevicesTabHandler extends DialogFragment{
         cancelButton.setOnClickListener(v -> {
 
             popupWindow.dismiss();
+
         });
 
-
-
-
         popupWindow.showAtLocation(this.rootView, Gravity.CENTER, 0, 0);
-
-
 
 
     }
@@ -193,7 +188,7 @@ public class DevicesTabHandler extends DialogFragment{
             }
 
             Log.d(TAG, "Showing input dialog");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            AlertDialog.Builder builder = new AlertDialog.Builder(this.context);
             builder.setTitle("Add a new device.");
 
             LinearLayout layout = new LinearLayout(this.context);
