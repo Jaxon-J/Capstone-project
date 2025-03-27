@@ -24,6 +24,9 @@ import java.util.Objects;
 // TODO: if we're still looking for a foreground service, look into hooking this receiver up with
 //  AtakBroadcast, then passing it to a bound service? idk tbh
 
+// TODO: phones send BLE advertising signals that are picked up from previously paired phones,
+//  even when unpaired. Only discontinues after Bluetooth gets reset on advertising device.
+
 public class BluetoothReceiver extends BroadcastReceiver {
     private static final String TAG = Constants.createTag(BluetoothReceiver.class);
     private static final Map<String, String> deviceMap = new HashMap<>();
@@ -74,11 +77,9 @@ public class BluetoothReceiver extends BroadcastReceiver {
 
     public BluetoothReceiver(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            BluetoothManager manager =
-                    (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
             if (manager == null) {
-                Log.e(TAG, "Could not get bluetooth manager. Bluetooth may not be supported on " +
-                        "this " + "device.");
+                Log.e(TAG, "Could not get bluetooth manager. Bluetooth may not be supported on this device.");
                 return;
             }
             this.btAdapter = manager.getAdapter();
@@ -90,6 +91,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
             this.btAdapter = BluetoothAdapter.getDefaultAdapter();
         }
         this.scanner = this.btAdapter.getBluetoothLeScanner();
+
     }
 
     private static void deviceLog(@Nullable String name, String address) {
@@ -113,19 +115,21 @@ public class BluetoothReceiver extends BroadcastReceiver {
         }
 
         switch (action) {
-            case ACTIONS.BLE_START_SCAN:
+            case ACTIONS.BLE_START_SCAN: {
                 Log.d(TAG, "BLE_START_SCAN");
                 // TODO: when we get the whitelist going, use that as a ScanFilter list and pass to
                 //  startScan, documentation says it'll keep going even if locked if we provide
                 //  this filter. Also look into ScanSettings, has some good stuff.
                 this.scanner.startScan(scanCallback);
                 break;
-            case ACTIONS.BLE_STOP_SCAN:
+            }
+            case ACTIONS.BLE_STOP_SCAN: {
                 Log.d(TAG, "BLE_STOP_SCAN");
                 deviceMap.clear();
                 this.scanner.stopScan(scanCallback);
                 break;
-            case ACTIONS.CLASSIC_START_DISCOVERY:
+            }
+            case ACTIONS.CLASSIC_START_DISCOVERY: {
                 Log.d(TAG, "CLASSIC_START_DISCOVERY");
                 if (!this.btAdapter.isEnabled()) {
                     Log.w(TAG, "Tried to start discovery when bluetooth was disabled.");
@@ -136,47 +140,47 @@ public class BluetoothReceiver extends BroadcastReceiver {
                 else Log.d(TAG, "Discovery process starting...");
                 isScanning = true;
                 break;
-            case ACTIONS.CLASSIC_STOP_DISCOVERY:
+            }
+            case ACTIONS.CLASSIC_STOP_DISCOVERY: {
                 Log.d(TAG, "CLASSIC_STOP_DISCOVERY");
                 boolean btStopped = this.btAdapter.cancelDiscovery();
                 if (!btStopped) Log.e(TAG, "Could not cancel classic discovery for some reason.");
                 isScanning = false;
                 break;
-            case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
+            }
+            case BluetoothAdapter.ACTION_DISCOVERY_STARTED: {
                 Log.d(TAG, "Classic discovery did indeed start!");
                 break;
-            case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
+            }
+            case BluetoothAdapter.ACTION_DISCOVERY_FINISHED: {
                 Log.d(TAG, "Classic discovery finished. Restarting...");
                 if (isScanning && this.btAdapter.isEnabled()) this.btAdapter.startDiscovery();
                 else Log.d(TAG, "Just kidding we're stopping now");
                 break;
-            case BluetoothDevice.ACTION_FOUND:
+            }
+            case BluetoothDevice.ACTION_FOUND: {
                 BluetoothDevice device;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE,
-                            BluetoothDevice.class);
+                    device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
                 } else {
                     device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 }
                 if (device == null) {
-                    Log.w(TAG, "ACTION_FOUND action did not have accompanying EXTRA_DEVICE " +
-                            "parcel.");
+                    Log.w(TAG, "ACTION_FOUND action did not have accompanying EXTRA_DEVICE parcel.");
                     return;
                 }
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
                 if (name == null) name = device.getName();
                 deviceLog(name, device.getAddress());
+                break;
+            }
         }
     }
 
     public static final class ACTIONS {
-        public static final String BLE_START_SCAN = "com.atakmap.android.trackingplugin" +
-                ".BLE_START_SCAN";
-        public static final String BLE_STOP_SCAN = "com.atakmap.android.trackingplugin" +
-                ".BLE_STOP_SCAN";
-        public static final String CLASSIC_START_DISCOVERY = "com.atakmap.android.trackingplugin" +
-                ".CLASSIC_START_DISCOVERY";
-        public static final String CLASSIC_STOP_DISCOVERY = "com.atakmap.android.trackingplugin" +
-                ".CLASSIC_STOP_DISCOVERY";
+        public static final String BLE_START_SCAN = "com.atakmap.android.trackingplugin.BLE_START_SCAN";
+        public static final String BLE_STOP_SCAN = "com.atakmap.android.trackingplugin.BLE_STOP_SCAN";
+        public static final String CLASSIC_START_DISCOVERY = "com.atakmap.android.trackingplugin.CLASSIC_START_DISCOVERY";
+        public static final String CLASSIC_STOP_DISCOVERY = "com.atakmap.android.trackingplugin.CLASSIC_STOP_DISCOVERY";
     }
 }

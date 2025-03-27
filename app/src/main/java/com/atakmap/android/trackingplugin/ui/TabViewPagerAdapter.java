@@ -22,6 +22,7 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.DeviceListManager;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
@@ -44,6 +45,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         Log.d(TAG, "onCreateViewHolder: " + Constants.TAB_LAYOUTS.get(position).first);
         View tabLayout = LayoutInflater.from(this.context)
                 .inflate(Constants.TAB_LAYOUTS.get(position).second, parent, false);
+
         return new TabViewHolder(tabLayout, Constants.TAB_LAYOUTS.get(position).first);
     }
 
@@ -51,17 +53,12 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
     @Override
     public void onBindViewHolder(@NonNull TabViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: " + Constants.TAB_LAYOUTS.get(position).first);
-        // This switch is for putting functionality on each page.
+        // This switch is called: 1) when initialized, 2) every time tab is switched to.
         switch (holder.tabName) {
+
             case Constants.TRACKING_TABNAME:
             case Constants.DEVICES_TABNAME: {
-                if (this.context instanceof Activity) {
-                    Log.d("DeviceTabHandler","context is activity");
-                }
                 new DevicesTabHandler(holder.itemView, this.context);
-
-                break;
-            }
             case Constants.SENSORS_TABNAME: {
                 break;
             }
@@ -71,18 +68,15 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                             GeoPoint selfPoint = MapView.getMapView().getSelfMarker().getPoint();
                             GeoPoint trackedPoint = new GeoPoint(selfPoint.getLatitude(),
                                     // 0.0000035 = 10ft
-                                    selfPoint.getLongitude(), selfPoint.getAltitude(),
-                                    selfPoint.getAltitudeReference(), 11, 11);
-                            PlacePointTool.MarkerCreator mc =
-                                    new PlacePointTool.MarkerCreator(trackedPoint);
+                                    selfPoint.getLongitude(), selfPoint.getAltitude(), selfPoint.getAltitudeReference(), 11, 11);
+                            PlacePointTool.MarkerCreator mc = new PlacePointTool.MarkerCreator(trackedPoint);
                             mc.setType("a-u-G");
                             mc.setCallsign("tracked");
                             Marker trackedMarker = mc.placePoint();
                         });
 
                 // debug bluetooth scanning
-                AtakBroadcast.DocumentedIntentFilter btIntentFilter =
-                        new AtakBroadcast.DocumentedIntentFilter();
+                AtakBroadcast.DocumentedIntentFilter btIntentFilter = new AtakBroadcast.DocumentedIntentFilter();
                 btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
                 btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
                 btIntentFilter.addAction(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
@@ -94,16 +88,40 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
 
 
                 holder.itemView.findViewById(R.id.bleScanDebugButton)
-                        .setOnClickListener(this::onBleScanDebugButtonClick);
+                        .setOnClickListener((View v) -> {
+                            Button b = (Button) v;
+                            boolean isEnabled = b.getText()
+                                    .equals(context.getString(R.string.ble_scan_enabled));
+                            if (isEnabled) {
+                                Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
+                                AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
+                                b.setText(context.getString(R.string.ble_scan_disabled));
+                                return;
+                            }
+                            Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
+                            AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
+                            b.setText(context.getString(R.string.ble_scan_enabled));
+                        });
                 holder.itemView.findViewById(R.id.classicScanDebugButton)
-                        .setOnClickListener(this::onClassicScanDebugButtonClick);
+                        .setOnClickListener((View v) -> {
+                            Button b = (Button) v;
+                            boolean isEnabled = b.getText()
+                                    .equals(context.getString(R.string.classic_scan_enabled));
+                            if (isEnabled) {
+                                Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY);
+                                AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
+                                b.setText(context.getString(R.string.classic_scan_disabled));
+                                return;
+                            }
+                            Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
+                            AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
+                            b.setText(context.getString(R.string.classic_scan_enabled));
+                        });
                 break;
             }
             default: {
                 // if all tabs are here, this is unreachable
-                Log.w(TAG, String.format("Please add string \"%s\" to Constants.java and use " +
-                        "that" + " variable as a case in TabViewPagerAdapter.onBindViewHolder",
-                        holder.tabName));
+                Log.w(TAG, String.format("onBindViewHolder: tab \"%s\" unknown", holder.tabName));
                 break;
             }
         }
@@ -111,7 +129,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
 
     @Override
     public int getItemCount() {
-        return Constants.TAB_LAYOUTS.size();
+        return Constants.TAB_COUNT;
     }
 
     @Override
@@ -119,34 +137,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         return position; // passes position to onCreateViewHolder instead of default (0)
     }
 
-    private void onBleScanDebugButtonClick(View v) {
-        Button b = (Button) v;
-        boolean isEnabled = b.getText().equals(context.getString(R.string.ble_scan_enabled));
-        if (isEnabled) {
-            Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-            AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
-            b.setText(context.getString(R.string.ble_scan_disabled));
-            return;
-        }
-        Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
-        AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
-        b.setText(context.getString(R.string.ble_scan_enabled));
-    }
-
-    private void onClassicScanDebugButtonClick(View v) {
-        Button b = (Button) v;
-        boolean isEnabled = b.getText().equals(context.getString(R.string.classic_scan_enabled));
-        if (isEnabled) {
-            Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY);
-            AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
-            b.setText(context.getString(R.string.classic_scan_disabled));
-            return;
-        }
-        Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
-        AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
-        b.setText(context.getString(R.string.classic_scan_enabled));
-    }
-
+    // Basically just here to hold onto a name that we can use on a switch in onBindViewHolder
     public static class TabViewHolder extends RecyclerView.ViewHolder {
         public String tabName;
 
