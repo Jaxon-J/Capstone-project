@@ -19,9 +19,9 @@ public class MockDevice {
     public static List<MockDevice> getDevices(int numberOfDevices) {
         if (mockDeviceList == null) {
             mockDeviceList = new ArrayList<>();
+            Random rand = new Random(System.currentTimeMillis());
             for (int i = 0; i < numberOfDevices; i++) {
                 String name = "mock" + i;
-                Random rand = new Random(System.currentTimeMillis());
                 String mac = generateMacAddress(rand);
                 mockDeviceList.add(new MockDevice(name, mac));
             }
