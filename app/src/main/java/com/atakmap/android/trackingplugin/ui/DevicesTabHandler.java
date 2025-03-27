@@ -1,7 +1,5 @@
 package com.atakmap.android.trackingplugin.ui;
 
-import static android.app.PendingIntent.getActivity;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -33,7 +31,6 @@ public class DevicesTabHandler extends DialogFragment{
     private final View rootView;
     private final Context context;
     private static Boolean tabInitialized = false;
-
     private static TableLayout devicesTable;
     private String TAG = "DevicesTabHandler";
 
@@ -138,7 +135,7 @@ public class DevicesTabHandler extends DialogFragment{
         View customView = inflater.inflate(R.layout.add_device_popup, null);
         PopupWindow popupWindow = new PopupWindow(customView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        popupWindow.setFocusable(true);  // Allows interaction with the popup
+        popupWindow.setFocusable(true);
         popupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.WHITE));
 
         EditText deviceIDEntry = customView.findViewById(R.id.deviceIDEntry);
@@ -146,10 +143,10 @@ public class DevicesTabHandler extends DialogFragment{
         EditText MACEntry = customView.findViewById(R.id.MACEntry);
         MACEntry.setHint("Enter MAC address");
 
-        // Step 3: Get a reference to a button or other UI elements in the popup
+
         Button enterButton = customView.findViewById(R.id.EnterButton);
         enterButton.setOnClickListener(v -> {
-            // Dismiss the PopupWindow when the button is clicked
+
             String deviceID = deviceIDEntry.getText().toString();
             String MAC = MACEntry.getText().toString();
 
@@ -168,7 +165,7 @@ public class DevicesTabHandler extends DialogFragment{
 
 
 
-        // Step 4: Show the PopupWindow at the desired location
+
         popupWindow.showAtLocation(this.rootView, Gravity.CENTER, 0, 0);
 
 
