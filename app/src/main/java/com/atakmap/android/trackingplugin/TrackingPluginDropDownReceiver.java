@@ -1,7 +1,9 @@
 package com.atakmap.android.trackingplugin;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -17,6 +19,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class TrackingPluginDropDownReceiver extends DropDownReceiver {
+    private static final String TAG = Constants.createTag(TrackingPluginDropDownReceiver.class);
     private final Context pluginContext;
     private final View mainView;
     public BluetoothReceiver btReceiver;
@@ -24,21 +27,22 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
     protected TrackingPluginDropDownReceiver(final MapView mapView, final Context context) {
         super(mapView);
         this.pluginContext = context;
-        // set up UI, set main layout to be viewed when SHOW_PLUGIN action is triggered
+        // get extract main_layout and set it to a view, to be shown on "SHOW_PLUGIN" event
         mainView = PluginLayoutInflater.inflate(context, R.layout.main_layout, null);
-        // set up all receivers/UI responses here
 
-        // set up logic before UI, so it can get passed in.
+        // initialize device data repository
+        DeviceListManager.initialize(context);
+        // initialize bluetooth scanner
         btReceiver = new BluetoothReceiver(context);
 
-        // tabs logic
+        // logic for setting up the tabs via TabLayout, ViewPager2, TabLayoutMediator
         TabLayout tabLayout = mainView.findViewById(R.id.tabLayout);
         ViewPager2 pager = mainView.findViewById(R.id.viewPager);
         pager.setAdapter(new TabViewPagerAdapter(context, btReceiver));
-        // set height as the maximum height of any tab
+        // set ViewPager2 component height as the maximum height of all tab layouts, so nothing gets cut off.
         pager.post(() -> {
             int height = 0;
-            for (int i = 0; i < Constants.TAB_LAYOUTS.size(); i++) {
+            for (int i = 0; i < Constants.TAB_COUNT; i++) {
                 View view = pager.getChildAt(i);
                 if (view != null) {
                     view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -49,11 +53,9 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
             params.height = height;
             pager.setLayoutParams(params);
         });
-        TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager,
-                (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
+        // TabLayoutMediator magic, where the names are actually set
+        TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager, (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
         mediator.attach();
-
-        // debug marker placement
     }
 
     @Override
@@ -62,7 +64,7 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
         if (action == null) return;
 
         switch (action) {
-            case ACTIONS.SHOW_PLUGIN: // UI ENTRY POINT
+            case ACTIONS.SHOW_PLUGIN:
                 if (!isClosed()) unhideDropDown();
                 // showDropDown has several more overloads. if we want to listen to
                 // resize/open/close events,
@@ -83,8 +85,4 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
     public static final class ACTIONS {
         public static final String SHOW_PLUGIN = "com.atakmap.android.trackingplugin.SHOW_PLUGIN";
     }
-
-    // If this ever gets refactored out, it needs the pluginContext and tabInfo passed in as
-    // parameters
-
 }
