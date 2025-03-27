@@ -90,7 +90,7 @@ public class DevicesTabHandler extends DialogFragment{
         headerRow.addView(headerCol2);
         headerRow.setBackgroundColor(Color.BLUE);
         tableLayout.addView(headerRow);
-        List<MockDevice> mockDevices = MockDevice.getDevices();
+        List<MockDevice> mockDevices = MockDevice.getDevices(20);
         //Log.d(TAG,String.valueOf(mockDevices.size()));
 
 

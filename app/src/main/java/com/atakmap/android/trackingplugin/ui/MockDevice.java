@@ -23,10 +23,10 @@ public class MockDevice {
         devices.add(this);
     }
 
-    public static List<MockDevice> getDevices() {
+    public static List<MockDevice> getDevices(int numberOfDevices) {
         if (mockDeviceList == null) {
             mockDeviceList = new ArrayList<>();
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < numberOfDevices; i++) {
                 String name = "mock" + i;
                 String mac = generateMacAddress();
                 mockDeviceList.add(new MockDevice(name, mac));
