@@ -59,6 +59,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
             case Constants.TRACKING_TABNAME:
             case Constants.DEVICES_TABNAME: {
                 new DevicesTabHandler(holder.itemView, this.context);
+            }
             case Constants.SENSORS_TABNAME: {
                 break;
             }
