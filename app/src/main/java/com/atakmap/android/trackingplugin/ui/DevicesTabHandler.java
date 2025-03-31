@@ -50,7 +50,7 @@ public class DevicesTabHandler {
 
         if (!tabInitialized) {
 
-            Log.d(TAG,"Creating mock devices");
+            //Log.d(TAG,"Creating mock devices");
             //Log.d(TAG,String.valueOf(mockDevices.size()));
 
             devicesTable = this.rootView.findViewById(R.id.devicesTableLayout);
@@ -81,7 +81,7 @@ public class DevicesTabHandler {
         TableRow headerRow = new TableRow(this.context);
         TextView headerCol1 = new TextView(this.context); // I guess i didnt need to pass in a context. Fix later.
         TextView headerCol2 = new TextView(this.context);
-        headerCol1.setText("DEVICE_ID\t");
+        headerCol1.setText("DEVICE_ID");
         headerCol2.setText("MAC");
         headerRow.addView(headerCol1);
         headerRow.addView(headerCol2);
@@ -96,19 +96,29 @@ public class DevicesTabHandler {
 
             TableRow row = new TableRow(this.context); // Create the table row
 
-            TextView deviceIDcol = new TextView(this.context);
-            TextView MACcol = new TextView(this.context);
+            TextView deviceIDColumn = new TextView(this.context);
+            TextView macColumn = new TextView(this.context);
 
 
-            deviceIDcol.setTextColor(Color.BLACK);
-            MACcol.setTextColor(Color.BLACK);
 
-            deviceIDcol.setText(mockDevice.getID());
-            MACcol.setText(mockDevice.getMacAddress());
+            deviceIDColumn.setTextColor(Color.BLACK);
+            macColumn.setTextColor(Color.BLACK);
 
-            row.addView(deviceIDcol);
-            row.addView(MACcol);
+            deviceIDColumn.setText(mockDevice.getID());
+            macColumn.setText(mockDevice.getMacAddress());
 
+            TextView deletionColumn = new TextView(this.context);
+            deletionColumn.setTextColor(Color.RED);
+            deletionColumn.setText("X");
+            deletionColumn.setGravity(Gravity.END);
+            deletionColumn.setOnClickListener(v->{
+                MockDevice.getDevice(macColumn.getText().toString()).removeDevice();
+                loadTable(devicesTable);
+            });
+
+            row.addView(deviceIDColumn);
+            row.addView(macColumn);
+            row.addView(deletionColumn);
             row.setBackgroundColor((i % 2 == 0) ? Color.LTGRAY : Color.WHITE);
             i++;
 
@@ -139,7 +149,8 @@ public class DevicesTabHandler {
             String deviceID = deviceIDEntry.getText().toString();
             String MAC = MACEntry.getText().toString();
 
-            new MockDevice(deviceID, MAC);
+            MockDevice device = new MockDevice(deviceID, MAC);
+            device.addToDeviceList();
 
             popupWindow.dismiss();
             loadTable(devicesTable);

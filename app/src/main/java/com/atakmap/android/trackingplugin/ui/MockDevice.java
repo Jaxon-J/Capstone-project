@@ -46,5 +46,23 @@ public class MockDevice {
         return this.macAddress;
     }
 
+    public void removeDevice(){
+        mockDeviceList.remove(this);
+    }
+
+    public static MockDevice getDevice(String macAddress){
+
+        for (MockDevice device: mockDeviceList) {
+            if (device.getMacAddress().equalsIgnoreCase(macAddress)) {
+                return device;
+            }
+        }
+        return null;
+    }
+
+    public void addToDeviceList() {
+        mockDeviceList.add(this);
+    }
+
 
 }
