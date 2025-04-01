@@ -30,7 +30,7 @@ jobs:
 
       - name: Install SDK Platform 33 and Build Tools
         run: |
-          "platforms;android-33" "build-tools;33.0.2"
+          sdkmanager "platforms\;android-33" "build-tools\;33.0.2"
 
       - name: Accept Licenses
         run: yes | sdkmanager --licenses
