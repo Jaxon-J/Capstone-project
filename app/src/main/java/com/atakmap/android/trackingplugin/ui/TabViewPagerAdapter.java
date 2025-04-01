@@ -23,11 +23,13 @@ import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
+/// Main class that handles Tabs and most subsequent UI logic implementation.
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
     private final BluetoothReceiver btReceiver;
 
+    /// @param context Plugin context
     public TabViewPagerAdapter(Context context, BluetoothReceiver btReceiver) {
         this.context = context;
         this.btReceiver = btReceiver;
@@ -44,6 +46,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
     }
 
 
+    /// Main method that is called to initialize UI logic. It is called upon initialization, and all subsequent times the tab is changed.
     @Override
     public void onBindViewHolder(@NonNull TabViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: " + Constants.TAB_LAYOUTS.get(position).first);
@@ -133,7 +136,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         return position; // passes position to onCreateViewHolder instead of default (0)
     }
 
-    // Basically just here to hold onto a name that we can use on a switch in onBindViewHolder
+    /// Add data here that will be relevant to tab logic, that can be accessed in {@link #onBindViewHolder(TabViewHolder, int)} via the first argument.
     public static class TabViewHolder extends RecyclerView.ViewHolder {
         public String tabName;
 

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/// Class that handles persistent data involving lists of devices, primarily constructed for whitelist and sensor list.
 public class DeviceListManager {
     private static final String DEVICE_LIST_ENTRY_NAME = "device_list";
     private static final String TAG = Constants.createTag(DeviceListManager.class);
@@ -168,6 +169,7 @@ public class DeviceListManager {
     }
 
 
+    /// All valid lists that can be accessed.
     public enum ListType {
         WHITELIST("devices_whitelist"), SENSORLIST("devices_sensors");
 
@@ -178,11 +180,17 @@ public class DeviceListManager {
         }
     }
 
+    /**
+     * Implemented by classes who want to listen to changes on device changes.
+     * All classes who implement this interface must register with DeviceListManager by calling
+     * {@link #addChangeListener(ListType, DeviceListChangeListener)}, passing itself as the listener a.k.a. "this".
+     */
     public interface DeviceListChangeListener {
         void onDeviceListChange(List<DeviceInfo> devices);
     }
 
     // All public fields in this class must be strings (or else it'll open up an even bigger headache with JSON serialization).
+    /// Basic class that is constructed to wrap info about a device.
     public static class DeviceInfo {
         public final String name;
         public final String macAddress;

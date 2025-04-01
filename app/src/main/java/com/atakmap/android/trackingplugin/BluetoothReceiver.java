@@ -1,5 +1,6 @@
 package com.atakmap.android.trackingplugin;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -10,14 +11,16 @@ import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.atakmap.android.trackingplugin.ui.PermissionsActivity;
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -27,10 +30,15 @@ import java.util.Objects;
 // TODO: phones send BLE advertising signals that are picked up from previously paired phones,
 //  even when unpaired. Only discontinues after Bluetooth gets reset on advertising device.
 
+/**
+ * BluetoothReceiver handles all the logic between a bluetooth scan and info retrieval from said scans.
+ * This is particularly true for Bluetooth LE scans.
+ */
 public class BluetoothReceiver extends BroadcastReceiver {
     private static final String TAG = Constants.createTag(BluetoothReceiver.class);
     private static final Map<String, String> deviceMap = new HashMap<>();
 
+    /// Object that is called via start/stopScan with the Bluetooth LE scanner to hook in functionality upon events that happen when scan is in progress.
     private final ScanCallback scanCallback = new ScanCallback() {
         @SuppressLint("MissingPermission")
         @Override
@@ -75,6 +83,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
     private BluetoothAdapter btAdapter;
     private boolean isScanning = false;
 
+    /// @param context Context for overall plugin.
     public BluetoothReceiver(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -106,7 +115,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
         if (action == null) {
             Log.w(TAG, "Action was null. Returning...");
             return;
-        } else if (!PermissionsActivity.hasAllBtPermissions(context)) {
+        } else if (!hasAllBtPermissions(context)) {
             Log.e(TAG, "Returning..."); // hasAllBtPermissions does logging
             return;
         } else if (this.btAdapter == null || this.scanner == null) {
@@ -176,7 +185,43 @@ public class BluetoothReceiver extends BroadcastReceiver {
             }
         }
     }
+    public static boolean hasAllBtPermissions(Context context) {
+        /*
+        startDiscovery:
+          - prerequisite: ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION
+          - ver <= R: BLUETOOTH_ADMIN
+          - ver >= S: BLUETOOTH_SCAN
+        device.getName()
+          - ver <= R: BLUETOOTH
+          - ver >= S: BLUETOOTH_CONNECT
+         */
+        List<String> perms = getPermsList();
+        List<String> missingPerms = new ArrayList<>();
+        for (String perm : perms)
+            if (context.checkSelfPermission(perm) == PackageManager.PERMISSION_DENIED) {
+                Log.e(TAG, "Don't have permission: " + perm);
+                missingPerms.add(perm);
+            }
+        return missingPerms.isEmpty();
+    }
 
+    /// Exclusively called by {@link #hasAllBtPermissions(Context)}
+    @NonNull
+    private static List<String> getPermsList() {
+        List<String> perms = new ArrayList<>(); // ugly but whatever
+        perms.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        perms.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            perms.add(Manifest.permission.BLUETOOTH_SCAN);
+            perms.add(Manifest.permission.BLUETOOTH_CONNECT);
+        } else {
+            perms.add(Manifest.permission.BLUETOOTH);
+            perms.add(Manifest.permission.BLUETOOTH_ADMIN);
+        }
+        return perms;
+    }
+
+    /// Class made for grouping all the actions that can be registered for {@link BluetoothReceiver}
     public static final class ACTIONS {
         public static final String BLE_START_SCAN = "com.atakmap.android.trackingplugin.BLE_START_SCAN";
         public static final String BLE_STOP_SCAN = "com.atakmap.android.trackingplugin.BLE_STOP_SCAN";
