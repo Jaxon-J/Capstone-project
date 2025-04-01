@@ -1,4 +1,4 @@
-#This file is our workflows. It takes the sdk from a public git repo release
+# This file is our workflows. It takes the sdk from a public git repo release
 name: Build & Test ATAK Plugin
 
 on:
@@ -25,6 +25,15 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Install SDK Platform 33 and Build Tools
+        run: sdkmanager "platforms;android-33" "build-tools;33.0.2"
+
+      - name: Accept Licenses
+        run: yes | sdkmanager --licenses
+
       - name: Download ATAK SDK from GitHub Release
         run: |
           curl -L \
@@ -37,3 +46,4 @@ jobs:
 
       - name: Build and Test
         run: ./gradlew build --debug --stacktrace
+
