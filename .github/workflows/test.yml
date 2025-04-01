@@ -29,7 +29,9 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install SDK Platform 33 and Build Tools
-        run: sdkmanager "platforms;android-33" "build-tools;33.0.2"
+        run: |
+          export SKIP_JDK_VERSION_CHECK=truesdkmanager 
+          "platforms;android-33" "build-tools;33.0.2"
 
       - name: Accept Licenses
         run: yes | sdkmanager --licenses
