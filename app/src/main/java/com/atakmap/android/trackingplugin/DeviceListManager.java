@@ -112,6 +112,7 @@ public class DeviceListManager {
         SharedPreferences listPref = pluginContext.getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = listPref.edit();
         String json = convertDeviceMapToJson(devices);
+        if (json == null) throw new RuntimeException("JSON serializing failed. Bailing here.");
         editor.putString(DEVICE_LIST_ENTRY_NAME, json);
         editor.apply();
 
