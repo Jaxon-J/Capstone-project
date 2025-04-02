@@ -229,6 +229,7 @@ public class DeviceListManager {
         public final String rssi;
 
         public DeviceInfo(String macAddress, String name, int rssi) {
+            // TODO: rename to StoredDeviceInfo. This is for persistent data, shouldn't be used for live updates.
             this.name = name;
             this.macAddress = macAddress;
             this.rssi = Integer.toString(rssi);
