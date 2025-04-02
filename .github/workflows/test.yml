@@ -52,5 +52,5 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Test
-        run: ./gradlew build --debug --stacktrace
+        run: ./gradlew build --quiet --no-daemon
 
