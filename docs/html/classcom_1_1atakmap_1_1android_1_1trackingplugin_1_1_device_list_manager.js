@@ -1,0 +1,5 @@
+var classcom_1_1atakmap_1_1android_1_1trackingplugin_1_1_device_list_manager =
+[
+    [ "DeviceListChangeListener", "interfacecom_1_1atakmap_1_1android_1_1trackingplugin_1_1_device_list_manager_1_1_device_list_change_listener.html", "interfacecom_1_1atakmap_1_1android_1_1trackingplugin_1_1_device_list_manager_1_1_device_list_change_listener" ],
+    [ "ListType", "enumcom_1_1atakmap_1_1android_1_1trackingplugin_1_1_device_list_manager_1_1_list_type.html", "enumcom_1_1atakmap_1_1android_1_1trackingplugin_1_1_device_list_manager_1_1_list_type" ]
+];
