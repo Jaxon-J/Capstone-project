@@ -48,6 +48,7 @@ jobs:
 
       - name: Copy repository to expected location
         run: |
+          shopt -s extglob
           mv !(ATAK-CIV-SDK) ./ATAK-CIV-SDK/plugins/Capstone-Plugin
           cd ./ATAK-CIV-SDK/plugins/Capstone-Plugin
 #      - name: Copy atak-gradle-takdev.jar to expected location
