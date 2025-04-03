@@ -44,15 +44,15 @@ jobs:
           curl -L \
             -o ATAK-CIV-SDK.zip \
             https://github.com/trafryda/ATAKSDK/releases/download/v1.0.0/ATAK-CIV-5.3.0.12-SDK-Zip.zip
-          unzip ATAK-CIV-SDK.zip -d ATAK-CIV-SDK
+          unzip ATAK-CIV-SDK.zip -d .
 
       - name: Copy repository to expected location
         run: |
           shopt -s extglob
-          mkdir -p ATAK-CIV-SDK/plugins/Capstone-project
-          mv !(ATAK-CIV-SDK) ATAK-CIV-SDK/plugins/Capstone-project
+          mkdir -p ATAK-CIV-5.3.0.12-SDK/plugins/Capstone-project
+          mv !(ATAK-CIV-SDK) ATAK-CIV-5.3.0.12-SDK/plugins/Capstone-project
           find . -type f -print -maxdepth 5
-          cd ATAK-CIV-SDK/plugins/Capstone-project
+          cd ATAK-CIV-5.3.0.12-SDK/plugins/Capstone-project
 #      - name: Copy atak-gradle-takdev.jar to expected location
 #        run: |
 #          mkdir -p ../../
