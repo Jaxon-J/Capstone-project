@@ -84,6 +84,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
 
                     // set up "add devices" pop-up
                     // TODO: add_device_popup more sense as a FrameView not a ScrollView, maybe?
+                    //  also, need to add code here to handle adding data to DeviceListManager.
                     View popupView = LayoutInflater.from(context).inflate(R.layout.add_device_popup, (ViewGroup) holder.itemView, false);
                     PopupWindow window = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                     window.setFocusable(true); // necessary or nah honestly dunno

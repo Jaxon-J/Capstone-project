@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+// TODO: could maybe rename this to DeviceStorageManger to avoid confusion
 /// Class that handles persistent data involving lists of devices, primarily constructed for whitelist and sensor list.
 public class DeviceListManager {
     private static final String DEVICE_LIST_ENTRY_NAME = "device_list";
