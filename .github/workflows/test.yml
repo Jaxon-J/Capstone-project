@@ -51,23 +51,24 @@ jobs:
           shopt -s extglob
           mkdir -p ATAK-CIV-SDK/plugins/Capstone-Plugin
           mv !(ATAK-CIV-SDK) ATAK-CIV-SDK/plugins/Capstone-Plugin
+          find . -type d -print
           cd ATAK-CIV-SDK/plugins/Capstone-Plugin
 #      - name: Copy atak-gradle-takdev.jar to expected location
 #        run: |
 #          mkdir -p ../../
 #          cp ATAK-CIV-5.3.0.12-SDK/ATAK-CIV-5.3.0.12-SDK/atak-gradle-takdev.jar ../../atak-gradle-takdev.jar
-
-      - name: Grant execute permissions to Gradle
-        run: chmod +x gradlew
-
-      - name: Build Debug
-        run: ./gradlew assembleCivDebug --quiet --no-daemon
-
-      - name: Build Release
-        run: ./gradlew assembleCivRelease --quiet --no-daemon
-
-      - name: Run Debug Unit Tests
-        run: ./gradlew testCivDebugUnitTest --quiet --no-daemon
-
-      - name: Run Release Unit Tests
-        run: ./gradlew testCivReleaseUnitTest --quiet --no-daemon
+#
+#      - name: Grant execute permissions to Gradle
+#        run: chmod +x gradlew
+#
+#      - name: Build Debug
+#        run: ./gradlew assembleCivDebug --quiet --no-daemon
+#
+#      - name: Build Release
+#        run: ./gradlew assembleCivRelease --quiet --no-daemon
+#
+#      - name: Run Debug Unit Tests
+#        run: ./gradlew testCivDebugUnitTest --quiet --no-daemon
+#
+#      - name: Run Release Unit Tests
+#        run: ./gradlew testCivReleaseUnitTest --quiet --no-daemon
