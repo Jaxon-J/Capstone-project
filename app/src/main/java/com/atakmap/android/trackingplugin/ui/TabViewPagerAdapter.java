@@ -23,13 +23,11 @@ import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
-/// Main class that handles Tabs and most subsequent UI logic implementation.
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
     private final BluetoothReceiver btReceiver;
 
-    /// @param context Plugin context
     public TabViewPagerAdapter(Context context, BluetoothReceiver btReceiver) {
         this.context = context;
         this.btReceiver = btReceiver;
@@ -56,7 +54,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 break;
             }
             case Constants.DEVICES_TABNAME: {
-                break;
+                new DevicesTabHandler(holder.itemView, this.context);
             }
             case Constants.SENSORS_TABNAME: {
                 break;
