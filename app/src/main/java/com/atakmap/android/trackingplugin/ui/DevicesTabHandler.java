@@ -24,7 +24,7 @@ import com.atakmap.android.trackingplugin.plugin.R;
 
 import java.util.List;
 
-public class DevicesTabHandler {
+    public class DevicesTabHandler {
 
     private final View rootView;
     private final Context context;
@@ -36,7 +36,7 @@ public class DevicesTabHandler {
 
         this.rootView = rootView;
         this.context = context;
-        Log.d(TAG,"LOADING");
+        //Log.d(TAG,"LOADING");
         try {
             String invokeCrashString = rootView.findViewById(R.id.devicesTableLayout).toString();
             setup();
@@ -57,7 +57,7 @@ public class DevicesTabHandler {
             loadTable(devicesTable);
 
             Button addDeviceButton = this.rootView.findViewById(R.id.addDeviceButton);
-            Log.d(TAG,"Setting button listener");
+            //Log.d(TAG,"Setting button listener");
             addDeviceButton.setOnClickListener(v -> {
 
                 //String invokeCrashString = rootView.findViewById(R.id.devicesTableLayout).toString();
@@ -91,7 +91,7 @@ public class DevicesTabHandler {
         //Log.d(TAG,String.valueOf(mockDevices.size()));
 
 
-        int i = 0;
+        int rowIndex = 0;
         for (MockDevice mockDevice : mockDevices) {
 
             TableRow row = new TableRow(this.context); // Create the table row
@@ -111,6 +111,7 @@ public class DevicesTabHandler {
             deletionColumn.setTextColor(Color.RED);
             deletionColumn.setText("X");
             deletionColumn.setGravity(Gravity.END);
+
             deletionColumn.setOnClickListener(v->{
                 MockDevice.getDevice(macColumn.getText().toString()).removeDevice();
                 loadTable(devicesTable);
@@ -119,8 +120,8 @@ public class DevicesTabHandler {
             row.addView(deviceIDColumn);
             row.addView(macColumn);
             row.addView(deletionColumn);
-            row.setBackgroundColor((i % 2 == 0) ? Color.LTGRAY : Color.WHITE);
-            i++;
+            row.setBackgroundColor((rowIndex % 2 == 0) ? Color.LTGRAY : Color.WHITE);
+            rowIndex++;
 
             tableLayout.addView(row);
 
@@ -149,11 +150,18 @@ public class DevicesTabHandler {
             String deviceID = deviceIDEntry.getText().toString();
             String MAC = MACEntry.getText().toString();
 
-            MockDevice device = new MockDevice(deviceID, MAC);
-            device.addToDeviceList();
+            if (MockDevice.getDevice(MAC) == null) {
+                MockDevice device = new MockDevice(deviceID, MAC);
+                device.addToDeviceList();
 
-            popupWindow.dismiss();
-            loadTable(devicesTable);
+                popupWindow.dismiss();
+                loadTable(devicesTable);
+
+            } else {
+
+                Log.d(TAG,"Device already exists.");
+
+            }
 
         });
 
