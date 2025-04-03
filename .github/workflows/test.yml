@@ -51,7 +51,7 @@ jobs:
           shopt -s extglob
           mkdir -p ATAK-CIV-SDK/plugins/Capstone-Plugin
           mv !(ATAK-CIV-SDK) ATAK-CIV-SDK/plugins/Capstone-Plugin
-          find . -type d -print
+          find . -type f -print -maxdepth 5
           cd ATAK-CIV-SDK/plugins/Capstone-Plugin
 #      - name: Copy atak-gradle-takdev.jar to expected location
 #        run: |
