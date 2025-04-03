@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
+            android:hint="Enter device ID"
             android:inputType="text"
             android:textColor="@color/darker_gray" />
 
@@ -27,27 +28,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
+            android:hint="Enter MAC address"
             android:inputType="text"
             android:textColor="@color/darker_gray" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="48dp"
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/CancelButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="CANCEL" />
-
-            <Button
                 android:id="@+id/EnterButton"
+                style="@style/darkButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:text="ENTER" />
+
+            <Button
+                android:id="@+id/CancelButton"
+                style="@style/darkButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="CANCEL" />
         </LinearLayout>
 
     </LinearLayout>
