@@ -6,6 +6,10 @@ import com.atakmap.android.trackingplugin.plugin.R;
 
 import java.util.List;
 
+/**
+ * Class that is meant to hold shared constant values.
+ * Best practice is to use {@link #createTag(Class)} when making tag fields that will be passed to {@link android.util.Log} methods.
+ */
 public final class Constants {
     public static final String TAG_PREFIX = "TrackPlug.";
     public static final String TRACKING_TABNAME = "Tracking";

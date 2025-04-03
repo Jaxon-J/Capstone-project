@@ -14,7 +14,7 @@ public class TrackingPluginMapComponent extends DropDownMapComponent {
     private Context pluginContext;
     private TrackingPluginDropDownReceiver mainDdr;
 
-    // ENTRY POINT
+    // Shouldn't touch this usually.
     @Override
     public void onCreate(Context context, Intent intent, MapView view) {
         context.setTheme(R.style.ATAKPluginTheme);

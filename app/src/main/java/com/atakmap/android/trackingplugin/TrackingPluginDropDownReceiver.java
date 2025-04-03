@@ -24,6 +24,7 @@ public class TrackingPluginDropDownReceiver extends DropDownReceiver {
     private final View mainView;
     public BluetoothReceiver btReceiver;
 
+    /// Entry point to plugin.
     protected TrackingPluginDropDownReceiver(final MapView mapView, final Context context) {
         super(mapView);
         this.pluginContext = context;
