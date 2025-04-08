@@ -19,25 +19,20 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.atakmap.android.trackingplugin.plugin.BuildConfig;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
-// TODO: if we're still looking for a foreground service, look into hooking this receiver up with
-//  AtakBroadcast, then passing it to a bound service? idk tbh
-
-// TODO: phones send BLE advertising signals that are picked up from previously paired phones,
+// NOTE: phones send BLE advertising signals that are picked up from previously paired phones,
 //  even when unpaired. Only discontinues after Bluetooth gets reset on advertising device.
 
 /**
  * BluetoothReceiver handles all the logic between a bluetooth scan and info retrieval from said scans.
  * This is particularly true for Bluetooth LE scans.
  */
-public class BluetoothReceiver extends BroadcastReceiver {
+public class BluetoothReceiver extends BroadcastReceiver implements DeviceListManager.DeviceListChangeListener {
     private static final String TAG = Constants.createTag(BluetoothReceiver.class);
-    private static final Map<String, String> deviceMap = new HashMap<>();
 
     /// Object that is called via start/stopScan with the Bluetooth LE scanner to hook in functionality upon events that happen when scan is in progress.
     private final ScanCallback scanCallback = new ScanCallback() {
@@ -47,11 +42,9 @@ public class BluetoothReceiver extends BroadcastReceiver {
             BluetoothDevice device = result.getDevice();
             String macAddr = device.getAddress();
             String name = device.getName();
-            if (name == null) name = Constants.DEFAULT_DEVICE_NAME;
-            if (!deviceMap.containsKey(macAddr) || !Objects.equals(deviceMap.get(macAddr), name)) {
-                deviceMap.put(macAddr, name);
-                Log.d(TAG, String.format("Logged Device (name: %s - mac: %s)", name, macAddr));
-            }
+            if (name == null) name = Constants.DEFAULT_DEVICE_NAME; // name probably irrelevant here, unless we wish to display what we picked up.
+            if (BuildConfig.BUILD_TYPE.equals("debug"))
+                Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", name.substring(0, 12), macAddr));
             // TODO: device info is here. need to pass into somewhere.
             //  probably class variable passed in via constructor
         }
@@ -80,27 +73,41 @@ public class BluetoothReceiver extends BroadcastReceiver {
             }
         }
     };
+
+    private final ScanSettings scanSettings = new ScanSettings.Builder()
+            .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+            .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+            .setNumOfMatches(ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT)
+            .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
+            .setPhy(ScanSettings.PHY_LE_ALL_SUPPORTED)
+            .setLegacy(false)
+            .build();
+
     private BluetoothLeScanner scanner;
-    private BluetoothAdapter btAdapter;
+    private List<DeviceListManager.StoredDeviceInfo> whitelistCopy;
+    private static boolean isScanning = false;
+    private boolean whitelistEnabled = true;
 
     /// @param context Context for overall plugin.
     public BluetoothReceiver(Context context) {
+        BluetoothAdapter btAdapter;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
             if (manager == null) {
-                Log.e(TAG, "Could not get bluetooth manager. Bluetooth may not be supported on this device.");
+                Log.e(TAG, "Could not get bluetooth manager. Could be the case that Bluetooth is not supported on this device?");
                 return;
             }
-            this.btAdapter = manager.getAdapter();
-            if (this.btAdapter == null) {
-                Log.e(TAG, "Could not get bluetooth adapter for some reason.");
-                return;
-            }
+            btAdapter = manager.getAdapter();
         } else {
-            this.btAdapter = BluetoothAdapter.getDefaultAdapter();
+            btAdapter = BluetoothAdapter.getDefaultAdapter();
         }
-        this.scanner = this.btAdapter.getBluetoothLeScanner();
-
+        if (btAdapter == null) {
+            Log.e(TAG, "Could not get bluetooth adapter for some reason.");
+            return;
+        }
+        this.scanner = btAdapter.getBluetoothLeScanner();
+        whitelistCopy = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
+        DeviceListManager.addChangeListener(DeviceListManager.ListType.WHITELIST, this);
     }
 
     @SuppressLint("MissingPermission")
@@ -113,7 +120,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
         } else if (!hasAllBtPermissions(context)) {
             Log.e(TAG, "Returning..."); // hasAllBtPermissions does logging
             return;
-        } else if (this.btAdapter == null || this.scanner == null) {
+        } else if (this.scanner == null) {
             Log.w(TAG, "Receiver was not initialized properly. Returning...");
             return;
         }
@@ -121,24 +128,51 @@ public class BluetoothReceiver extends BroadcastReceiver {
         switch (action) {
             case ACTIONS.BLE_START_SCAN: {
                 Log.d(TAG, "BLE_START_SCAN");
-                List<ScanFilter> whitelistFilters = new ArrayList<>();
-                for (DeviceListManager.StoredDeviceInfo deviceInfo : DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST))
-                    whitelistFilters.add(new ScanFilter.Builder().setDeviceAddress(deviceInfo.macAddress).build());
-
-                // TODO: look into ScanSettings, see if anything needs to be tweaked.
-                ScanSettings scanSettings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_OPPORTUNISTIC).build();
-
-                this.scanner.startScan(whitelistFilters, scanSettings, scanCallback);
+                startScan();
                 break;
             }
             case ACTIONS.BLE_STOP_SCAN: {
                 Log.d(TAG, "BLE_STOP_SCAN");
-                deviceMap.clear();
-                this.scanner.stopScan(scanCallback);
+                stopScan();
                 break;
+            }
+            case ACTIONS.ENABLE_SCAN_WHITELIST: {
+                whitelistEnabled = true;
+                if (isScanning) {
+                    stopScan();
+                    startScan();
+                }
+            }
+            case ACTIONS.DISABLE_SCAN_WHITELIST: {
+                whitelistEnabled = false;
+                if (isScanning) {
+                    stopScan();
+                    startScan();
+                }
             }
         }
     }
+
+    @SuppressLint("MissingPermission")
+    private void startScan() {
+        if (isScanning) return;
+        List<ScanFilter> whitelistFilters = null;
+        if (whitelistEnabled) {
+            whitelistFilters = new ArrayList<>();
+            for (DeviceListManager.StoredDeviceInfo deviceInfo : whitelistCopy)
+                whitelistFilters.add(new ScanFilter.Builder().setDeviceAddress(deviceInfo.macAddress).build());
+        }
+        this.scanner.startScan(whitelistFilters, scanSettings, scanCallback);
+        isScanning = true;
+    }
+
+    @SuppressLint("MissingPermission")
+    private void stopScan() {
+        if (!isScanning) return;
+        this.scanner.stopScan(scanCallback);
+        isScanning = false;
+    }
+
     public static boolean hasAllBtPermissions(Context context) {
         /*
         startDiscovery:
@@ -175,9 +209,21 @@ public class BluetoothReceiver extends BroadcastReceiver {
         return perms;
     }
 
+    @Override
+    public void onDeviceListChange(List<DeviceListManager.StoredDeviceInfo> devices) {
+        whitelistCopy = devices;
+        if (isScanning && whitelistEnabled) {
+            stopScan();
+            startScan();
+        }
+    }
+
     /// Class made for grouping all the actions that can be registered for {@link BluetoothReceiver}
     public static final class ACTIONS {
         public static final String BLE_START_SCAN = "com.atakmap.android.trackingplugin.BLE_START_SCAN";
         public static final String BLE_STOP_SCAN = "com.atakmap.android.trackingplugin.BLE_STOP_SCAN";
+
+        public static final String ENABLE_SCAN_WHITELIST = "com.atakmap.android.trackingplugin.ENABLE_SCAN_WHITELIST";
+        public static final String DISABLE_SCAN_WHITELIST = "com.atakmap.android.trackingplugin.DISABLE_SCAN_WHITELIST";
     }
 }

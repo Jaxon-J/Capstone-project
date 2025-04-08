@@ -1,8 +1,7 @@
 package com.atakmap.android.trackingplugin.ui;
 
-import static com.atakmap.android.ipc.AtakBroadcast.*;
+import static com.atakmap.android.ipc.AtakBroadcast.DocumentedIntentFilter;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -13,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.PopupWindow;
 import android.widget.TableLayout;
@@ -22,6 +22,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
@@ -39,7 +40,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
     private final BluetoothReceiver btReceiver;
-    private boolean init = false;
+    private boolean devicesTabInitialized = false; // TODO: maybe make this a list for all tabs if there's other necessary init logic.
 
     public TabViewPagerAdapter(Context context, BluetoothReceiver btReceiver) {
         this.context = context;
@@ -67,7 +68,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 break;
             }
             case Constants.DEVICES_TABNAME: {
-                if (!init) {
+                if (!devicesTabInitialized) {
                     // set up device table
                     TableLayout devTable = holder.itemView.findViewById(R.id.devicesTableLayout);
                     List<LiveDeviceInfo> devices;
@@ -87,7 +88,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                     //  also, need to add code here to handle adding data to DeviceListManager.
                     View popupView = LayoutInflater.from(context).inflate(R.layout.add_device_popup, (ViewGroup) holder.itemView, false);
                     PopupWindow window = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    window.setFocusable(true); // necessary or nah honestly dunno
+                    window.setFocusable(true);
                     window.setBackgroundDrawable(new ColorDrawable(Color.WHITE)); // white background, maybe not.
                     popupView.findViewById(R.id.EnterButton).setOnClickListener(v -> {
                         String deviceName = ((EditText) popupView.findViewById(R.id.deviceIDEntry)).getText().toString();
@@ -104,9 +105,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                         ((EditText) popupView.findViewById(R.id.MACEntry)).setText("");
                         window.showAtLocation(holder.itemView, Gravity.CENTER, 0, 0);
                     });
-
-                    // FIXME: can't scroll to the bottom after adding device.
-                    init = true;
+                    devicesTabInitialized = true;
                 }
 
             }
@@ -130,8 +129,9 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 DocumentedIntentFilter btIntentFilter = new DocumentedIntentFilter();
                 btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
                 btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-                btIntentFilter.addAction(BluetoothDevice.ACTION_FOUND); // TODO: check if this is necessary anymore.
-                getInstance().registerReceiver(this.btReceiver, btIntentFilter);
+                btIntentFilter.addAction(BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST);
+                btIntentFilter.addAction(BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST);
+                AtakBroadcast.getInstance().registerReceiver(this.btReceiver, btIntentFilter);
 
 
                 holder.itemView.findViewById(R.id.bleScanDebugButton)
@@ -141,29 +141,19 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                                     .equals(context.getString(R.string.ble_scan_enabled));
                             if (isEnabled) {
                                 Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-                                getInstance().sendBroadcast(stopScanIntent);
+                                AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
                                 b.setText(context.getString(R.string.ble_scan_disabled));
                                 return;
                             }
                             Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
-                            getInstance().sendBroadcast(startScanIntent);
+                            AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
                             b.setText(context.getString(R.string.ble_scan_enabled));
                         });
-                holder.itemView.findViewById(R.id.classicScanDebugButton)
-                        .setOnClickListener((View v) -> {
-                            Button b = (Button) v;
-                            boolean isEnabled = b.getText()
-                                    .equals(context.getString(R.string.classic_scan_enabled));
-                            if (isEnabled) {
-                                Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY);
-                                getInstance().sendBroadcast(stopScanIntent);
-                                b.setText(context.getString(R.string.classic_scan_disabled));
-                                return;
-                            }
-                            Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
-                            getInstance().sendBroadcast(startScanIntent);
-                            b.setText(context.getString(R.string.classic_scan_enabled));
-                        });
+                holder.itemView.findViewById(R.id.whitelistCheckBox)
+                        .setOnClickListener((View v) ->
+                                AtakBroadcast.getInstance().sendBroadcast(new Intent(((CheckBox) v).isChecked()
+                                    ? BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST
+                                    : BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST)));
                 break;
             }
             default: {
