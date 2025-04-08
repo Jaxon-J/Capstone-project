@@ -118,6 +118,7 @@ public class DeviceListManager {
         SharedPreferences.Editor editor = listPref.edit();
         String json = convertDeviceMapToJson(devices);
         if (json == null) throw new RuntimeException("JSON serializing failed. Bailing here.");
+        Log.d(TAG, String.format("Updating %s to JSON: %s", listType.sharedPrefsFilename, json));
         editor.putString(DEVICE_LIST_ENTRY_NAME, json);
         editor.apply();
 
