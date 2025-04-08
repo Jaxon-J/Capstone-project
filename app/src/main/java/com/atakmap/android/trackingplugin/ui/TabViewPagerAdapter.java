@@ -88,6 +88,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                         String deviceMac = ((EditText) popupView.findViewById(R.id.MACEntry)).getText().toString();
 
                         DeviceInfo newDevice = new DeviceInfo(deviceName, deviceMac, -1, false);
+                        DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, newDevice);
                         addDeviceToTable(devTable, newDevice, DeviceListManager.ListType.WHITELIST);
 
                         window.dismiss();
