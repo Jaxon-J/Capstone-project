@@ -43,8 +43,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
             String macAddr = device.getAddress();
             String name = device.getName();
             if (name == null) name = Constants.DEFAULT_DEVICE_NAME; // name probably irrelevant here, unless we wish to display what we picked up.
-            if (BuildConfig.BUILD_TYPE.equals("debug"))
-                Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", name.substring(0, 12), macAddr));
+            Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", name.substring(0, 12), macAddr));
             // TODO: device info is here. need to pass into somewhere.
             //  probably class variable passed in via constructor
         }
@@ -211,7 +210,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
 
     @Override
     public void onDeviceListChange(List<DeviceListManager.StoredDeviceInfo> devices) {
-        whitelistCopy = devices;
+        whitelistCopy = devices; // this is probably just reassigning the same reference over and over again. oh well.
         if (isScanning && whitelistEnabled) {
             stopScan();
             startScan();

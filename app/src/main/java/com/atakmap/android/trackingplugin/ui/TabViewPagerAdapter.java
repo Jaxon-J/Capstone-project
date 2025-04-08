@@ -151,9 +151,11 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                         });
                 holder.itemView.findViewById(R.id.whitelistCheckBox)
                         .setOnClickListener((View v) ->
-                                AtakBroadcast.getInstance().sendBroadcast(new Intent(((CheckBox) v).isChecked()
-                                    ? BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST
-                                    : BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST)));
+                                AtakBroadcast.getInstance().sendBroadcast(
+                                    new Intent(
+                                        ((CheckBox) v).isChecked()
+                                            ? BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST
+                                            : BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST)));
                 break;
             }
             default: {
