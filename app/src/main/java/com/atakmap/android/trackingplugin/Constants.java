@@ -17,6 +17,8 @@ public final class Constants {
     public static final String SENSORS_TABNAME = "Sensors";
     public static final String DEBUG_TABNAME = "Debug";
 
+    public static final String DEFAULT_DEVICE_NAME = "unknown";
+
     // Tab position index determined here, which is why this can't be a map.
     public static final List<Pair<String, Integer>> TAB_LAYOUTS = List.of(
             new Pair<>(TRACKING_TABNAME, R.layout.tracking_layout),

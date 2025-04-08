@@ -7,7 +7,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +18,6 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,10 +47,10 @@ public class BluetoothReceiver extends BroadcastReceiver {
             BluetoothDevice device = result.getDevice();
             String macAddr = device.getAddress();
             String name = device.getName();
-            if (name == null) name = "unknown";
+            if (name == null) name = Constants.DEFAULT_DEVICE_NAME;
             if (!deviceMap.containsKey(macAddr) || !Objects.equals(deviceMap.get(macAddr), name)) {
                 deviceMap.put(macAddr, name);
-                deviceLog(name, macAddr);
+                Log.d(TAG, String.format("Logged Device (name: %s - mac: %s)", name, macAddr));
             }
             // TODO: device info is here. need to pass into somewhere.
             //  probably class variable passed in via constructor
@@ -81,7 +82,6 @@ public class BluetoothReceiver extends BroadcastReceiver {
     };
     private BluetoothLeScanner scanner;
     private BluetoothAdapter btAdapter;
-    private boolean isScanning = false;
 
     /// @param context Context for overall plugin.
     public BluetoothReceiver(Context context) {
@@ -103,11 +103,6 @@ public class BluetoothReceiver extends BroadcastReceiver {
 
     }
 
-    private static void deviceLog(@Nullable String name, String address) {
-        if (name == null) name = "unknown";
-        Log.d(TAG, String.format("Logged Device (name: %s - mac: %s)", name, address));
-    }
-
     @SuppressLint("MissingPermission")
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -126,61 +121,20 @@ public class BluetoothReceiver extends BroadcastReceiver {
         switch (action) {
             case ACTIONS.BLE_START_SCAN: {
                 Log.d(TAG, "BLE_START_SCAN");
-                // TODO: when we get the whitelist going, use that as a ScanFilter list and pass to
-                //  startScan, documentation says it'll keep going even if locked if we provide
-                //  this filter. Also look into ScanSettings, has some good stuff.
-                this.scanner.startScan(scanCallback);
+                List<ScanFilter> whitelistFilters = new ArrayList<>();
+                for (DeviceListManager.StoredDeviceInfo deviceInfo : DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST))
+                    whitelistFilters.add(new ScanFilter.Builder().setDeviceAddress(deviceInfo.macAddress).build());
+
+                // TODO: look into ScanSettings, see if anything needs to be tweaked.
+                ScanSettings scanSettings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_OPPORTUNISTIC).build();
+
+                this.scanner.startScan(whitelistFilters, scanSettings, scanCallback);
                 break;
             }
             case ACTIONS.BLE_STOP_SCAN: {
                 Log.d(TAG, "BLE_STOP_SCAN");
                 deviceMap.clear();
                 this.scanner.stopScan(scanCallback);
-                break;
-            }
-            case ACTIONS.CLASSIC_START_DISCOVERY: {
-                Log.d(TAG, "CLASSIC_START_DISCOVERY");
-                if (!this.btAdapter.isEnabled()) {
-                    Log.w(TAG, "Tried to start discovery when bluetooth was disabled.");
-                    return;
-                }
-                boolean btStarted = this.btAdapter.startDiscovery();
-                if (!btStarted) Log.e(TAG, "Could not start classic discovery for some reason.");
-                else Log.d(TAG, "Discovery process starting...");
-                isScanning = true;
-                break;
-            }
-            case ACTIONS.CLASSIC_STOP_DISCOVERY: {
-                Log.d(TAG, "CLASSIC_STOP_DISCOVERY");
-                boolean btStopped = this.btAdapter.cancelDiscovery();
-                if (!btStopped) Log.e(TAG, "Could not cancel classic discovery for some reason.");
-                isScanning = false;
-                break;
-            }
-            case BluetoothAdapter.ACTION_DISCOVERY_STARTED: {
-                Log.d(TAG, "Classic discovery did indeed start!");
-                break;
-            }
-            case BluetoothAdapter.ACTION_DISCOVERY_FINISHED: {
-                Log.d(TAG, "Classic discovery finished. Restarting...");
-                if (isScanning && this.btAdapter.isEnabled()) this.btAdapter.startDiscovery();
-                else Log.d(TAG, "Just kidding we're stopping now");
-                break;
-            }
-            case BluetoothDevice.ACTION_FOUND: {
-                BluetoothDevice device;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
-                } else {
-                    device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                }
-                if (device == null) {
-                    Log.w(TAG, "ACTION_FOUND action did not have accompanying EXTRA_DEVICE parcel.");
-                    return;
-                }
-                String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
-                if (name == null) name = device.getName();
-                deviceLog(name, device.getAddress());
                 break;
             }
         }
@@ -225,7 +179,5 @@ public class BluetoothReceiver extends BroadcastReceiver {
     public static final class ACTIONS {
         public static final String BLE_START_SCAN = "com.atakmap.android.trackingplugin.BLE_START_SCAN";
         public static final String BLE_STOP_SCAN = "com.atakmap.android.trackingplugin.BLE_STOP_SCAN";
-        public static final String CLASSIC_START_DISCOVERY = "com.atakmap.android.trackingplugin.CLASSIC_START_DISCOVERY";
-        public static final String CLASSIC_STOP_DISCOVERY = "com.atakmap.android.trackingplugin.CLASSIC_STOP_DISCOVERY";
     }
 }
