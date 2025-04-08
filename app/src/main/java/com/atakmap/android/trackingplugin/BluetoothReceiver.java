@@ -50,6 +50,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
 
         @Override
         public void onScanFailed(int errorCode) {
+            isScanning = false;
             switch (errorCode) {
                 case ScanCallback.SCAN_FAILED_SCANNING_TOO_FREQUENTLY:
                     Log.e(TAG, "SCAN FAIL: Scanning too frequently...");
@@ -135,25 +136,20 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
                 stopScan();
                 break;
             }
-            case ACTIONS.ENABLE_SCAN_WHITELIST: {
-                whitelistEnabled = true;
-                if (isScanning) {
-                    stopScan();
-                    startScan();
-                }
-            }
+            case ACTIONS.ENABLE_SCAN_WHITELIST:
             case ACTIONS.DISABLE_SCAN_WHITELIST: {
-                whitelistEnabled = false;
-                if (isScanning) {
-                    stopScan();
-                    startScan();
-                }
+                whitelistEnabled = action.equals(ACTIONS.ENABLE_SCAN_WHITELIST);
+                Log.d(TAG, (whitelistEnabled ? "ENABLE" : "DISABLE") + "_SCAN_WHITELIST");
+                resetScan();
+                break;
             }
         }
     }
 
     @SuppressLint("MissingPermission")
     private void startScan() {
+        // starting and stopping scan are gated around isScanning flag, which implicitly assumes calls will always fully execute uninterrupted.
+        // this should be okay for the most part, but might get finicky if something gets interrupted and the flag is left in a desync'd state.
         if (isScanning) return;
         List<ScanFilter> whitelistFilters = null;
         if (whitelistEnabled) {
@@ -170,6 +166,13 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
         if (!isScanning) return;
         this.scanner.stopScan(scanCallback);
         isScanning = false;
+    }
+
+    private void resetScan() {
+        if (isScanning) {
+            stopScan();
+            startScan();
+        }
     }
 
     public static boolean hasAllBtPermissions(Context context) {
@@ -211,10 +214,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
     @Override
     public void onDeviceListChange(List<DeviceListManager.StoredDeviceInfo> devices) {
         whitelistCopy = devices; // this is probably just reassigning the same reference over and over again. oh well.
-        if (isScanning && whitelistEnabled) {
-            stopScan();
-            startScan();
-        }
+        if (whitelistEnabled) resetScan();
     }
 
     /// Class made for grouping all the actions that can be registered for {@link BluetoothReceiver}

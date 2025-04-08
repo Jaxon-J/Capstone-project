@@ -28,12 +28,14 @@ import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceListManager;
+import com.atakmap.android.trackingplugin.DeviceListManager.StoredDeviceInfo;
 import com.atakmap.android.trackingplugin.LiveDeviceInfo;
 import com.atakmap.android.trackingplugin.plugin.BuildConfig;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
@@ -71,40 +73,39 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 if (!devicesTabInitialized) {
                     // set up device table
                     TableLayout devTable = holder.itemView.findViewById(R.id.devicesTableLayout);
-                    List<LiveDeviceInfo> devices;
-                    if (BuildConfig.BUILD_TYPE.equals("debug")) {
-                        devices = LiveDeviceInfo.getMockDevices(20);
-                    } else {
-                        // TODO: get actual device info here
-                        //  how it'll be handled depends on if we want to display live RSSI here.
-                        devices = LiveDeviceInfo.getMockDevices(20);
-                    }
+                    List<StoredDeviceInfo> devices = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
 
-                    for (LiveDeviceInfo devInfo : devices)
-                        addDeviceToTable(devTable, devInfo);
+                    for (StoredDeviceInfo devInfo : devices)
+                        addDeviceToTable(devTable, devInfo, DeviceListManager.ListType.WHITELIST);
 
                     // set up "add devices" pop-up
                     // TODO: add_device_popup more sense as a FrameView not a ScrollView, maybe?
-                    //  also, need to add code here to handle adding data to DeviceListManager.
                     View popupView = LayoutInflater.from(context).inflate(R.layout.add_device_popup, (ViewGroup) holder.itemView, false);
                     PopupWindow window = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
                     window.setFocusable(true);
                     window.setBackgroundDrawable(new ColorDrawable(Color.WHITE)); // white background, maybe not.
+
                     popupView.findViewById(R.id.EnterButton).setOnClickListener(v -> {
                         String deviceName = ((EditText) popupView.findViewById(R.id.deviceIDEntry)).getText().toString();
                         String deviceMac = ((EditText) popupView.findViewById(R.id.MACEntry)).getText().toString();
-                        LiveDeviceInfo newDevice = new LiveDeviceInfo(deviceName, deviceMac);
-                        addDeviceToTable(devTable, newDevice);
+
+                        StoredDeviceInfo newDevice = new StoredDeviceInfo(deviceName, deviceMac, false);
+                        addDeviceToTable(devTable, newDevice, DeviceListManager.ListType.WHITELIST);
+
                         window.dismiss();
                     });
+
                     popupView.findViewById(R.id.CancelButton).setOnClickListener(v -> window.dismiss());
 
                     // show pop-up by clicking add devices button.
                     holder.itemView.findViewById(R.id.addDeviceButton).setOnClickListener(v -> {
                         ((EditText) popupView.findViewById(R.id.deviceIDEntry)).setText("");
                         ((EditText) popupView.findViewById(R.id.MACEntry)).setText("");
+
                         window.showAtLocation(holder.itemView, Gravity.CENTER, 0, 0);
                     });
+
                     devicesTabInitialized = true;
                 }
 
@@ -186,14 +187,13 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         }
     }
 
-    private void addDeviceToTable(TableLayout table, LiveDeviceInfo devInfo) {
+    private void addDeviceToTable(TableLayout table, StoredDeviceInfo devInfo, DeviceListManager.ListType associatedList) {
         TableRow row = (TableRow) LayoutInflater.from(context)
                 .inflate(R.layout.device_table_row_layout, table, false);
         ((TextView) row.getChildAt(0)).setText(devInfo.name);
-        ((TextView) row.getChildAt(1)).setText(devInfo.macAddr);
+        ((TextView) row.getChildAt(1)).setText(devInfo.macAddress);
         row.getChildAt(2).setOnClickListener(v -> {
-            if (!BuildConfig.BUILD_TYPE.equals("debug"))
-                DeviceListManager.removeDevice(DeviceListManager.ListType.WHITELIST, devInfo.macAddr);
+            DeviceListManager.removeDevice(associatedList, devInfo.macAddress);
             table.removeView(row);
         });
         table.addView(row);

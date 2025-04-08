@@ -18,9 +18,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
-// TODO: could maybe rename this to DeviceStorageManger to avoid confusion
+// TODO: could maybe rename this to DeviceStorageManger to avoid confusion. If whitelist is the only persistent data,
+//  could also just rename to WhitelistHandler and get rid of "list" abstractions i.e. "ListType"
 /// Class that handles persistent data involving lists of devices, primarily constructed for whitelist and sensor list.
 public class DeviceListManager {
     private static final String DEVICE_LIST_ENTRY_NAME = "device_list";
@@ -52,10 +54,12 @@ public class DeviceListManager {
     }
 
     /// If device with existing MAC Address exists within list, entry will be overwritten.
+    /// Mock devices can be added, but will not be stored.
     public static void addOrUpdateDevice(ListType listType, StoredDeviceInfo deviceInfo) {
         Map<String, StoredDeviceInfo> deviceList = getDeviceMap(listType);
         deviceList.put(deviceInfo.macAddress, deviceInfo);
-        saveDevicesToPreferences(listType, deviceList);
+        if (!deviceInfo.mock)
+            saveDevicesToPreferences(listType, deviceList);
     }
 
     public static void removeDevice(ListType listType, String macAddress) {
@@ -151,6 +155,8 @@ public class DeviceListManager {
 
             StoredDeviceInfo devInfo = new StoredDeviceInfo();
             for (Field field : StoredDeviceInfo.class.getFields()) {
+                if (!Modifier.isPublic(field.getModifiers()) || !field.getType().getSimpleName().equals("String"))
+                    continue;
                 String fieldVal;
                 try {
                     fieldVal = devJsonEntry.getString(field.getName());
@@ -182,13 +188,13 @@ public class DeviceListManager {
             StoredDeviceInfo devInfo = entry.getValue();
             try {
                 for (Field field : StoredDeviceInfo.class.getFields()) {
-                    if (Modifier.isPublic(field.getModifiers())) {
-                        try {
-                            devInfoJson.put(field.getName(), field.get(devInfo));
-                        } catch (IllegalAccessException e) {
-                            String errStr = "Attempted to access an inaccessible field %s.%s when writing to JSON.";
-                            Log.w(TAG, String.format(errStr, StoredDeviceInfo.class.getSimpleName(), field.getName()));
-                        }
+                    if (!Modifier.isPublic(field.getModifiers()) || !field.getType().getSimpleName().equals("String"))
+                        continue;
+                    try {
+                        devInfoJson.put(field.getName(), field.get(devInfo));
+                    } catch (IllegalAccessException e) {
+                        String errStr = "Attempted to access an inaccessible field %s.%s when writing to JSON.";
+                        Log.w(TAG, String.format(errStr, StoredDeviceInfo.class.getSimpleName(), field.getName()));
                     }
                 }
                 baseJson.put(entry.getKey(), devInfoJson);
@@ -222,22 +228,45 @@ public class DeviceListManager {
         void onDeviceListChange(List<StoredDeviceInfo> devices);
     }
 
-    // All public fields in this class must be strings (or else it'll open up an even bigger headache with JSON serialization).
-    /// Class that contains device information.
+    // Only public String fields will be serialized into JSON. The rest will be ignored.
+    /// Read-only class that contains device information.
     public static class StoredDeviceInfo {
+        // idea(?): store list type within StoredDeviceInfo, so this can be passed around easier without constantly needing to pass
+        // a sort of "associatedList" variable.
         public final String name;
         public final String macAddress;
+        public final boolean mock;
 
-        public StoredDeviceInfo(String macAddress, String name, int rssi) {
-            // TODO: rename to StoredDeviceInfo. This is for persistent data, shouldn't be used for live updates.
+        public StoredDeviceInfo(String name, String macAddress, boolean mock) {
             this.name = name;
             this.macAddress = macAddress;
+            this.mock = mock;
         }
 
-        // for JSON serialization method
+        // for JSON serialization method. this constructor will always contain real data.
         private StoredDeviceInfo() {
-            this.name = null;
-            this.macAddress = null;
+            this(null, null, false);
+        }
+
+        public static List<StoredDeviceInfo> getMockDevices(int numberOfDevices, ListType associatedList) {
+            List<StoredDeviceInfo> mockDeviceList = new ArrayList<>();
+            Random rand = new Random(System.currentTimeMillis());
+            for (int i = 0; i < numberOfDevices; i++) {
+                String macAddr;
+                // this loop is here to avoid generating MAC addresses that are already associated with real devices.
+                // test data and real data should have mutually exclusive mac addresses.
+                do {
+                    StringBuilder macBuilder = new StringBuilder();
+                    for (int j = 0; j < 6; j++) {
+                        macBuilder.append(Integer.toString(rand.nextInt(255), 16));
+                        if (j != 5) macBuilder.append(":");
+                    }
+                    int rssi = -5 * (rand.nextInt(15) + 1);
+                    macAddr = macBuilder.toString();
+                } while (getDevice(associatedList, macAddr) != null);
+                mockDeviceList.add(new StoredDeviceInfo("mock" + i, macAddr, true));
+            }
+            return mockDeviceList;
         }
     }
 }
