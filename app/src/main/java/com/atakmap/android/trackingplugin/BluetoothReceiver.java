@@ -84,7 +84,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
             .build();
 
     private BluetoothLeScanner scanner;
-    private List<DeviceListManager.StoredDeviceInfo> whitelistCopy;
+    private List<DeviceInfo> whitelistCopy;
     private static boolean isScanning = false;
     private boolean whitelistEnabled = true;
 
@@ -154,7 +154,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
         List<ScanFilter> whitelistFilters = null;
         if (whitelistEnabled) {
             whitelistFilters = new ArrayList<>();
-            for (DeviceListManager.StoredDeviceInfo deviceInfo : whitelistCopy)
+            for (DeviceInfo deviceInfo : whitelistCopy)
                 whitelistFilters.add(new ScanFilter.Builder().setDeviceAddress(deviceInfo.macAddress).build());
         }
         this.scanner.startScan(whitelistFilters, scanSettings, scanCallback);
@@ -212,7 +212,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
     }
 
     @Override
-    public void onDeviceListChange(List<DeviceListManager.StoredDeviceInfo> devices) {
+    public void onDeviceListChange(List<DeviceInfo> devices) {
         whitelistCopy = devices; // this is probably just reassigning the same reference over and over again. oh well.
         if (whitelistEnabled) resetScan();
     }

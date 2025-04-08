@@ -27,15 +27,12 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceListManager;
-import com.atakmap.android.trackingplugin.DeviceListManager.StoredDeviceInfo;
-import com.atakmap.android.trackingplugin.LiveDeviceInfo;
-import com.atakmap.android.trackingplugin.plugin.BuildConfig;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
@@ -73,9 +70,9 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 if (!devicesTabInitialized) {
                     // set up device table
                     TableLayout devTable = holder.itemView.findViewById(R.id.devicesTableLayout);
-                    List<StoredDeviceInfo> devices = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
+                    List<DeviceInfo> devices = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
 
-                    for (StoredDeviceInfo devInfo : devices)
+                    for (DeviceInfo devInfo : devices)
                         addDeviceToTable(devTable, devInfo, DeviceListManager.ListType.WHITELIST);
 
                     // set up "add devices" pop-up
@@ -90,7 +87,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                         String deviceName = ((EditText) popupView.findViewById(R.id.deviceIDEntry)).getText().toString();
                         String deviceMac = ((EditText) popupView.findViewById(R.id.MACEntry)).getText().toString();
 
-                        StoredDeviceInfo newDevice = new StoredDeviceInfo(deviceName, deviceMac, false);
+                        DeviceInfo newDevice = new DeviceInfo(deviceName, deviceMac, -1, false);
                         addDeviceToTable(devTable, newDevice, DeviceListManager.ListType.WHITELIST);
 
                         window.dismiss();
@@ -187,7 +184,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         }
     }
 
-    private void addDeviceToTable(TableLayout table, StoredDeviceInfo devInfo, DeviceListManager.ListType associatedList) {
+    private void addDeviceToTable(TableLayout table, DeviceInfo devInfo, DeviceListManager.ListType associatedList) {
         TableRow row = (TableRow) LayoutInflater.from(context)
                 .inflate(R.layout.device_table_row_layout, table, false);
         ((TextView) row.getChildAt(0)).setText(devInfo.name);

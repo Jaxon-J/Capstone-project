@@ -27,7 +27,7 @@ import java.util.Set;
 public class DeviceListManager {
     private static final String DEVICE_LIST_ENTRY_NAME = "device_list";
     private static final String TAG = Constants.createTag(DeviceListManager.class);
-    private static final Map<ListType, Map<String, StoredDeviceInfo>> listTypeMap = new HashMap<>();
+    private static final Map<ListType, Map<String, DeviceInfo>> listTypeMap = new HashMap<>();
     private static final Map<ListType, Set<DeviceListChangeListener>> listeners = new HashMap<>();
     private static Context pluginContext;
 
@@ -49,21 +49,21 @@ public class DeviceListManager {
         }
     }
 
-    public static List<StoredDeviceInfo> getDeviceList(ListType listType) {
+    public static List<DeviceInfo> getDeviceList(ListType listType) {
         return Collections.unmodifiableList(new ArrayList<>(getDeviceMap(listType).values()));
     }
 
     /// If device with existing MAC Address exists within list, entry will be overwritten.
     /// Mock devices can be added, but will not be stored.
-    public static void addOrUpdateDevice(ListType listType, StoredDeviceInfo deviceInfo) {
-        Map<String, StoredDeviceInfo> deviceList = getDeviceMap(listType);
+    public static void addOrUpdateDevice(ListType listType, DeviceInfo deviceInfo) {
+        Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
         deviceList.put(deviceInfo.macAddress, deviceInfo);
         if (!deviceInfo.mock)
             saveDevicesToPreferences(listType, deviceList);
     }
 
     public static void removeDevice(ListType listType, String macAddress) {
-        Map<String, StoredDeviceInfo> deviceList = getDeviceMap(listType);
+        Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
         if (!deviceList.containsKey(macAddress)) return;
         deviceList.remove(macAddress);
         saveDevicesToPreferences(listType, deviceList);
@@ -74,12 +74,12 @@ public class DeviceListManager {
     }
 
     @Nullable
-    public static StoredDeviceInfo getDevice(ListType listType, String macAddress) {
+    public static DeviceInfo getDevice(ListType listType, String macAddress) {
         return getDeviceMap(listType).get(macAddress);
     }
 
     public static void clearList(ListType listType) {
-        Map<String, StoredDeviceInfo> empty = new HashMap<>();
+        Map<String, DeviceInfo> empty = new HashMap<>();
 
         listTypeMap.put(listType, empty);
         saveDevicesToPreferences(listType, empty);
@@ -99,20 +99,20 @@ public class DeviceListManager {
     }
 
     // Methods that access SharedPreferences file.
-    private static Map<String, StoredDeviceInfo> getDeviceMap(ListType listType) {
+    private static Map<String, DeviceInfo> getDeviceMap(ListType listType) {
         checkInitialization();
         if (listTypeMap.containsKey(listType)) return listTypeMap.get(listType);
 
         SharedPreferences prefs = pluginContext.getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
         String json = prefs.getString(DEVICE_LIST_ENTRY_NAME, "{}");
-        Map<String, StoredDeviceInfo> list = parseDevicesFromJson(json);
+        Map<String, DeviceInfo> list = parseDevicesFromJson(json);
         if (list == null) throw new RuntimeException("JSON parsing failed. Gonna bail here.");
         listTypeMap.put(listType, list);
         return list;
     }
 
 
-    private static void saveDevicesToPreferences(ListType listType, Map<String, StoredDeviceInfo> devices) {
+    private static void saveDevicesToPreferences(ListType listType, Map<String, DeviceInfo> devices) {
         checkInitialization();
         SharedPreferences listPref = pluginContext.getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = listPref.edit();
@@ -130,7 +130,7 @@ public class DeviceListManager {
     // JSON conversion methods
     /// @return Returns map if successful. Upon failure, will log and return null.
     @Nullable
-    private static Map<String, StoredDeviceInfo> parseDevicesFromJson(String json) {
+    private static Map<String, DeviceInfo> parseDevicesFromJson(String json) {
         JSONObject baseJson;
         try {
             baseJson = new JSONObject(json);
@@ -139,7 +139,7 @@ public class DeviceListManager {
             Log.e(TAG, String.format(errStr, json));
             return null;
         }
-        Map<String, StoredDeviceInfo> devMap = new HashMap<>();
+        Map<String, DeviceInfo> devMap = new HashMap<>();
         for (Iterator<String> it = baseJson.keys(); it.hasNext(); ) {
             String macAddr = it.next();
 
@@ -153,9 +153,11 @@ public class DeviceListManager {
                 return null;
             }
 
-            StoredDeviceInfo devInfo = new StoredDeviceInfo();
-            for (Field field : StoredDeviceInfo.class.getFields()) {
-                if (!Modifier.isPublic(field.getModifiers()) || !field.getType().getSimpleName().equals("String"))
+            DeviceInfo devInfo = new DeviceInfo();
+            for (Field field : DeviceInfo.class.getFields()) {
+                int modifiers = field.getModifiers();
+                // only check public final String fields.
+                if (!Modifier.isPublic(modifiers) || !Modifier.isFinal(modifiers) || !field.getType().getSimpleName().equals("String"))
                     continue;
                 String fieldVal;
                 try {
@@ -171,7 +173,7 @@ public class DeviceListManager {
                     field.set(devInfo, fieldVal);
                 } catch (IllegalAccessException e) {
                     String errStr = "Attempted to write to inaccessible field %s.%s when parsing JSON.";
-                    Log.w(TAG, String.format(errStr, StoredDeviceInfo.class.getSimpleName(), field.getName()));
+                    Log.w(TAG, String.format(errStr, DeviceInfo.class.getSimpleName(), field.getName()));
                     return null;
                 }
             }
@@ -181,20 +183,22 @@ public class DeviceListManager {
     }
 
     @Nullable
-    private static String convertDeviceMapToJson(Map<String, StoredDeviceInfo> deviceMap) {
+    private static String convertDeviceMapToJson(Map<String, DeviceInfo> deviceMap) {
         JSONObject baseJson = new JSONObject();
-        for (Map.Entry<String, StoredDeviceInfo> entry : deviceMap.entrySet()) {
+        for (Map.Entry<String, DeviceInfo> entry : deviceMap.entrySet()) {
             JSONObject devInfoJson = new JSONObject();
-            StoredDeviceInfo devInfo = entry.getValue();
+            DeviceInfo devInfo = entry.getValue();
             try {
-                for (Field field : StoredDeviceInfo.class.getFields()) {
-                    if (!Modifier.isPublic(field.getModifiers()) || !field.getType().getSimpleName().equals("String"))
+                for (Field field : DeviceInfo.class.getFields()) {
+                    int modifiers = field.getModifiers();
+                    // only allow public final String's to be serialized.
+                    if (!Modifier.isPublic(modifiers) || !Modifier.isFinal(modifiers) || !field.getType().getSimpleName().equals("String"))
                         continue;
                     try {
                         devInfoJson.put(field.getName(), field.get(devInfo));
                     } catch (IllegalAccessException e) {
                         String errStr = "Attempted to access an inaccessible field %s.%s when writing to JSON.";
-                        Log.w(TAG, String.format(errStr, StoredDeviceInfo.class.getSimpleName(), field.getName()));
+                        Log.w(TAG, String.format(errStr, DeviceInfo.class.getSimpleName(), field.getName()));
                     }
                 }
                 baseJson.put(entry.getKey(), devInfoJson);
@@ -225,48 +229,6 @@ public class DeviceListManager {
      * {@link #addChangeListener(ListType, DeviceListChangeListener)}, passing itself as the listener a.k.a. "this".
      */
     public interface DeviceListChangeListener {
-        void onDeviceListChange(List<StoredDeviceInfo> devices);
-    }
-
-    // Only public String fields will be serialized into JSON. The rest will be ignored.
-    /// Read-only class that contains device information.
-    public static class StoredDeviceInfo {
-        // idea(?): store list type within StoredDeviceInfo, so this can be passed around easier without constantly needing to pass
-        // a sort of "associatedList" variable.
-        public final String name;
-        public final String macAddress;
-        public final boolean mock;
-
-        public StoredDeviceInfo(String name, String macAddress, boolean mock) {
-            this.name = name;
-            this.macAddress = macAddress;
-            this.mock = mock;
-        }
-
-        // for JSON serialization method. this constructor will always contain real data.
-        private StoredDeviceInfo() {
-            this(null, null, false);
-        }
-
-        public static List<StoredDeviceInfo> getMockDevices(int numberOfDevices, ListType associatedList) {
-            List<StoredDeviceInfo> mockDeviceList = new ArrayList<>();
-            Random rand = new Random(System.currentTimeMillis());
-            for (int i = 0; i < numberOfDevices; i++) {
-                String macAddr;
-                // this loop is here to avoid generating MAC addresses that are already associated with real devices.
-                // test data and real data should have mutually exclusive mac addresses.
-                do {
-                    StringBuilder macBuilder = new StringBuilder();
-                    for (int j = 0; j < 6; j++) {
-                        macBuilder.append(Integer.toString(rand.nextInt(255), 16));
-                        if (j != 5) macBuilder.append(":");
-                    }
-                    int rssi = -5 * (rand.nextInt(15) + 1);
-                    macAddr = macBuilder.toString();
-                } while (getDevice(associatedList, macAddr) != null);
-                mockDeviceList.add(new StoredDeviceInfo("mock" + i, macAddr, true));
-            }
-            return mockDeviceList;
-        }
+        void onDeviceListChange(List<DeviceInfo> devices);
     }
 }
