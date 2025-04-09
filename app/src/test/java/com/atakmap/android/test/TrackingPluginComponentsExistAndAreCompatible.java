@@ -7,6 +7,7 @@ package com.atakmap.android.test;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.TrackingPluginDropDownReceiver;
 import com.atakmap.android.trackingplugin.TrackingPluginMapComponent;
@@ -22,6 +23,14 @@ public class TrackingPluginComponentsExistAndAreCompatible {
         String expectedDropDownTag = "TrackPlug.TrackingPluginDropDownReceiver";
         String actualDropDownTag = Constants.createTag(TrackingPluginDropDownReceiver.class);
         assertEquals(expectedDropDownTag, actualDropDownTag);
+
+        String expectedConstantsTag = "TrackPlug.Constants";
+        String actualConstantsTag = Constants.createTag(Constants.class);
+        assertEquals(expectedConstantsTag, actualConstantsTag);
+
+        String expectedReceiverTag = "TrackPlug.BluetoothReceiver";
+        String actualReceiverTag = Constants.createTag(BluetoothReceiver.class);
+        assertEquals(expectedReceiverTag, actualReceiverTag);
     }
 }
 
