@@ -154,7 +154,7 @@ Milestone 2
   - Started work on basic whitelist
  
 - General
-  -Refactored to legacy to better utilize public projects
+  - Refactored to legacy to better utilize public projects
 
 ____________________________________________________________________________________________________________________________________________________________
 Milestone 3
