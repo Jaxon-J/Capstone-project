@@ -1,7 +1,5 @@
 package com.atakmap.android.trackingplugin.ui;
 
-import static com.atakmap.android.ipc.AtakBroadcast.DocumentedIntentFilter;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -22,14 +20,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.atakmap.android.drawing.mapItems.DrawingCircle;
 import com.atakmap.android.ipc.AtakBroadcast;
+import com.atakmap.android.maps.MapGroup;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
+import com.atakmap.android.maps.PointMapItem;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceListManager;
 import com.atakmap.android.trackingplugin.plugin.R;
+import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
@@ -38,12 +40,10 @@ import java.util.List;
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
-    private final BluetoothReceiver btReceiver;
     private boolean devicesTabInitialized = false; // TODO: maybe make this a list for all tabs if there's other necessary init logic.
 
-    public TabViewPagerAdapter(Context context, BluetoothReceiver btReceiver) {
+    public TabViewPagerAdapter(Context context) {
         this.context = context;
-        this.btReceiver = btReceiver;
     }
 
     @NonNull
@@ -112,27 +112,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 break;
             }
             case Constants.DEBUG_TABNAME: {
-                holder.itemView.findViewById(R.id.debugPlacePinButton)
-                        .setOnClickListener((View v) -> {
-                            GeoPoint selfPoint = MapView.getMapView().getSelfMarker().getPoint();
-                            GeoPoint trackedPoint = new GeoPoint(selfPoint.getLatitude(),
-                                    // 0.0000035 = 10ft
-                                    selfPoint.getLongitude(), selfPoint.getAltitude(), selfPoint.getAltitudeReference(), 11, 11);
-                            PlacePointTool.MarkerCreator mc = new PlacePointTool.MarkerCreator(trackedPoint);
-                            mc.setType("a-u-G");
-                            mc.setCallsign("tracked");
-                            Marker trackedMarker = mc.placePoint();
-                        });
-
-                // debug bluetooth scanning
-                DocumentedIntentFilter btIntentFilter = new DocumentedIntentFilter();
-                btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
-                btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-                btIntentFilter.addAction(BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST);
-                btIntentFilter.addAction(BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST);
-                AtakBroadcast.getInstance().registerReceiver(this.btReceiver, btIntentFilter);
-
-
+                // ble scan button
                 holder.itemView.findViewById(R.id.bleScanDebugButton)
                         .setOnClickListener((View v) -> {
                             Button b = (Button) v;
@@ -148,6 +128,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                             AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
                             b.setText(context.getString(R.string.ble_scan_enabled));
                         });
+                // whitelist enabled button
                 holder.itemView.findViewById(R.id.whitelistCheckBox)
                         .setOnClickListener((View v) ->
                                 AtakBroadcast.getInstance().sendBroadcast(
@@ -155,6 +136,18 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                                         ((CheckBox) v).isChecked()
                                             ? BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST
                                             : BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST)));
+                // "place circle" button
+                holder.itemView.findViewById(R.id.debugPlaceCircleButton)
+                        .setOnClickListener((View v) -> {
+                            Button b = (Button) v;
+                            if (b.getText().equals(context.getString(R.string.place_circle))) {
+                                TrackingPlugin.displayDeviceRadius();
+                                b.setText(R.string.remove_circle);
+                            } else {
+                                TrackingPlugin.removeDeviceRadius();
+                                b.setText(R.string.place_circle);
+                            }
+                        });
                 break;
             }
             default: {

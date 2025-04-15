@@ -11,4 +11,6 @@
     <string name="classic_scan_enabled">Stop Classic Scan</string>
     <string name="classic_scan_disabled">Start Classic Scan</string>
 
+    <string name="place_circle">Place Circle</string>
+    <string name="remove_circle">Remove Circle</string>
 </resources>
