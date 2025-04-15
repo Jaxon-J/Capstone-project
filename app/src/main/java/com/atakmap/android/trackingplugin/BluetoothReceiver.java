@@ -19,8 +19,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.atakmap.android.trackingplugin.plugin.BuildConfig;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,8 +77,6 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
             .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
             .setNumOfMatches(ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT)
             .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
-            .setPhy(ScanSettings.PHY_LE_ALL_SUPPORTED)
-            .setLegacy(false)
             .build();
 
     private BluetoothLeScanner scanner;
