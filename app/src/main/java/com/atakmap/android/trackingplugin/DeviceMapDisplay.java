@@ -22,8 +22,8 @@ public class DeviceMapDisplay {
     private static final String DEVICE_RADIUS_GROUP_NAME = "scan-radius-" + (new Random()).nextInt();
     private static final String ATTRIBUTE_SET_KEY = "found-device-attributes";
     private static final String LAST_SEEN_ATTRIBUTE_KEY = "found-device-last-seen";
-    private static final int ALLOWANCE = 50; // need this to allow a tad of time overlap between removal polls.
-    private static final int TIMEOUT_TIME = 15000; // 15 seconds
+    private static final int ALLOWANCE_MILLIS = 50; // need this to allow a tad of time overlap between removal polls.
+    private static final int TIMEOUT_TIME_MILLIS = 15000;
     private static boolean initialized = false;
     private static MapGroup regionGroup; // the logical local "folder" our DrawingCircle's will go in
     private static Timer poller;
@@ -64,13 +64,7 @@ public class DeviceMapDisplay {
         if (initialized) return;
 
         // set up regionGroup
-        if (regionGroup == null) {
-            RootMapGroup rootGroup = MapView.getMapView().getRootGroup();
-            // if the map group already exists for some reason, take it.
-            regionGroup = rootGroup.deepFindMapGroup(DEVICE_RADIUS_GROUP_NAME);
-            if (regionGroup == null)
-                regionGroup = rootGroup.addGroup(DEVICE_RADIUS_GROUP_NAME);
-        }
+        regionGroup = MapView.getMapView().getRootGroup().addGroup(DEVICE_RADIUS_GROUP_NAME);
 
         // set up maps
         foundDevices = new HashMap<>();
@@ -81,8 +75,8 @@ public class DeviceMapDisplay {
         poller.schedule(new TimerTask() {
             @Override
             public void run() {
-                // grab last time we saw the device, if we didn't see it in this POLL_TIME window, remove it (timed out)
-                long thresholdTime = Calendar.getInstance().getTimeInMillis() - TIMEOUT_TIME - ALLOWANCE;
+                // grab last time we saw the device, if we didn't see it in this TIMEOUT_TIME window, remove it (timed out)
+                long thresholdTime = Calendar.getInstance().getTimeInMillis() - TIMEOUT_TIME_MILLIS - ALLOWANCE_MILLIS;
                 for (Map.Entry<String, DrawingCircle> foundEntry : foundDevices.entrySet()) {
                     long lastSeen = foundEntry.getValue().getMetaAttributeSet(ATTRIBUTE_SET_KEY).getLongAttribute(LAST_SEEN_ATTRIBUTE_KEY);
                     if (lastSeen < thresholdTime) {
@@ -91,7 +85,7 @@ public class DeviceMapDisplay {
                     }
                 }
             }
-        }, TIMEOUT_TIME, TIMEOUT_TIME);
+        }, TIMEOUT_TIME_MILLIS, TIMEOUT_TIME_MILLIS);
 
         initialized = true;
     }
@@ -99,14 +93,8 @@ public class DeviceMapDisplay {
     public static void destroy() {
         if (!initialized) return;
 
-        if (poller != null) {
-            poller.cancel();
-        }
-        if (regionGroup != null && foundDevices != null) {
-            for (DrawingCircle devCircle : foundDevices.values()) {
-                regionGroup.removeItem(devCircle);
-            }
-        }
+        poller.cancel();
+        MapView.getMapView().getRootGroup().removeGroup(regionGroup);
         poller = null;
         regionGroup = null;
         foundDevices = null;

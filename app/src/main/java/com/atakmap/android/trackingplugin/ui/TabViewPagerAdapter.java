@@ -140,8 +140,8 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                                 AtakBroadcast.getInstance().sendBroadcast(
                                     new Intent(
                                         ((CheckBox) v).isChecked()
-                                            ? BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST
-                                            : BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST)));
+                                            ? BluetoothReceiver.ACTIONS.ENABLE_WHITELIST
+                                            : BluetoothReceiver.ACTIONS.DISABLE_WHITELIST)));
                 // "place circle" button
                 holder.itemView.findViewById(R.id.debugPlaceCircleButton)
                         .setOnClickListener((View v) -> {

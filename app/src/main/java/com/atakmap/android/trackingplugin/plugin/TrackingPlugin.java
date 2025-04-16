@@ -55,7 +55,6 @@ public class TrackingPlugin implements IPlugin {
         }
         pluginContext = ctxProvider.getPluginContext();
         pluginContext.setTheme(R.style.ATAKPluginTheme);
-        DeviceListManager.initialize(pluginContext);
 
         // create button that will be added to the toolbar in onStart
         toolbarItem = new ToolbarItem.Builder(
@@ -72,15 +71,18 @@ public class TrackingPlugin implements IPlugin {
     public void onStart() {
         // the plugin is starting, add the button to the toolbar
         uiService.addToolbarItem(toolbarItem);
+
+        // initialize what needs to be initialized
         btReceiver = new BluetoothReceiver(pluginContext);
         AtakBroadcast.DocumentedIntentFilter btIntentFilter = new AtakBroadcast.DocumentedIntentFilter();
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST);
-        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.ENABLE_WHITELIST);
+        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.DISABLE_WHITELIST);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
 
-        DeviceMapDisplay.start();
+        DeviceListManager.initialize(pluginContext);
+        DeviceMapDisplay.initialize();
     }
 
     @Override
@@ -95,7 +97,7 @@ public class TrackingPlugin implements IPlugin {
             btReceiver = null;
         }
 
-        DeviceMapDisplay.stop();
+        DeviceMapDisplay.destroy();
     }
 
     private void showPane() {

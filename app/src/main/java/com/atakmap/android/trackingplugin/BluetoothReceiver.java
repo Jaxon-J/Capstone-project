@@ -131,9 +131,9 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
                 stopScan();
                 break;
             }
-            case ACTIONS.ENABLE_SCAN_WHITELIST:
-            case ACTIONS.DISABLE_SCAN_WHITELIST: {
-                whitelistEnabled = action.equals(ACTIONS.ENABLE_SCAN_WHITELIST);
+            case ACTIONS.ENABLE_WHITELIST:
+            case ACTIONS.DISABLE_WHITELIST: {
+                whitelistEnabled = action.equals(ACTIONS.ENABLE_WHITELIST);
                 Log.d(TAG, (whitelistEnabled ? "ENABLE" : "DISABLE") + "_SCAN_WHITELIST");
                 resetScan();
                 break;
@@ -217,7 +217,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
         public static final String BLE_START_SCAN = "com.atakmap.android.trackingplugin.BLE_START_SCAN";
         public static final String BLE_STOP_SCAN = "com.atakmap.android.trackingplugin.BLE_STOP_SCAN";
 
-        public static final String ENABLE_SCAN_WHITELIST = "com.atakmap.android.trackingplugin.ENABLE_SCAN_WHITELIST";
-        public static final String DISABLE_SCAN_WHITELIST = "com.atakmap.android.trackingplugin.DISABLE_SCAN_WHITELIST";
+        public static final String ENABLE_WHITELIST = "com.atakmap.android.trackingplugin.ENABLE_SCAN_WHITELIST";
+        public static final String DISABLE_WHITELIST = "com.atakmap.android.trackingplugin.DISABLE_SCAN_WHITELIST";
     }
 }
