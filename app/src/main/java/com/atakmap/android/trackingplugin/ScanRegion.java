@@ -2,24 +2,19 @@ package com.atakmap.android.trackingplugin;
 
 import com.atakmap.android.drawing.mapItems.DrawingCircle;
 import com.atakmap.android.maps.MapGroup;
-import com.atakmap.android.maps.MapItem;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.PointMapItem;
 import com.atakmap.android.maps.RootMapGroup;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import gov.tak.api.util.AttributeSet;
-
 public class ScanRegion {
-    private static final String DEVICE_LIST_META_KEY = "device_list";
+    private static final String DEVICE_LIST_META_KEY = "scan_region_device_list";
     private static final int ALLOWANCE = 50;
     private static final int POLL_TIME = 15000; // 15 seconds
     private static MapGroup regionGroup;
@@ -34,13 +29,17 @@ public class ScanRegion {
         DeviceInfo existingInfo = foundDevices.get(deviceInfo.macAddress);
         if (existingInfo == null) {
             foundDevices.put(deviceInfo.macAddress, deviceInfo);
-            // FIXME: this is hella deprecated. figure out how to set with setMetaAttributeSet
+            // FIXME: this is hella deprecated. figure out how to set with setMetaAttributeSet with gov.tak.api.util.AttributeSet
             circle.setMetaStringArrayList(DEVICE_LIST_META_KEY, new ArrayList<>(foundDevices.keySet()));
+            // TODO: figure out what this even displays. Are the circles displayed on a per-scanned-device basis?
+            //  if so, have user set color (init as color that's distinct from the rest a la https://medialab.github.io/iwanthue if possible/reasonable).
+            //  and.. this is going to need to change a lot, oops.
         } else {
             existingInfo.lastSeenEpochMillis = Calendar.getInstance().getTimeInMillis();
         }
     }
 
+    /// Best practice is to call this at earliest time, although will be automatically called upon first show() or hide() call.
     public static void init() {
         // Create the circle to put on the map
         MapView mapView = MapView.getMapView();
@@ -83,6 +82,7 @@ public class ScanRegion {
             }
         }, POLL_TIME, POLL_TIME);
     }
+
     public static void show() {
         if (circle == null)
             init();
@@ -97,9 +97,19 @@ public class ScanRegion {
     }
 
     public static void destroy() {
-        poller.cancel();
-        if (regionGroup == null || circle == null)
-            return; // uninitialized, no need to remove.
-        regionGroup.removeItem(circle);
+        if (poller != null) {
+            poller.cancel();
+            poller = null;
+        }
+
+        if (regionGroup != null) {
+            if (circle != null) {
+                regionGroup.removeItem(circle);
+                circle = null;
+            }
+            regionGroup = null;
+        }
+
+        foundDevices = null;
     }
 }
