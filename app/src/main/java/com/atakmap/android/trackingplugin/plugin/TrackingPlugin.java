@@ -12,6 +12,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.atak.plugins.impl.PluginContextProvider;
 import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.drawing.mapItems.DrawingCircle;
+import com.atakmap.android.dropdown.DropDownManager;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapGroup;
 import com.atakmap.android.maps.MapItem;
@@ -20,6 +21,7 @@ import com.atakmap.android.maps.PointMapItem;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceListManager;
+import com.atakmap.android.trackingplugin.ScanRegion;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
 import com.atakmap.coremap.maps.coords.GeoPoint;
@@ -33,6 +35,7 @@ import gov.tak.api.ui.PaneBuilder;
 import gov.tak.api.ui.ToolbarItem;
 import gov.tak.api.ui.ToolbarItemAdapter;
 import gov.tak.platform.marshal.MarshalManager;
+import gov.tak.platform.ui.MotionEvent;
 
 // FIXME: at the moment, the hot reloading is broken. working on a fix if one is available.
 public class TrackingPlugin implements IPlugin {
@@ -67,12 +70,7 @@ public class TrackingPlugin implements IPlugin {
                         ResourcesCompat.getDrawable(pluginContext.getResources(), R.drawable.ic_launcher, null),
                         android.graphics.drawable.Drawable.class,
                         gov.tak.api.commons.graphics.Bitmap.class))
-                .setListener(new ToolbarItemAdapter() {
-                    @Override
-                    public void onClick(ToolbarItem item) {
-                        showPane();
-                    }
-                })
+                .setListener((ToolbarItem item, MotionEvent event) -> showPane())
                 .build();
     }
 
@@ -88,18 +86,25 @@ public class TrackingPlugin implements IPlugin {
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST);
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
+
+        ScanRegion.init();
     }
 
     @Override
     public void onStop() {
-        // the plugin is stopping, remove the button from the toolbar
-        if (uiService != null)
+        // if ui is up, take it down or else the old plugin will stick around.
+        if (uiService != null) {
+            if (templatePane != null && uiService.isPaneVisible(templatePane)) {
+                uiService.closePane(templatePane);
+            }
             uiService.removeToolbarItem(toolbarItem);
+        }
         if (btReceiver != null) {
             AtakBroadcast.getInstance().unregisterReceiver(btReceiver);
             btReceiver = null;
         }
-        removeDeviceRadius();
+
+        ScanRegion.destroy();
     }
 
     private void showPane() {
@@ -108,9 +113,7 @@ public class TrackingPlugin implements IPlugin {
             initUi();
         }
 
-        // if the plugin pane is not visible, show it!
         if(!uiService.isPaneVisible(templatePane)) {
-            Log.d(TAG, "Plugin pane opened");
             uiService.showPane(templatePane, null);
         }
     }
@@ -148,29 +151,5 @@ public class TrackingPlugin implements IPlugin {
     }
 
     // TODO: PUT BOTH FUNCTIONS BELOW SOMEWHERE ELSE WHERE IT MAKES SENSE.
-    public static void displayDeviceRadius() {
-        MapView mapView = MapView.getMapView();
-        DrawingCircle circle = new DrawingCircle(mapView, Constants.DEVICE_RADIUS_CIRCLE_NAME);
-        // set location, automatically update to follow the self marker
-        circle.setCenterPoint(mapView.getSelfMarker().getGeoPointMetaData());
-        mapView.getSelfMarker().addOnPointChangedListener((PointMapItem selfMarker) -> circle.setCenterPoint(selfMarker.getGeoPointMetaData()));
-        circle.setRadius(10);
-        circle.setMetaBoolean("archive", false);
-        circle.setMetaBoolean("editable", false); // this is gross as shit.
-        circle.setEditable(false);
-        circle.setClickable(false);
-        MapGroup radiusGroup = mapView.getRootGroup().deepFindMapGroup(Constants.RADIUS_GROUP_NAME);
-        if (radiusGroup == null) {
-            radiusGroup = mapView.getRootGroup().addGroup(Constants.RADIUS_GROUP_NAME);
-        }
-        radiusGroup.addItem(circle);
-    }
 
-    public static void removeDeviceRadius() {
-        MapGroup radiusGroup = MapView.getMapView().getRootGroup().deepFindMapGroup(Constants.RADIUS_GROUP_NAME);
-        MapItem radius = radiusGroup.deepFindUID(Constants.DEVICE_RADIUS_CIRCLE_NAME);
-        if (radius == null)
-            return;
-        radiusGroup.removeItem(radius);
-    }
 }

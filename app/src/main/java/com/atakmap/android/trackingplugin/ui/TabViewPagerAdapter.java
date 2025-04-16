@@ -20,20 +20,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.atakmap.android.drawing.mapItems.DrawingCircle;
 import com.atakmap.android.ipc.AtakBroadcast;
-import com.atakmap.android.maps.MapGroup;
-import com.atakmap.android.maps.MapView;
-import com.atakmap.android.maps.Marker;
-import com.atakmap.android.maps.PointMapItem;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceListManager;
+import com.atakmap.android.trackingplugin.ScanRegion;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
-import com.atakmap.android.user.PlacePointTool;
-import com.atakmap.coremap.maps.coords.GeoPoint;
 
 import java.util.List;
 
@@ -64,6 +58,21 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         // This switch is called: 1) when initialized, 2) every time tab is switched to.
         switch (holder.tabName) {
             case Constants.TRACKING_TABNAME: {
+                holder.itemView.findViewById(R.id.trackingScanButton)
+                        .setOnClickListener((View v) -> {
+                            Button b = (Button) v;
+                            if (b.getText().equals(context.getString(R.string.tracking_start_scan))) {
+                                Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
+                                AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
+                                b.setText(context.getString(R.string.tracking_stop_scan));
+                                ScanRegion.show();
+                                return;
+                            }
+                            Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
+                            AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
+                            b.setText(context.getString(R.string.tracking_start_scan));
+                            ScanRegion.hide();
+                        });
                 break;
             }
             case Constants.DEVICES_TABNAME: {
@@ -141,10 +150,10 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                         .setOnClickListener((View v) -> {
                             Button b = (Button) v;
                             if (b.getText().equals(context.getString(R.string.place_circle))) {
-                                TrackingPlugin.displayDeviceRadius();
+                                ScanRegion.show();
                                 b.setText(R.string.remove_circle);
                             } else {
-                                TrackingPlugin.removeDeviceRadius();
+                                ScanRegion.hide();
                                 b.setText(R.string.place_circle);
                             }
                         });

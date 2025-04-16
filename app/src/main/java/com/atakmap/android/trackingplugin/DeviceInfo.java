@@ -1,6 +1,7 @@
 package com.atakmap.android.trackingplugin;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -11,6 +12,7 @@ public class DeviceInfo {
     public final String name;
     public final String macAddress;
     public int rssi;
+    public long lastSeenEpochMillis;
     public final boolean mock;
 
     public DeviceInfo(String name, String macAddr, int rssi, boolean mock) {
@@ -18,6 +20,7 @@ public class DeviceInfo {
         this.macAddress = macAddr;
         this.rssi = rssi;
         this.mock = mock;
+        this.lastSeenEpochMillis = Calendar.getInstance().getTimeInMillis();
     }
 
     /// SHOULD ONLY BE CALLED FOR JSON SERIALIZATION.
