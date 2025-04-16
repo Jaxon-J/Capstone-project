@@ -25,9 +25,8 @@ import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceListManager;
-import com.atakmap.android.trackingplugin.ScanRegion;
+import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.plugin.R;
-import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 
 import java.util.List;
 
@@ -65,13 +64,11 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                                 Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
                                 AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
                                 b.setText(context.getString(R.string.tracking_stop_scan));
-                                ScanRegion.show();
                                 return;
                             }
                             Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
                             AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
                             b.setText(context.getString(R.string.tracking_start_scan));
-                            ScanRegion.hide();
                         });
                 break;
             }
@@ -148,12 +145,13 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 // "place circle" button
                 holder.itemView.findViewById(R.id.debugPlaceCircleButton)
                         .setOnClickListener((View v) -> {
+                            String macAddrDebug = "DEBUG_CIRCLE";
                             Button b = (Button) v;
                             if (b.getText().equals(context.getString(R.string.place_circle))) {
-                                ScanRegion.show();
+                                DeviceMapDisplay.show(macAddrDebug);
                                 b.setText(R.string.remove_circle);
                             } else {
-                                ScanRegion.hide();
+                                DeviceMapDisplay.hide(macAddrDebug);
                                 b.setText(R.string.place_circle);
                             }
                         });

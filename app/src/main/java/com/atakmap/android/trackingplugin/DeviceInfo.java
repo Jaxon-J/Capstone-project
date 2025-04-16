@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
+// TODO: should visibility be stored persistently, or everything defaults to invisible on every time ATAK re-opens?
+
 /// Class that stores information about a device.
 /// Note that only "public final String" fields will be stored persistently if passed to
 /// {@link DeviceListManager#addOrUpdateDevice(DeviceListManager.ListType, DeviceInfo)}

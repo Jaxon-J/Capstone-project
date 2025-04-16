@@ -42,7 +42,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
             String name = device.getName();
             if (name == null) name = Constants.DEFAULT_DEVICE_NAME; // name probably irrelevant here, unless we wish to display what we picked up.
             Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", name.substring(0, 12), macAddr));
-            ScanRegion.addOrRefreshDevice(new DeviceInfo(name, macAddr, result.getRssi(), false));
+            DeviceMapDisplay.addOrRefreshDevice(new DeviceInfo(name, macAddr, result.getRssi(), false));
         }
 
         @Override

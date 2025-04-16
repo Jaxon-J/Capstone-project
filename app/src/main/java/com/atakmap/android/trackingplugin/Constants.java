@@ -20,9 +20,6 @@ public final class Constants {
 
     public static final String DEFAULT_DEVICE_NAME = "unknown";
 
-    public static final String DEVICE_RADIUS_CIRCLE_NAME = "radius-" + (new Random()).nextInt();
-    public static final String RADIUS_GROUP_NAME = "tracking-plugin-radius-group";
-
     // Tab position index determined here, which is why this can't be a map.
     public static final List<Pair<String, Integer>> TAB_LAYOUTS = List.of(
             new Pair<>(TRACKING_TABNAME, R.layout.tracking_layout),
