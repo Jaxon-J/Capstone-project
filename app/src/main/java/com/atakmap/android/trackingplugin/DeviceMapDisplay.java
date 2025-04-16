@@ -1,5 +1,7 @@
 package com.atakmap.android.trackingplugin;
 
+import android.util.Log;
+
 import com.atakmap.android.drawing.mapItems.DrawingCircle;
 import com.atakmap.android.maps.MapGroup;
 import com.atakmap.android.maps.MapView;
@@ -16,35 +18,38 @@ import java.util.TimerTask;
 import gov.tak.api.util.AttributeSet;
 
 public class DeviceMapDisplay {
-    public static final String DEVICE_RADIUS_GROUP_NAME = "scan-radius-" + (new Random()).nextInt();
+    private static final String TAG = Constants.createTag(DeviceMapDisplay.class);
+    private static final String DEVICE_RADIUS_GROUP_NAME = "scan-radius-" + (new Random()).nextInt();
     private static final String ATTRIBUTE_SET_KEY = "found-device-attributes";
     private static final String LAST_SEEN_ATTRIBUTE_KEY = "found-device-last-seen";
     private static final int ALLOWANCE = 50; // need this to allow a tad of time overlap between removal polls.
     private static final int TIMEOUT_TIME = 15000; // 15 seconds
-    private static MapGroup regionGroup; // the logical local "folder" our DrawingCircles will go in
+    private static boolean initialized = false;
+    private static MapGroup regionGroup; // the logical local "folder" our DrawingCircle's will go in
     private static Timer poller;
     private static Map<String, DrawingCircle> foundDevices;
+    private static Map<String, Boolean> visibilityMap;
+
+    private DeviceMapDisplay() {
+        // prevent instantiation. this is a static class.
+    }
 
     /// Devices need to be refreshed in a scan region, otherwise it will be removed after a specified timeout period.
     public static void addOrRefreshDevice(DeviceInfo deviceInfo) {
+        if (!checkIsStarted()) return;
+
         // grab time at the moment this function is called.
         long currentTime = Calendar.getInstance().getTimeInMillis();
-
-        if (foundDevices == null)
-            foundDevices = new HashMap<>();
 
         DrawingCircle devCircle = foundDevices.get(deviceInfo.macAddress);
         if (devCircle == null) {
             // device hasn't been added to the map yet, do that here.
             devCircle = createCircle(deviceInfo);
 
-            if (regionGroup == null) {
-                RootMapGroup rootGroup = MapView.getMapView().getRootGroup();
-                // if the map group already exists for some reason, take it.
-                regionGroup = rootGroup.deepFindMapGroup(DEVICE_RADIUS_GROUP_NAME);
-                if (regionGroup == null)
-                    regionGroup = rootGroup.addGroup(DEVICE_RADIUS_GROUP_NAME);
-            }
+            // check if show() has been called on this device prior to being instantiated, set visibility accordingly.
+            if (Boolean.TRUE.equals(visibilityMap.get(deviceInfo.macAddress)))
+                devCircle.setVisible(true);
+
             regionGroup.addItem(devCircle);
             foundDevices.put(deviceInfo.macAddress, devCircle);
         }
@@ -53,15 +58,25 @@ public class DeviceMapDisplay {
         AttributeSet attrSet = new AttributeSet();
         attrSet.setAttribute(LAST_SEEN_ATTRIBUTE_KEY, currentTime);
         devCircle.setMetaAttributeSet(ATTRIBUTE_SET_KEY, attrSet);
-
-        // TODO: somehow grab value from visibility toggle on the whitelist and set it here.
-        //  this is really clunky, though.
-        if (false /* put toggle check here */) {
-            devCircle.setVisible(true);
-        }
     }
 
-    public static void start() {
+    public static void initialize() {
+        if (initialized) return;
+
+        // set up regionGroup
+        if (regionGroup == null) {
+            RootMapGroup rootGroup = MapView.getMapView().getRootGroup();
+            // if the map group already exists for some reason, take it.
+            regionGroup = rootGroup.deepFindMapGroup(DEVICE_RADIUS_GROUP_NAME);
+            if (regionGroup == null)
+                regionGroup = rootGroup.addGroup(DEVICE_RADIUS_GROUP_NAME);
+        }
+
+        // set up maps
+        foundDevices = new HashMap<>();
+        visibilityMap = new HashMap<>();
+
+        // set up timer that removes devices after some timeout
         poller = new Timer();
         poller.schedule(new TimerTask() {
             @Override
@@ -77,9 +92,13 @@ public class DeviceMapDisplay {
                 }
             }
         }, TIMEOUT_TIME, TIMEOUT_TIME);
+
+        initialized = true;
     }
 
-    public static void stop() {
+    public static void destroy() {
+        if (!initialized) return;
+
         if (poller != null) {
             poller.cancel();
         }
@@ -91,19 +110,31 @@ public class DeviceMapDisplay {
         poller = null;
         regionGroup = null;
         foundDevices = null;
+        visibilityMap = null;
+        initialized = false;
     }
 
     /// Shows device circle on the map if it has been detected. Otherwise does nothing.
     public static void show(String macAddress) {
+        if (!checkIsStarted()) return;
+
         DrawingCircle circle = foundDevices.get(macAddress);
         if (circle != null)
             circle.setVisible(true);
+        if (visibilityMap == null)
+            visibilityMap = new HashMap<>();
+        visibilityMap.put(macAddress, true);
     }
 
     public static void hide(String macAddress) {
+        checkIsStarted();
+
         DrawingCircle circle = foundDevices.get(macAddress);
         if (circle != null)
             circle.setVisible(false);
+        if (visibilityMap == null)
+            visibilityMap = new HashMap<>();
+        visibilityMap.put(macAddress, false);
     }
 
     private static DrawingCircle createCircle(DeviceInfo deviceInfo) {
@@ -127,5 +158,12 @@ public class DeviceMapDisplay {
         //  this should be a preference that users can set otherwise.
 
         return circle;
+    }
+
+    private static boolean checkIsStarted() {
+        if (!initialized) {
+            Log.e(TAG, "Must call " + DeviceMapDisplay.class.getSimpleName() + ".initialize() before any method call.");
+        }
+        return initialized;
     }
 }
