@@ -181,8 +181,8 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
     private void addDeviceToTable(TableLayout table, DeviceInfo devInfo, DeviceListManager.ListType associatedList, TabViewHolder holder) {
         TableRow row = (TableRow) LayoutInflater.from(context)
                 .inflate(R.layout.device_table_row_layout, table, false);
-        ((TextView) row.getChildAt(0)).setText(devInfo.name);
-        ((TextView) row.getChildAt(1)).setText(devInfo.macAddress);
+        ((TextView) row.getChildAt(1)).setText(devInfo.name);
+        ((TextView) row.getChildAt(2)).setText(devInfo.macAddress);
 
         View popupView = LayoutInflater.from(context).inflate(R.layout.device_info_popup, (ViewGroup) holder.itemView, false);
         PopupWindow window = new PopupWindow(popupView, 1100, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -190,7 +190,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         window.setFocusable(true);
         window.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
 
-        ((TextView) row.getChildAt(0)).setOnClickListener(v -> {
+        ((TextView) row.getChildAt(1)).setOnClickListener(v -> {
             window.showAtLocation(holder.itemView, Gravity.CENTER, 550, 0);
             ((TextView) popupView.findViewById(R.id.deviceNameText)).setText("name: " + devInfo.name);
             ((TextView) popupView.findViewById(R.id.deviceMACText)).setText("mac: " + devInfo.macAddress);

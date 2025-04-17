@@ -9,6 +9,11 @@
     android:paddingBottom="2dp"
     android:visibility="visible">
 
+    <CheckBox
+        android:id="@+id/checkBox2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <TextView
         android:id="@+id/deviceNameText"
         android:layout_width="wrap_content"

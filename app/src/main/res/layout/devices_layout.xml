@@ -33,6 +33,12 @@
                     android:paddingStart="4dp"
                     android:paddingEnd="4dp">
 
+                    <ImageView
+                        android:id="@+id/imageView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@android:drawable/ic_menu_view" />
+
                     <TextView
                         android:id="@+id/nameHeaderText"
                         android:layout_width="0dp"
