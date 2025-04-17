@@ -1,8 +1,5 @@
 package com.atakmap.android.trackingplugin.ui;
 
-import static com.atakmap.android.ipc.AtakBroadcast.*;
-
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -13,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.PopupWindow;
 import android.widget.TableLayout;
@@ -22,14 +20,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.atakmap.android.drawing.mapItems.DrawingCircle;
+import com.atakmap.android.ipc.AtakBroadcast;
+import com.atakmap.android.maps.MapGroup;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
+import com.atakmap.android.maps.PointMapItem;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceListManager;
-import com.atakmap.android.trackingplugin.LiveDeviceInfo;
-import com.atakmap.android.trackingplugin.plugin.BuildConfig;
 import com.atakmap.android.trackingplugin.plugin.R;
+import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 import com.atakmap.android.user.PlacePointTool;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
@@ -38,12 +40,10 @@ import java.util.List;
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
-    private final BluetoothReceiver btReceiver;
-    private boolean init = false;
+    private boolean devicesTabInitialized = false; // TODO: maybe make this a list for all tabs if there's other necessary init logic.
 
-    public TabViewPagerAdapter(Context context, BluetoothReceiver btReceiver) {
+    public TabViewPagerAdapter(Context context) {
         this.context = context;
-        this.btReceiver = btReceiver;
     }
 
     @NonNull
@@ -67,45 +67,44 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 break;
             }
             case Constants.DEVICES_TABNAME: {
-                if (!init) {
+                if (!devicesTabInitialized) {
                     // set up device table
                     TableLayout devTable = holder.itemView.findViewById(R.id.devicesTableLayout);
-                    List<LiveDeviceInfo> devices;
-                    if (BuildConfig.BUILD_TYPE.equals("debug")) {
-                        devices = LiveDeviceInfo.getMockDevices(20);
-                    } else {
-                        // TODO: get actual device info here
-                        //  how it'll be handled depends on if we want to display live RSSI here.
-                        devices = LiveDeviceInfo.getMockDevices(20);
-                    }
+                    List<DeviceInfo> devices = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
 
-                    for (LiveDeviceInfo devInfo : devices)
-                        addDeviceToTable(devTable, devInfo);
+                    for (DeviceInfo devInfo : devices)
+                        addDeviceToTable(devTable, devInfo, DeviceListManager.ListType.WHITELIST, holder);
 
                     // set up "add devices" pop-up
                     // TODO: add_device_popup more sense as a FrameView not a ScrollView, maybe?
-                    //  also, need to add code here to handle adding data to DeviceListManager.
                     View popupView = LayoutInflater.from(context).inflate(R.layout.add_device_popup, (ViewGroup) holder.itemView, false);
                     PopupWindow window = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    window.setFocusable(true); // necessary or nah honestly dunno
+
+                    window.setFocusable(true);
                     window.setBackgroundDrawable(new ColorDrawable(Color.WHITE)); // white background, maybe not.
+
                     popupView.findViewById(R.id.EnterButton).setOnClickListener(v -> {
                         String deviceName = ((EditText) popupView.findViewById(R.id.deviceIDEntry)).getText().toString();
                         String deviceMac = ((EditText) popupView.findViewById(R.id.MACEntry)).getText().toString();
-                        LiveDeviceInfo newDevice = new LiveDeviceInfo(deviceName, deviceMac);
-                        addDeviceToTable(devTable, newDevice);
+
+                        DeviceInfo newDevice = new DeviceInfo(deviceName, deviceMac, -1, false);
+                        DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, newDevice);
+                        addDeviceToTable(devTable, newDevice, DeviceListManager.ListType.WHITELIST, holder);
+
                         window.dismiss();
                     });
+
                     popupView.findViewById(R.id.CancelButton).setOnClickListener(v -> window.dismiss());
 
                     // show pop-up by clicking add devices button.
                     holder.itemView.findViewById(R.id.addDeviceButton).setOnClickListener(v -> {
                         ((EditText) popupView.findViewById(R.id.deviceIDEntry)).setText("");
                         ((EditText) popupView.findViewById(R.id.MACEntry)).setText("");
+
                         window.showAtLocation(holder.itemView, Gravity.CENTER, 0, 0);
                     });
 
-                    init = true;
+                    devicesTabInitialized = true;
                 }
 
             }
@@ -113,26 +112,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 break;
             }
             case Constants.DEBUG_TABNAME: {
-                holder.itemView.findViewById(R.id.debugPlacePinButton)
-                        .setOnClickListener((View v) -> {
-                            GeoPoint selfPoint = MapView.getMapView().getSelfMarker().getPoint();
-                            GeoPoint trackedPoint = new GeoPoint(selfPoint.getLatitude(),
-                                    // 0.0000035 = 10ft
-                                    selfPoint.getLongitude(), selfPoint.getAltitude(), selfPoint.getAltitudeReference(), 11, 11);
-                            PlacePointTool.MarkerCreator mc = new PlacePointTool.MarkerCreator(trackedPoint);
-                            mc.setType("a-u-G");
-                            mc.setCallsign("tracked");
-                            Marker trackedMarker = mc.placePoint();
-                        });
-
-                // debug bluetooth scanning
-                DocumentedIntentFilter btIntentFilter = new DocumentedIntentFilter();
-                btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
-                btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-                btIntentFilter.addAction(BluetoothDevice.ACTION_FOUND); // TODO: check if this is necessary anymore.
-                getInstance().registerReceiver(this.btReceiver, btIntentFilter);
-
-
+                // ble scan button
                 holder.itemView.findViewById(R.id.bleScanDebugButton)
                         .setOnClickListener((View v) -> {
                             Button b = (Button) v;
@@ -140,28 +120,33 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                                     .equals(context.getString(R.string.ble_scan_enabled));
                             if (isEnabled) {
                                 Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-                                getInstance().sendBroadcast(stopScanIntent);
+                                AtakBroadcast.getInstance().sendBroadcast(stopScanIntent);
                                 b.setText(context.getString(R.string.ble_scan_disabled));
                                 return;
                             }
                             Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
-                            getInstance().sendBroadcast(startScanIntent);
+                            AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
                             b.setText(context.getString(R.string.ble_scan_enabled));
                         });
-                holder.itemView.findViewById(R.id.classicScanDebugButton)
+                // whitelist enabled button
+                holder.itemView.findViewById(R.id.whitelistCheckBox)
+                        .setOnClickListener((View v) ->
+                                AtakBroadcast.getInstance().sendBroadcast(
+                                    new Intent(
+                                        ((CheckBox) v).isChecked()
+                                            ? BluetoothReceiver.ACTIONS.ENABLE_SCAN_WHITELIST
+                                            : BluetoothReceiver.ACTIONS.DISABLE_SCAN_WHITELIST)));
+                // "place circle" button
+                holder.itemView.findViewById(R.id.debugPlaceCircleButton)
                         .setOnClickListener((View v) -> {
                             Button b = (Button) v;
-                            boolean isEnabled = b.getText()
-                                    .equals(context.getString(R.string.classic_scan_enabled));
-                            if (isEnabled) {
-                                Intent stopScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_STOP_DISCOVERY);
-                                getInstance().sendBroadcast(stopScanIntent);
-                                b.setText(context.getString(R.string.classic_scan_disabled));
-                                return;
+                            if (b.getText().equals(context.getString(R.string.place_circle))) {
+                                TrackingPlugin.displayDeviceRadius();
+                                b.setText(R.string.remove_circle);
+                            } else {
+                                TrackingPlugin.removeDeviceRadius();
+                                b.setText(R.string.place_circle);
                             }
-                            Intent startScanIntent = new Intent(BluetoothReceiver.ACTIONS.CLASSIC_START_DISCOVERY);
-                            getInstance().sendBroadcast(startScanIntent);
-                            b.setText(context.getString(R.string.classic_scan_enabled));
                         });
                 break;
             }
@@ -193,16 +178,41 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         }
     }
 
-    private void addDeviceToTable(TableLayout table, LiveDeviceInfo devInfo) {
+    private void addDeviceToTable(TableLayout table, DeviceInfo devInfo, DeviceListManager.ListType associatedList, TabViewHolder holder) {
         TableRow row = (TableRow) LayoutInflater.from(context)
                 .inflate(R.layout.device_table_row_layout, table, false);
         ((TextView) row.getChildAt(0)).setText(devInfo.name);
-        ((TextView) row.getChildAt(1)).setText(devInfo.macAddr);
+        ((TextView) row.getChildAt(1)).setText(devInfo.macAddress);
         row.getChildAt(2).setOnClickListener(v -> {
-            if (!BuildConfig.BUILD_TYPE.equals("debug"))
-                DeviceListManager.removeDevice(DeviceListManager.ListType.WHITELIST, devInfo.macAddr);
+            DeviceListManager.removeDevice(associatedList, devInfo.macAddress);
             table.removeView(row);
         });
+
+        View popupView = LayoutInflater.from(context).inflate(R.layout.device_info_popup, (ViewGroup) holder.itemView, false);
+        PopupWindow window = new PopupWindow(popupView, 1100, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        window.setFocusable(true);
+        window.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+
+        ((TextView) row.getChildAt(0)).setOnClickListener(v -> {
+
+            window.showAtLocation(holder.itemView, Gravity.CENTER, 550, 0);
+
+            ((TextView) popupView.findViewById(R.id.deviceNameText)).setText("name: " + devInfo.name);
+            ((TextView) popupView.findViewById(R.id.deviceMACText)).setText("mac: " + devInfo.macAddress);
+            ((TextView) popupView.findViewById(R.id.firstSeenText)).setText("first seen: " + "[time]" + "\n\tby: " + "[name of device]");
+            ((TextView) popupView.findViewById(R.id.lastSeenText)).setText("last seen: " + "[time]" + "\n\tby: " + "[name of device]");
+        });
+
+        popupView.findViewById(R.id.deviceInfoPopupBackButton).setOnClickListener(v -> {
+            window.dismiss();
+        });
+
+
+
+
+
+
         table.addView(row);
     }
 }

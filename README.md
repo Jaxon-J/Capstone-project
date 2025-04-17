@@ -1,37 +1,3 @@
-(Plugin Name)
-
-
-_________________________________________________________________
-PURPOSE AND CAPABILITIES
-
-(General Description)
-
-
-_________________________________________________________________
-STATUS
-
-(In Progress?  Expected release?  Released?  To Who?  When?)
-
-_________________________________________________________________
-POINT OF CONTACTS
-
-(Who is developing this)
-
-_________________________________________________________________
-PORTS REQUIRED
-
-(This is important for ATO, networking, and other security concerns)
-
-_________________________________________________________________
-EQUIPMENT REQUIRED
-
-_________________________________________________________________
-EQUIPMENT SUPPORTED
-
-_________________________________________________________________
-COMPILATION
-
-_________________________________________________________________
 DEVELOPER NOTES
 
 Setting up dev environment
@@ -141,3 +107,33 @@ Hello world ATAK plugin created and set up for all devs.
   In progress: updated wireframe to fit client description
                implementing wireframe to display (nonfunctional)
   Goal: Fully visible UI in accordance to client description
+
+____________________________________________________________________________________________________________________________________________________________
+Milestone 2
+
+- Bluetooth branch
+  - Implemented scanning
+  - Switched scanning to be bluetooth low energy
+ 
+- UI branch
+  - Implemented wireframe
+  - Started work on basic whitelist
+ 
+- General
+  - Refactored to legacy to better utilize public projects
+
+____________________________________________________________________________________________________________________________________________________________
+Milestone 3
+
+- UI branch
+  - Implemented malluable whitelist
+  - Added debug buttons
+
+- Bluetooth branch
+  - Implemented whitelist into scanning
+  - Refined the scanning process
+  - Removed classic bluetooth
+
+- General
+  - Implemented a way to define, store, and view device objects across the plugin
+  - Refactored code to simplify processes and remove dead code

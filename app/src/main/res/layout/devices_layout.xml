@@ -27,20 +27,34 @@
                     android:id="@+id/headerColumn"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp">
+                    android:background="@drawable/glossy_header"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp">
 
                     <TextView
                         android:id="@+id/nameHeaderText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="NAME" />
+                        android:layout_weight="1"
+                        android:text="NAME"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:padding="4dp" />
 
                     <TextView
                         android:id="@+id/macAddrHeaderText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="MAC" />
+                        android:layout_weight="1"
+                        android:text="MAC"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:padding="4dp"
+                        android:layout_marginEnd="8dp" />/>
                 </TableRow>
             </TableLayout>
         </ScrollView>
