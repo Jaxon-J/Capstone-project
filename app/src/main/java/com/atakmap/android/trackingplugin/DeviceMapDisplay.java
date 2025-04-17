@@ -6,7 +6,6 @@ import com.atakmap.android.drawing.mapItems.DrawingCircle;
 import com.atakmap.android.maps.MapGroup;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.PointMapItem;
-import com.atakmap.android.maps.RootMapGroup;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -36,7 +35,7 @@ public class DeviceMapDisplay {
 
     /// Devices need to be refreshed in a scan region, otherwise it will be removed after a specified timeout period.
     public static void addOrRefreshDevice(DeviceInfo deviceInfo) {
-        if (!checkIsStarted()) return;
+        if (!checkIsInitialized()) return;
 
         // grab time at the moment this function is called.
         long currentTime = Calendar.getInstance().getTimeInMillis();
@@ -104,7 +103,7 @@ public class DeviceMapDisplay {
 
     /// Shows device circle on the map if it has been detected. Otherwise does nothing.
     public static void show(String macAddress) {
-        if (!checkIsStarted()) return;
+        if (!checkIsInitialized()) return;
 
         DrawingCircle circle = foundDevices.get(macAddress);
         if (circle != null)
@@ -115,7 +114,7 @@ public class DeviceMapDisplay {
     }
 
     public static void hide(String macAddress) {
-        checkIsStarted();
+        if (!checkIsInitialized()) return;
 
         DrawingCircle circle = foundDevices.get(macAddress);
         if (circle != null)
@@ -148,7 +147,7 @@ public class DeviceMapDisplay {
         return circle;
     }
 
-    private static boolean checkIsStarted() {
+    private static boolean checkIsInitialized() {
         if (!initialized) {
             Log.e(TAG, "Must call " + DeviceMapDisplay.class.getSimpleName() + ".initialize() before any method call.");
         }
