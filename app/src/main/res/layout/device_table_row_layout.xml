@@ -21,10 +21,4 @@
         android:layout_height="wrap_content"
         android:text="example" />
 
-    <ImageView
-        android:id="@+id/deleteImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="Button to delete row in table"
-        android:src="@android:drawable/ic_delete" />
 </TableRow>

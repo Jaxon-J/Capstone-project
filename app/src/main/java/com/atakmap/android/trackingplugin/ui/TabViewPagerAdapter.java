@@ -183,10 +183,6 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 .inflate(R.layout.device_table_row_layout, table, false);
         ((TextView) row.getChildAt(0)).setText(devInfo.name);
         ((TextView) row.getChildAt(1)).setText(devInfo.macAddress);
-        row.getChildAt(2).setOnClickListener(v -> {
-            DeviceListManager.removeDevice(associatedList, devInfo.macAddress);
-            table.removeView(row);
-        });
 
         View popupView = LayoutInflater.from(context).inflate(R.layout.device_info_popup, (ViewGroup) holder.itemView, false);
         PopupWindow window = new PopupWindow(popupView, 1100, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -195,9 +191,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         window.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
 
         ((TextView) row.getChildAt(0)).setOnClickListener(v -> {
-
             window.showAtLocation(holder.itemView, Gravity.CENTER, 550, 0);
-
             ((TextView) popupView.findViewById(R.id.deviceNameText)).setText("name: " + devInfo.name);
             ((TextView) popupView.findViewById(R.id.deviceMACText)).setText("mac: " + devInfo.macAddress);
             ((TextView) popupView.findViewById(R.id.firstSeenText)).setText("first seen: " + "[time]" + "\n\tby: " + "[name of device]");
@@ -205,6 +199,12 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         });
 
         popupView.findViewById(R.id.deviceInfoPopupBackButton).setOnClickListener(v -> {
+            window.dismiss();
+        });
+
+        popupView.findViewById(R.id.deleteDeviceButton).setOnClickListener(v -> {
+            DeviceListManager.removeDevice(associatedList, devInfo.macAddress);
+            table.removeView(row);
             window.dismiss();
         });
 
