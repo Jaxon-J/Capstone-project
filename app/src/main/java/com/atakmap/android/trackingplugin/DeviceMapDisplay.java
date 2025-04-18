@@ -35,7 +35,7 @@ public class DeviceMapDisplay {
 
     /// Devices need to be refreshed in a scan region, otherwise it will be removed after a specified timeout period.
     public static void addOrRefreshDevice(DeviceInfo deviceInfo) {
-        if (!checkIsInitialized()) return;
+        if (logOnUninitialized()) return;
 
         // grab time at the moment this function is called.
         long currentTime = Calendar.getInstance().getTimeInMillis();
@@ -103,7 +103,7 @@ public class DeviceMapDisplay {
 
     /// Shows device circle on the map if it has been detected. Otherwise does nothing.
     public static void show(String macAddress) {
-        if (!checkIsInitialized()) return;
+        if (logOnUninitialized()) return;
 
         DrawingCircle circle = foundDevices.get(macAddress);
         if (circle != null)
@@ -114,7 +114,7 @@ public class DeviceMapDisplay {
     }
 
     public static void hide(String macAddress) {
-        if (!checkIsInitialized()) return;
+        if (logOnUninitialized()) return;
 
         DrawingCircle circle = foundDevices.get(macAddress);
         if (circle != null)
@@ -147,10 +147,11 @@ public class DeviceMapDisplay {
         return circle;
     }
 
-    private static boolean checkIsInitialized() {
-        if (!initialized) {
+    private static boolean logOnUninitialized() {
+        boolean unInit = !initialized;
+        if (unInit) {
             Log.e(TAG, "Must call " + DeviceMapDisplay.class.getSimpleName() + ".initialize() before any method call.");
         }
-        return initialized;
+        return unInit;
     }
 }
