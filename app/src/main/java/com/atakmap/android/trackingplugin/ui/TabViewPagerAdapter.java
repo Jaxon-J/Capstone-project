@@ -79,7 +79,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                     List<DeviceInfo> devices = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
 
                     for (DeviceInfo devInfo : devices)
-                        addDeviceToTable(devTable, devInfo, DeviceListManager.ListType.WHITELIST);
+                        addDeviceToTable(devTable, devInfo, DeviceListManager.ListType.WHITELIST, holder);
 
                     // set up "add devices" pop-up
                     // TODO: add_device_popup more sense as a FrameView not a ScrollView, maybe?
@@ -95,7 +95,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
 
                         DeviceInfo newDevice = new DeviceInfo(deviceName, deviceMac, -1, false);
                         DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, newDevice);
-                        addDeviceToTable(devTable, newDevice, DeviceListManager.ListType.WHITELIST);
+                        addDeviceToTable(devTable, newDevice, DeviceListManager.ListType.WHITELIST, holder);
 
                         window.dismiss();
                     });
@@ -185,15 +185,41 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         }
     }
 
-    private void addDeviceToTable(TableLayout table, DeviceInfo devInfo, DeviceListManager.ListType associatedList) {
+    private void addDeviceToTable(TableLayout table, DeviceInfo devInfo, DeviceListManager.ListType associatedList, TabViewHolder holder) {
         TableRow row = (TableRow) LayoutInflater.from(context)
                 .inflate(R.layout.device_table_row_layout, table, false);
-        ((TextView) row.getChildAt(0)).setText(devInfo.name);
-        ((TextView) row.getChildAt(1)).setText(devInfo.macAddress);
-        row.getChildAt(2).setOnClickListener(v -> {
+        ((TextView) row.getChildAt(1)).setText(devInfo.name);
+        ((TextView) row.getChildAt(2)).setText(devInfo.macAddress);
+
+        View popupView = LayoutInflater.from(context).inflate(R.layout.device_info_popup, (ViewGroup) holder.itemView, false);
+        PopupWindow window = new PopupWindow(popupView, 1100, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        window.setFocusable(true);
+        window.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+
+        ((TextView) row.getChildAt(1)).setOnClickListener(v -> {
+            window.showAtLocation(holder.itemView, Gravity.CENTER, 550, 0);
+            ((TextView) popupView.findViewById(R.id.deviceNameText)).setText("name: " + devInfo.name);
+            ((TextView) popupView.findViewById(R.id.deviceMACText)).setText("mac: " + devInfo.macAddress);
+            ((TextView) popupView.findViewById(R.id.firstSeenText)).setText("first seen: " + "[time]" + "\n\tby: " + "[name of device]");
+            ((TextView) popupView.findViewById(R.id.lastSeenText)).setText("last seen: " + "[time]" + "\n\tby: " + "[name of device]");
+        });
+
+        popupView.findViewById(R.id.deviceInfoPopupBackButton).setOnClickListener(v -> {
+            window.dismiss();
+        });
+
+        popupView.findViewById(R.id.deleteDeviceButton).setOnClickListener(v -> {
             DeviceListManager.removeDevice(associatedList, devInfo.macAddress);
             table.removeView(row);
+            window.dismiss();
         });
+
+
+
+
+
+
         table.addView(row);
     }
 }
