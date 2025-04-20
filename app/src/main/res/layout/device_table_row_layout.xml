@@ -8,23 +8,33 @@
     android:paddingBottom="2dp"
     android:visibility="visible">
 
-    <CheckBox
-        android:id="@+id/visibilityCheckbox"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp" />
+    <ToggleButton
+        android:id="@+id/deviceRowVisibilityCheckbox"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_weight="1"
+        android:background="?android:attr/listChoiceIndicatorMultiple"
+        android:scaleX="0.65"
+        android:scaleY="1" />
 
     <TextView
-        android:id="@+id/deviceNameText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/deviceInfoPaneNameText"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="8"
+        android:gravity="center_vertical"
         android:text="[example name]"
+        android:textSize="18sp"
         tools:ignore="HardcodedText" />
 
     <TextView
-        android:id="@+id/macAddressText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="[example mac]"
+        android:id="@+id/deviceRowMacAddressText"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="8"
+        android:gravity="center_vertical"
+        android:text="[example name]"
+        android:textSize="18sp"
         tools:ignore="HardcodedText" />
 
 </TableRow>

@@ -16,10 +16,12 @@ import android.widget.PopupWindow;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
@@ -27,16 +29,26 @@ import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceListManager;
 import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.plugin.R;
+import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
+
+import gov.tak.api.ui.IHostUIService;
+import gov.tak.api.ui.Pane;
+import gov.tak.api.ui.PaneBuilder;
 
 public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapter.TabViewHolder> {
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
+    private final IHostUIService uiService;
     private boolean devicesTabInitialized = false; // TODO: maybe make this a list for all tabs if there's other necessary init logic.
 
-    public TabViewPagerAdapter(Context context) {
+    public TabViewPagerAdapter(Context context, IHostUIService uiService) {
         this.context = context;
+        this.uiService = uiService;
     }
 
     @NonNull
@@ -72,14 +84,14 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                         });
                 break;
             }
-            case Constants.DEVICES_TABNAME: {
+            case Constants.WHITELIST_TABNAME: {
                 if (!devicesTabInitialized) {
                     // set up device table
-                    TableLayout devTable = holder.itemView.findViewById(R.id.devicesTableLayout);
+                    TableLayout devTable = holder.itemView.findViewById(R.id.whitelistDeviceTable);
                     List<DeviceInfo> devices = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
 
                     for (DeviceInfo devInfo : devices)
-                        addDeviceToTable(devTable, devInfo, DeviceListManager.ListType.WHITELIST, holder);
+                        addDeviceToTable(devTable, devInfo);
 
                     // set up "add devices" pop-up
                     // TODO: add_device_popup more sense as a FrameView not a ScrollView, maybe?
@@ -89,23 +101,23 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                     window.setFocusable(true);
                     window.setBackgroundDrawable(new ColorDrawable(Color.WHITE)); // white background, maybe not.
 
-                    popupView.findViewById(R.id.EnterButton).setOnClickListener(v -> {
-                        String deviceName = ((EditText) popupView.findViewById(R.id.deviceIDEntry)).getText().toString();
-                        String deviceMac = ((EditText) popupView.findViewById(R.id.MACEntry)).getText().toString();
+                    popupView.findViewById(R.id.addDeviceEnterButton).setOnClickListener(v -> {
+                        String deviceName = ((EditText) popupView.findViewById(R.id.addDeviceNameTextEntry)).getText().toString();
+                        String deviceMac = ((EditText) popupView.findViewById(R.id.addDeviceMacTextEntry)).getText().toString();
 
                         DeviceInfo newDevice = new DeviceInfo(deviceName, deviceMac, -1, false);
                         DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, newDevice);
-                        addDeviceToTable(devTable, newDevice, DeviceListManager.ListType.WHITELIST, holder);
+                        addDeviceToTable(devTable, newDevice);
 
                         window.dismiss();
                     });
 
-                    popupView.findViewById(R.id.CancelButton).setOnClickListener(v -> window.dismiss());
+                    popupView.findViewById(R.id.addDeviceCancelButton).setOnClickListener(v -> window.dismiss());
 
                     // show pop-up by clicking add devices button.
                     holder.itemView.findViewById(R.id.addDeviceButton).setOnClickListener(v -> {
-                        ((EditText) popupView.findViewById(R.id.deviceIDEntry)).setText("");
-                        ((EditText) popupView.findViewById(R.id.MACEntry)).setText("");
+                        ((EditText) popupView.findViewById(R.id.addDeviceNameTextEntry)).setText("");
+                        ((EditText) popupView.findViewById(R.id.addDeviceMacTextEntry)).setText("");
 
                         window.showAtLocation(holder.itemView, Gravity.CENTER, 0, 0);
                     });
@@ -135,7 +147,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                             b.setText(context.getString(R.string.ble_scan_enabled));
                         });
                 // whitelist enabled button
-                holder.itemView.findViewById(R.id.whitelistCheckBox)
+                holder.itemView.findViewById(R.id.whitelistEnabledCheckBox)
                         .setOnClickListener((View v) ->
                                 AtakBroadcast.getInstance().sendBroadcast(
                                     new Intent(
@@ -185,41 +197,53 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         }
     }
 
-    private void addDeviceToTable(TableLayout table, DeviceInfo devInfo, DeviceListManager.ListType associatedList, TabViewHolder holder) {
+    private void addDeviceToTable(TableLayout table, DeviceInfo devInfo) {
         TableRow row = (TableRow) LayoutInflater.from(context)
                 .inflate(R.layout.device_table_row_layout, table, false);
-        ((TextView) row.getChildAt(1)).setText(devInfo.name);
-        ((TextView) row.getChildAt(2)).setText(devInfo.macAddress);
-
-        View popupView = LayoutInflater.from(context).inflate(R.layout.device_info_popup, (ViewGroup) holder.itemView, false);
-        PopupWindow window = new PopupWindow(popupView, 1100, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        window.setFocusable(true);
-        window.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
-
-        ((TextView) row.getChildAt(1)).setOnClickListener(v -> {
-            window.showAtLocation(holder.itemView, Gravity.CENTER, 550, 0);
-            ((TextView) popupView.findViewById(R.id.deviceNameText)).setText("name: " + devInfo.name);
-            ((TextView) popupView.findViewById(R.id.deviceMACText)).setText("mac: " + devInfo.macAddress);
-            ((TextView) popupView.findViewById(R.id.firstSeenText)).setText("first seen: " + "[time]" + "\n\tby: " + "[name of device]");
-            ((TextView) popupView.findViewById(R.id.lastSeenText)).setText("last seen: " + "[time]" + "\n\tby: " + "[name of device]");
+        ((TextView) row.findViewById(R.id.deviceInfoPaneNameText)).setText(devInfo.name);
+        ((TextView) row.findViewById(R.id.deviceRowMacAddressText)).setText(devInfo.macAddress);
+        ((ToggleButton) row.findViewById(R.id.deviceRowVisibilityCheckbox)).setOnClickListener((View v) -> {
+            if (((ToggleButton) v).isChecked())
+                DeviceMapDisplay.show(devInfo.macAddress);
+            else
+                DeviceMapDisplay.hide(devInfo.macAddress);
         });
-
-        popupView.findViewById(R.id.deviceInfoPopupBackButton).setOnClickListener(v -> {
-            window.dismiss();
-        });
-
-        popupView.findViewById(R.id.deleteDeviceButton).setOnClickListener(v -> {
-            DeviceListManager.removeDevice(associatedList, devInfo.macAddress);
-            table.removeView(row);
-            window.dismiss();
-        });
-
-
-
-
-
-
         table.addView(row);
+
+        row.setOnClickListener((View v) -> {
+            Pane devInfoPane = constructDeviceInfoPane(devInfo);
+            uiService.showPane(devInfoPane, null);
+        });
+    }
+
+    private Pane constructDeviceInfoPane(DeviceInfo deviceInfo) {
+        // get view from layout, construct pane with it
+        View deviceInfoView = PluginLayoutInflater.inflate(context, R.layout.device_info_pane);
+        Pane deviceInfoPane = new PaneBuilder(deviceInfoView)
+                .setMetaValue(Pane.RELATIVE_LOCATION, Pane.Location.Default)
+                // pane will take up 50% of screen width in landscape mode
+                .setMetaValue(Pane.PREFERRED_WIDTH_RATIO, 0.5D)
+                // pane will take up 50% of screen height in portrait mode
+                .setMetaValue(Pane.PREFERRED_HEIGHT_RATIO, 0.5D)
+                .build();
+
+        // populate text fields
+        Map<Integer, String> textInfoMap = Map.of(
+                R.id.deviceInfoPaneNameText, deviceInfo.name,
+                R.id.deviceInfoPaneMacText, deviceInfo.macAddress,
+                R.id.deviceInfoPaneFirstSeenText, "NOT IMPLEMENTED",
+                R.id.deviceInfoPaneFirstSeenByText, "NOT IMPLEMENTED",
+                R.id.deviceInfoPaneLastSeenText, new Timestamp(deviceInfo.lastSeenEpochMillis).toString(),
+                R.id.deviceInfoPaneLastSeenByText, "NOT IMPLEMENTED"
+        );
+        for (Map.Entry<Integer, String> entry : textInfoMap.entrySet())
+            ((TextView) deviceInfoView.findViewById(entry.getKey())).setText(entry.getValue());
+
+        // add functionality to buttons
+        deviceInfoView.findViewById(R.id.deviceInfoPaneBackButton).setOnClickListener((View v) -> {
+            uiService.showPane(TrackingPlugin.primaryPane, null);
+        });
+        // TODO: locate / edit / delete buttons
+        return deviceInfoPane;
     }
 }

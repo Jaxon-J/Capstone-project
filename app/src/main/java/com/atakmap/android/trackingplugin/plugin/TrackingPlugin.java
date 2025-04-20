@@ -1,10 +1,14 @@
 
 package com.atakmap.android.trackingplugin.plugin;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -18,6 +22,7 @@ import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import gov.tak.api.commons.graphics.Bitmap;
 import gov.tak.api.plugin.IPlugin;
 import gov.tak.api.plugin.IServiceController;
 import gov.tak.api.ui.IHostUIService;
@@ -41,9 +46,9 @@ public class TrackingPlugin implements IPlugin {
     Context pluginContext;
     IHostUIService uiService;
     ToolbarItem toolbarItem;
-    Pane templatePane;
+    public static Pane primaryPane;
     BluetoothReceiver btReceiver;
-    boolean uiInitialized = false;
+    boolean primaryPaneInitialized = false;
 
     public TrackingPlugin(IServiceController serviceController) {
         this.serviceController = serviceController;
@@ -61,8 +66,8 @@ public class TrackingPlugin implements IPlugin {
                 pluginContext.getString(R.string.app_name),
                 MarshalManager.marshal(
                         ResourcesCompat.getDrawable(pluginContext.getResources(), R.drawable.ic_launcher, null),
-                        android.graphics.drawable.Drawable.class,
-                        gov.tak.api.commons.graphics.Bitmap.class))
+                        Drawable.class,
+                        Bitmap.class))
                 .setListener((ToolbarItem item, MotionEvent event) -> showPane())
                 .build();
     }
@@ -73,6 +78,7 @@ public class TrackingPlugin implements IPlugin {
         uiService.addToolbarItem(toolbarItem);
 
         // initialize what needs to be initialized
+        DeviceListManager.initialize(pluginContext);
         btReceiver = new BluetoothReceiver(pluginContext);
         AtakBroadcast.DocumentedIntentFilter btIntentFilter = new AtakBroadcast.DocumentedIntentFilter();
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
@@ -80,40 +86,27 @@ public class TrackingPlugin implements IPlugin {
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.ENABLE_WHITELIST);
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.DISABLE_WHITELIST);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
-
-        DeviceListManager.initialize(pluginContext);
         DeviceMapDisplay.initialize();
     }
 
     @Override
     public void onStop() {
         // if ui is up, take it down or else the old plugin will stick around.
-        if (templatePane != null && uiService.isPaneVisible(templatePane)) {
-            uiService.closePane(templatePane);
+        if (primaryPane != null && uiService.isPaneVisible(primaryPane)) {
+            uiService.closePane(primaryPane);
         }
         uiService.removeToolbarItem(toolbarItem);
         if (btReceiver != null) {
             AtakBroadcast.getInstance().unregisterReceiver(btReceiver);
             btReceiver = null;
         }
-
         DeviceMapDisplay.destroy();
     }
 
-    private void showPane() {
-        // instantiate the plugin view if necessary
-        if (!uiInitialized)
-            initUi();
-
-        if(!uiService.isPaneVisible(templatePane)) {
-            uiService.showPane(templatePane, null);
-        }
-    }
-
-    private void initUi() {
+    private void setupPrimaryPane() {
         View mainTemplate = PluginLayoutInflater.inflate(pluginContext, R.layout.main_layout, null);
         ViewPager2 pager = mainTemplate.findViewById(R.id.viewPager);
-        pager.setAdapter(new TabViewPagerAdapter(pluginContext));
+        pager.setAdapter(new TabViewPagerAdapter(pluginContext, uiService));
         // set ViewPager2 component height as the maximum height of all tab layouts, so nothing gets cut off.
         pager.post(() -> {
             int height = 0;
@@ -130,7 +123,7 @@ public class TrackingPlugin implements IPlugin {
         });
         TabLayoutMediator mediator = new TabLayoutMediator(mainTemplate.findViewById(R.id.tabLayout), pager, (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
         mediator.attach();
-        templatePane = new PaneBuilder(mainTemplate)
+        primaryPane = new PaneBuilder(mainTemplate)
                 // relative location is set to default; pane will switch location dependent on
                 // current orientation of device screen
                 .setMetaValue(Pane.RELATIVE_LOCATION, Pane.Location.Default)
@@ -140,6 +133,14 @@ public class TrackingPlugin implements IPlugin {
                 .setMetaValue(Pane.PREFERRED_HEIGHT_RATIO, 0.5D)
                 .build();
 
-        uiInitialized = true;
+        primaryPaneInitialized = true;
+    }
+
+    /// Pass NULL to switch to main plugin pane
+    public void showPane() {
+        if (!primaryPaneInitialized)
+            setupPrimaryPane();
+        if (!uiService.isPaneVisible(primaryPane))
+            uiService.showPane(primaryPane, null);
     }
 }

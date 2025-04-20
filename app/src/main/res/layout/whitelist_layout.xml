@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,27 +12,27 @@
         android:layout_height="194dp">
 
         <TableLayout
-            android:id="@+id/devicesTableLayout"
+            android:id="@+id/whitelistDeviceTable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:stretchColumns="0,1">
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp">
 
             <TableRow
-                android:id="@+id/headerColumn"
+                android:id="@+id/headerRow"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/glossy_header"
                 tools:ignore="UselessParent">
 
                 <ImageView
                     android:id="@+id/visibilityHeaderImage"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:contentDescription="Icon for visibility column"
-                    android:scaleType="fitCenter"
-                    app:srcCompat="@android:drawable/ic_menu_view"
-                    tools:ignore="HardcodedText" />
+                    android:src="@android:drawable/ic_menu_view"
+                    tools:ignore="HardcodedText"
+                    tools:srcCompat="@android:drawable/ic_menu_view" />
 
                 <TextView
                     android:id="@+id/nameHeaderText"
@@ -41,10 +41,9 @@
                     android:layout_weight="8"
                     android:gravity="center"
                     android:padding="4dp"
-                    android:text="NAME"
+                    android:text="@string/deviceTableNameHeaderText"
                     android:textSize="16sp"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/macAddrHeaderText"
@@ -53,10 +52,9 @@
                     android:layout_weight="8"
                     android:gravity="center"
                     android:padding="4dp"
-                    android:text="MAC"
+                    android:text="@string/deviceTableMacHeaderText"
                     android:textSize="16sp"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
+                    android:textStyle="bold" />
             </TableRow>
         </TableLayout>
     </ScrollView>
@@ -69,7 +67,6 @@
         android:layout_gravity="center_horizontal"
         android:maxWidth="320dp"
         android:minWidth="275dp"
-        android:text="ADD A DEVICE"
-        tools:ignore="HardcodedText" />
+        android:text="@string/deviceTabAddDeviceButtonText" />
 
-</LinearLayout>
+</android.widget.LinearLayout>

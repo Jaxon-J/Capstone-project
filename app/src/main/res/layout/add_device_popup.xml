@@ -1,59 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@drawable/popup_menu_background"
-    style="@android:style/Widget.DeviceDefault.Light.ScrollView"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginLeft="3dp"
     android:layout_marginRight="3dp"
+    android:background="@drawable/popup_menu_background"
     android:fadeScrollbars="false">
 
 
-    <LinearLayout
+    <android.widget.LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/deviceIDEntry"
+        <android.widget.EditText
+            android:id="@+id/addDeviceNameTextEntry"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:ems="10"
-            android:hint="Enter device ID"
+            android:hint="@string/addDeviceNameEntryHintText"
             android:inputType="text"
             android:textColor="@color/darker_gray" />
 
-        <EditText
-            android:id="@+id/MACEntry"
+        <android.widget.EditText
+            android:id="@+id/addDeviceMacTextEntry"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:ems="10"
-            android:hint="Enter MAC address"
+            android:hint="@string/addDeviceMacEntryHintText"
             android:inputType="text"
             android:textColor="@color/darker_gray" />
 
-        <LinearLayout
+        <android.widget.LinearLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/EnterButton"
+                android:id="@+id/addDeviceEnterButton"
                 style="@style/darkButton"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="ENTER" />
+                android:text="@string/addDeviceEnterButtonText" />
 
             <Button
-                android:id="@+id/CancelButton"
+                android:id="@+id/addDeviceCancelButton"
                 style="@style/darkButton"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="CANCEL" />
-        </LinearLayout>
+                android:text="@string/addDeviceCancelButtonText" />
+        </android.widget.LinearLayout>
 
-    </LinearLayout>
-</ScrollView>
+    </android.widget.LinearLayout>
+</FrameLayout>

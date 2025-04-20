@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/darker_gray"
+    android:padding="8dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/deviceInfoPaneTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/deviceInfoPaneBackButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_revert"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/deviceInfoPaneTitleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Information"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/deviceInfoPaneFindButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:src="@android:drawable/ic_menu_mylocation"
+        app:layout_constraintEnd_toStartOf="@+id/deviceInfoPaneEditButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deviceInfoPaneTopBar" />
+
+    <ImageView
+        android:id="@+id/deviceInfoPaneEditButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:src="@android:drawable/ic_menu_edit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deviceInfoPaneTopBar" />
+
+    <ImageView
+        android:id="@+id/deviceInfoPaneDeleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:src="@android:drawable/ic_menu_delete"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/deviceInfoPaneEditButton"
+        app:layout_constraintTop_toBottomOf="@+id/deviceInfoPaneTopBar" />
+
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:stretchColumns="*"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deviceInfoPaneEditButton">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/deviceInfoPaneNameLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:paddingRight="8dp"
+                android:text="NAME:" />
+
+            <TextView
+                android:id="@+id/deviceInfoPaneNameText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:text="[name]"
+                android:textColor="@color/white" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/deviceInfoPaneMacLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:paddingRight="8dp"
+                android:text="MAC:" />
+
+            <TextView
+                android:id="@+id/deviceInfoPaneMacText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:text="[mac_addr]"
+                android:textColor="@color/white" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/deviceInfoPaneFirstSeenLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:paddingRight="8dp"
+                android:text="FIRST SEEN:" />
+
+            <TextView
+                android:id="@+id/deviceInfoPaneFirstSeenText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:text="[firstseen_timestamp]"
+                android:textColor="@color/white" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/deviceInfoPaneFirstSeenByLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:paddingRight="8dp"
+                android:text="BY:" />
+
+            <TextView
+                android:id="@+id/deviceInfoPaneFirstSeenByText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:text="[firstseen_name]"
+                android:textColor="#FFFFFF" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/deviceInfoPaneLastSeenLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:paddingRight="8dp"
+                android:text="LAST SEEN:" />
+
+            <TextView
+                android:id="@+id/deviceInfoPaneLastSeenText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:text="[lastseen_timestamp]"
+                android:textColor="@color/white" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/deviceInfoPaneLastSeenByLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:paddingRight="8dp"
+                android:text="BY:" />
+
+            <TextView
+                android:id="@+id/deviceInfoPaneLastSeenByText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:text="[lastseen_name]"
+                android:textColor="#FFFFFF" />
+        </TableRow>
+
+    </TableLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

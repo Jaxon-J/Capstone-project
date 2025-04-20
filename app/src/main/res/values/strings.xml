@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- App -->
     <string name="app_name">Tracking Plugin</string>
     <!-- description -->
     <string name="app_desc">This plugin is used to track devices based on their signal emissions. (Bluetooth only for now.)</string>
 
-    <!-- Tracking Tab Strings -->
+    <!-- Tracking Tab -->
     <string name="tracking_start_scan">Start Scan</string>
     <string name="tracking_stop_scan">Stop Scan</string>
-    <!-- Debug Tab Strings -->
+    <!-- Debug Tab -->
     <string name="ble_scan_enabled">Stop BLE Scan</string>
     <string name="ble_scan_disabled">Start BLE Scan</string>
     <string name="classic_scan_enabled">Stop Classic Scan</string>
     <string name="classic_scan_disabled">Start Classic Scan</string>
     <string name="place_circle">Place Circle</string>
     <string name="remove_circle">Remove Circle</string>
+    <!-- Devices Tab -->
+    <string name="deviceTableNameHeaderText">NAME</string>
+    <string name="deviceTableMacHeaderText">MAC</string>
+    <string name="deviceTabAddDeviceButtonText">ADD DEVICE</string>
+    <!-- Add device popup -->
+    <string name="addDeviceEnterButtonText">ENTER</string>
+    <string name="addDeviceCancelButtonText" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="addDeviceMacEntryHintText">MAC Address</string>
+    <string name="addDeviceNameEntryHintText">Name</string>
 </resources>
