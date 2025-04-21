@@ -32,4 +32,8 @@
     <string name="devInfoPaneFirstSeenByLabel">BY:</string>
     <string name="devInfoPaneLastSeenLabel">LAST SEEN:</string>
     <string name="devInfoPaneLastSeenByLabel">BY:</string>
+    <string name="deviceInfoPaneBackButtonDescription">Return button</string>
+    <string name="deviceInfoPaneFindButtonDescription">Locate device on map button</string>
+    <string name="deviceInfoPaneEditButtonDescription">Edit device attributes button</string>
+    <string name="deviceInfoPaneDeleteButtonDescription">Delete device button</string>
 </resources>
