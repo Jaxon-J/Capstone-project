@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="3dp"
+    android:layout_marginRight="3dp"
+    android:fadeScrollbars="false">
+
+
+    <android.widget.EditText
+        android:id="@+id/addDeviceNameTextEntry"
+        android:layout_width="400dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="32dp"
+        android:hint="@string/addDeviceNameEntryHintText"
+        android:inputType="text"
+        android:minWidth="275dp"
+        android:textColor="@color/white"
+        android:textColorHint="#838383"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.widget.EditText
+        android:id="@+id/addDeviceMacTextEntry"
+        android:layout_width="400dp"
+        android:layout_height="48dp"
+        android:hint="@string/addDeviceMacEntryHintText"
+        android:inputType="text"
+        android:minWidth="275dp"
+        android:textColor="@color/white"
+        android:textColorHint="#838383"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/addDeviceNameTextEntry" />
+
+    <Button
+        android:id="@+id/addDevicePaneEnterButton"
+        style="@style/darkButton"
+        android:layout_width="175dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/addDeviceEnterButtonText"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/addDeviceMacTextEntry"
+        app:layout_constraintTop_toBottomOf="@+id/addDeviceMacTextEntry" />
+
+    <Button
+        android:id="@+id/addDevicePaneCancelButton"
+        style="@style/darkButton"
+        android:layout_width="175dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/addDeviceCancelButtonText"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/addDeviceMacTextEntry"
+        app:layout_constraintTop_toBottomOf="@+id/addDeviceMacTextEntry" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

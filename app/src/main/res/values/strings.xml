@@ -24,4 +24,12 @@
     <string name="addDeviceCancelButtonText" tools:ignore="ButtonCase">CANCEL</string>
     <string name="addDeviceMacEntryHintText">MAC Address</string>
     <string name="addDeviceNameEntryHintText">Name</string>
+    <!-- Device Info Pane -->
+    <string name="deviceInfoPaneTitleLabel">Information</string>
+    <string name="devInfoPaneNameLabel">NAME:</string>
+    <string name="devInfoPaneMacLabel">MAC:</string>
+    <string name="devInfoPaneFirstSeenLabel">FIRST SEEN:</string>
+    <string name="devInfoPaneFirstSeenByLabel">BY:</string>
+    <string name="devInfoPaneLastSeenLabel">LAST SEEN:</string>
+    <string name="devInfoPaneLastSeenByLabel">BY:</string>
 </resources>

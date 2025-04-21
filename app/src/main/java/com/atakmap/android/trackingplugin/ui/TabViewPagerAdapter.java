@@ -2,17 +2,13 @@ package com.atakmap.android.trackingplugin.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.PopupWindow;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -32,7 +28,6 @@ import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +39,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
     private final IHostUIService uiService;
-    private boolean devicesTabInitialized = false; // TODO: maybe make this a list for all tabs if there's other necessary init logic.
+    private boolean whitelistTabInitialized = false; // TODO: maybe make this a list for all tabs if there's other necessary init logic.
 
     public TabViewPagerAdapter(Context context, IHostUIService uiService) {
         this.context = context;
@@ -85,7 +80,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 break;
             }
             case Constants.WHITELIST_TABNAME: {
-                if (!devicesTabInitialized) {
+                if (!whitelistTabInitialized) {
                     // set up device table
                     TableLayout devTable = holder.itemView.findViewById(R.id.whitelistDeviceTable);
                     List<DeviceInfo> devices = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
@@ -93,36 +88,43 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                     for (DeviceInfo devInfo : devices)
                         addDeviceToTable(devTable, devInfo);
 
-                    // set up "add devices" pop-up
-                    // TODO: add_device_popup more sense as a FrameView not a ScrollView, maybe?
-                    View popupView = LayoutInflater.from(context).inflate(R.layout.add_device_popup, (ViewGroup) holder.itemView, false);
-                    PopupWindow window = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    // set up "add device" pane
+                    View addDeviceView = PluginLayoutInflater.inflate(context, R.layout.add_device_pane);
+                    Pane addDevicePane = new PaneBuilder(addDeviceView)
+                            .setMetaValue(Pane.RELATIVE_LOCATION, Pane.Location.Default)
+                            // pane will take up 50% of screen width in landscape mode
+                            .setMetaValue(Pane.PREFERRED_WIDTH_RATIO, 0.5D)
+                            // pane will take up 50% of screen height in portrait mode
+                            .setMetaValue(Pane.PREFERRED_HEIGHT_RATIO, 0.5D)
+                            .build();
 
-                    window.setFocusable(true);
-                    window.setBackgroundDrawable(new ColorDrawable(Color.WHITE)); // white background, maybe not.
+                    // set up button that shows add device pane
+                    holder.itemView.findViewById(R.id.addDeviceButton).setOnClickListener(v ->
+                        uiService.showPane(addDevicePane, null));
 
-                    popupView.findViewById(R.id.addDeviceEnterButton).setOnClickListener(v -> {
-                        String deviceName = ((EditText) popupView.findViewById(R.id.addDeviceNameTextEntry)).getText().toString();
-                        String deviceMac = ((EditText) popupView.findViewById(R.id.addDeviceMacTextEntry)).getText().toString();
+                    // set up enter button on add device pane
+                    addDeviceView.findViewById(R.id.addDevicePaneEnterButton).setOnClickListener(v -> {
+                        String deviceName = ((EditText) addDeviceView.findViewById(R.id.addDeviceNameTextEntry)).getText().toString();
+                        String deviceMac = ((EditText) addDeviceView.findViewById(R.id.addDeviceMacTextEntry)).getText().toString();
 
                         DeviceInfo newDevice = new DeviceInfo(deviceName, deviceMac, -1, false);
                         DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, newDevice);
                         addDeviceToTable(devTable, newDevice);
 
-                        window.dismiss();
+                        uiService.showPane(TrackingPlugin.primaryPane, null);
+                        ((EditText) addDeviceView.findViewById(R.id.addDeviceNameTextEntry)).setText("");
+                        ((EditText) addDeviceView.findViewById(R.id.addDeviceMacTextEntry)).setText("");
                     });
 
-                    popupView.findViewById(R.id.addDeviceCancelButton).setOnClickListener(v -> window.dismiss());
 
-                    // show pop-up by clicking add devices button.
-                    holder.itemView.findViewById(R.id.addDeviceButton).setOnClickListener(v -> {
-                        ((EditText) popupView.findViewById(R.id.addDeviceNameTextEntry)).setText("");
-                        ((EditText) popupView.findViewById(R.id.addDeviceMacTextEntry)).setText("");
-
-                        window.showAtLocation(holder.itemView, Gravity.CENTER, 0, 0);
+                    // set up cancel button on add device pane
+                    addDeviceView.findViewById(R.id.addDevicePaneCancelButton).setOnClickListener(v -> {
+                        uiService.showPane(TrackingPlugin.primaryPane, null);
+                        ((EditText) addDeviceView.findViewById(R.id.addDeviceNameTextEntry)).setText("");
+                        ((EditText) addDeviceView.findViewById(R.id.addDeviceMacTextEntry)).setText("");
                     });
 
-                    devicesTabInitialized = true;
+                    whitelistTabInitialized = true;
                 }
 
             }
@@ -132,7 +134,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
             case Constants.DEBUG_TABNAME: {
                 // ble scan button
                 holder.itemView.findViewById(R.id.bleScanDebugButton)
-                        .setOnClickListener((View v) -> {
+                        .setOnClickListener(v -> {
                             Button b = (Button) v;
                             boolean isEnabled = b.getText()
                                     .equals(context.getString(R.string.ble_scan_enabled));
@@ -148,7 +150,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                         });
                 // whitelist enabled button
                 holder.itemView.findViewById(R.id.whitelistEnabledCheckBox)
-                        .setOnClickListener((View v) ->
+                        .setOnClickListener(v ->
                                 AtakBroadcast.getInstance().sendBroadcast(
                                     new Intent(
                                         ((CheckBox) v).isChecked()
@@ -156,7 +158,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                                             : BluetoothReceiver.ACTIONS.DISABLE_WHITELIST)));
                 // "place circle" button
                 holder.itemView.findViewById(R.id.debugPlaceCircleButton)
-                        .setOnClickListener((View v) -> {
+                        .setOnClickListener(v -> {
                             String macAddrDebug = "DEBUG_CIRCLE";
                             Button b = (Button) v;
                             if (b.getText().equals(context.getString(R.string.place_circle))) {
@@ -202,7 +204,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 .inflate(R.layout.device_table_row_layout, table, false);
         ((TextView) row.findViewById(R.id.deviceInfoPaneNameText)).setText(devInfo.name);
         ((TextView) row.findViewById(R.id.deviceRowMacAddressText)).setText(devInfo.macAddress);
-        ((ToggleButton) row.findViewById(R.id.deviceRowVisibilityCheckbox)).setOnClickListener((View v) -> {
+        row.findViewById(R.id.deviceRowVisibilityCheckbox).setOnClickListener(v -> {
             if (((ToggleButton) v).isChecked())
                 DeviceMapDisplay.show(devInfo.macAddress);
             else
@@ -240,9 +242,8 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
             ((TextView) deviceInfoView.findViewById(entry.getKey())).setText(entry.getValue());
 
         // add functionality to buttons
-        deviceInfoView.findViewById(R.id.deviceInfoPaneBackButton).setOnClickListener((View v) -> {
-            uiService.showPane(TrackingPlugin.primaryPane, null);
-        });
+        deviceInfoView.findViewById(R.id.deviceInfoPaneBackButton).setOnClickListener(v ->
+                uiService.showPane(TrackingPlugin.primaryPane, null));
         // TODO: locate / edit / delete buttons
         return deviceInfoPane;
     }

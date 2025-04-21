@@ -1,14 +1,11 @@
 
 package com.atakmap.android.trackingplugin.plugin;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -20,6 +17,7 @@ import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceListManager;
 import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import gov.tak.api.commons.graphics.Bitmap;
@@ -106,22 +104,15 @@ public class TrackingPlugin implements IPlugin {
     private void setupPrimaryPane() {
         View mainTemplate = PluginLayoutInflater.inflate(pluginContext, R.layout.main_layout, null);
         ViewPager2 pager = mainTemplate.findViewById(R.id.viewPager);
+        TabLayout tabLayout = mainTemplate.findViewById(R.id.tabLayout);
         pager.setAdapter(new TabViewPagerAdapter(pluginContext, uiService));
-        // set ViewPager2 component height as the maximum height of all tab layouts, so nothing gets cut off.
+        // set correct height for the tabs (difference between plugin height and tabs height)
         pager.post(() -> {
-            int height = 0;
-            for (int i = 0; i < Constants.TAB_COUNT; i++) {
-                View view = pager.getChildAt(i);
-                if (view != null) {
-                    view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-                    height = Math.max(height, view.getMeasuredHeight());
-                }
-            }
             ViewGroup.LayoutParams params = pager.getLayoutParams();
-            params.height = height;
+            params.height = mainTemplate.getMeasuredHeight() - tabLayout.getMeasuredHeight();
             pager.setLayoutParams(params);
         });
-        TabLayoutMediator mediator = new TabLayoutMediator(mainTemplate.findViewById(R.id.tabLayout), pager, (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
+        TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager, (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
         mediator.attach();
         primaryPane = new PaneBuilder(mainTemplate)
                 // relative location is set to default; pane will switch location dependent on

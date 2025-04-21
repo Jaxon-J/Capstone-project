@@ -1,33 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <TableLayout
+        android:id="@+id/deviceTableHeaderRowTable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp">
+
+        <TableRow
+            android:id="@+id/deviceTableHeaderRow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:ignore="UselessParent">
+
+            <ImageView
+                android:id="@+id/deviceTableHeaderVisibilityImage"
+                android:layout_width="48dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:contentDescription="Icon for visibility column"
+                android:src="@android:drawable/ic_menu_view"
+                tools:ignore="HardcodedText"
+                tools:srcCompat="@android:drawable/ic_menu_view" />
+
+            <TextView
+                android:id="@+id/deviceTableHeaderNameLabel"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="8"
+                android:gravity="center"
+                android:padding="4dp"
+                android:text="@string/deviceTableNameHeaderText"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/deviceTableHeaderMacAddrLabel"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="8"
+                android:gravity="center"
+                android:padding="4dp"
+                android:text="@string/deviceTableMacHeaderText"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </TableRow>
+    </TableLayout>
+
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="194dp">
+        android:layout_height="194dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp">
 
         <TableLayout
             android:id="@+id/whitelistDeviceTable"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp">
+            android:layout_height="wrap_content">
 
             <TableRow
-                android:id="@+id/headerRow"
+                android:id="@+id/deviceTableDummyHeaderRow"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
                 tools:ignore="UselessParent">
 
                 <ImageView
-                    android:id="@+id/visibilityHeaderImage"
+                    android:id="@+id/deviceTableDummyHeaderVisibilityImage"
                     android:layout_width="48dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="1"
                     android:contentDescription="Icon for visibility column"
                     android:src="@android:drawable/ic_menu_view"
@@ -35,9 +80,9 @@
                     tools:srcCompat="@android:drawable/ic_menu_view" />
 
                 <TextView
-                    android:id="@+id/nameHeaderText"
+                    android:id="@+id/deviceTableDummyHeaderNameLabel"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="8"
                     android:gravity="center"
                     android:padding="4dp"
@@ -46,9 +91,9 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/macAddrHeaderText"
+                    android:id="@+id/deviceTableDummyHeaderMacAddrLabel"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="8"
                     android:gravity="center"
                     android:padding="4dp"
@@ -62,11 +107,10 @@
     <Button
         android:id="@+id/addDeviceButton"
         style="@style/darkButton"
-        android:layout_width="wrap_content"
+        android:layout_width="275dp"
         android:layout_height="48dp"
         android:layout_gravity="center_horizontal"
-        android:maxWidth="320dp"
-        android:minWidth="275dp"
+        android:layout_marginTop="16dp"
         android:text="@string/deviceTabAddDeviceButtonText" />
 
 </android.widget.LinearLayout>

@@ -25,10 +25,10 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/deviceInfoPaneTitleText"
+            android:id="@+id/deviceInfoPaneTitleLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Information"
+            android:text="@string/deviceInfoPaneTitleLabel"
             android:textColor="@color/white"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -84,17 +84,20 @@
                 android:id="@+id/deviceInfoPaneNameLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:paddingRight="8dp"
-                android:text="NAME:" />
+                android:gravity="end|center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="8dp"
+                android:text="@string/devInfoPaneNameLabel" />
 
             <TextView
                 android:id="@+id/deviceInfoPaneNameText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp"
                 android:text="[name]"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                tools:ignore="HardcodedText" />
         </TableRow>
 
         <TableRow
@@ -105,17 +108,20 @@
                 android:id="@+id/deviceInfoPaneMacLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:paddingRight="8dp"
-                android:text="MAC:" />
+                android:gravity="end|center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="8dp"
+                android:text="@string/devInfoPaneMacLabel" />
 
             <TextView
                 android:id="@+id/deviceInfoPaneMacText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp"
                 android:text="[mac_addr]"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                tools:ignore="HardcodedText" />
         </TableRow>
 
         <TableRow
@@ -126,17 +132,20 @@
                 android:id="@+id/deviceInfoPaneFirstSeenLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:paddingRight="8dp"
-                android:text="FIRST SEEN:" />
+                android:gravity="end|center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="8dp"
+                android:text="@string/devInfoPaneFirstSeenLabel" />
 
             <TextView
                 android:id="@+id/deviceInfoPaneFirstSeenText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp"
                 android:text="[firstseen_timestamp]"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                tools:ignore="HardcodedText" />
         </TableRow>
 
         <TableRow
@@ -147,17 +156,20 @@
                 android:id="@+id/deviceInfoPaneFirstSeenByLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:paddingRight="8dp"
-                android:text="BY:" />
+                android:gravity="end|center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="8dp"
+                android:text="@string/devInfoPaneFirstSeenByLabel" />
 
             <TextView
                 android:id="@+id/deviceInfoPaneFirstSeenByText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp"
                 android:text="[firstseen_name]"
-                android:textColor="#FFFFFF" />
+                android:textColor="#FFFFFF"
+                tools:ignore="HardcodedText" />
         </TableRow>
 
         <TableRow
@@ -168,17 +180,20 @@
                 android:id="@+id/deviceInfoPaneLastSeenLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:paddingRight="8dp"
-                android:text="LAST SEEN:" />
+                android:gravity="end|center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="8dp"
+                android:text="@string/devInfoPaneLastSeenLabel" />
 
             <TextView
                 android:id="@+id/deviceInfoPaneLastSeenText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp"
                 android:text="[lastseen_timestamp]"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                tools:ignore="HardcodedText" />
         </TableRow>
 
         <TableRow
@@ -189,17 +204,20 @@
                 android:id="@+id/deviceInfoPaneLastSeenByLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:paddingRight="8dp"
-                android:text="BY:" />
+                android:gravity="end|center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="8dp"
+                android:text="@string/devInfoPaneLastSeenByLabel" />
 
             <TextView
                 android:id="@+id/deviceInfoPaneLastSeenByText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp"
                 android:text="[lastseen_name]"
-                android:textColor="#FFFFFF" />
+                android:textColor="#FFFFFF"
+                tools:ignore="HardcodedText" />
         </TableRow>
 
     </TableLayout>
