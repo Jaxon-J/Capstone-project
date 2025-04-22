@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.atakmap.android.maps.MapView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,7 +20,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 // TODO: could maybe rename this to DeviceStorageManger to avoid confusion. If whitelist is the only persistent data,
@@ -29,7 +30,6 @@ public class DeviceListManager {
     private static final String TAG = Constants.createTag(DeviceListManager.class);
     private static final Map<ListType, Map<String, DeviceInfo>> listTypeMap = new HashMap<>();
     private static final Map<ListType, Set<DeviceListChangeListener>> listeners = new HashMap<>();
-    private static Context pluginContext;
 
     // Private constructor to prevent instantiation
     private DeviceListManager() {
@@ -40,19 +40,11 @@ public class DeviceListManager {
         getListeners(listType).add(listener);
     }
 
-    /**
-     * Initialize the DeviceListManager with the plugin context.
-     */
-    public static void initialize(Context pluginContext) {
-        if (DeviceListManager.pluginContext == null) {
-            DeviceListManager.pluginContext = pluginContext;
-        }
-    }
-
     public static List<DeviceInfo> getDeviceList(ListType listType) {
         return Collections.unmodifiableList(new ArrayList<>(getDeviceMap(listType).values()));
     }
 
+    /// FOR WHITELIST: USE {@link com.atakmap.android.trackingplugin.ui.WhitelistTabHelper#addOrUpdateWhitelist(DeviceInfo)}
     /// If device with existing MAC Address exists within list, entry will be overwritten.
     /// Mock devices can be added, but will not be stored.
     public static void addOrUpdateDevice(ListType listType, DeviceInfo deviceInfo) {
@@ -85,12 +77,6 @@ public class DeviceListManager {
         saveDevicesToPreferences(listType, empty);
     }
 
-
-    private static void checkInitialization() {
-        if (pluginContext == null)
-            throw new IllegalStateException("DeviceListManager is not initialized. Call DeviceListManager.initialize(context) first.");
-    }
-
     private static Set<DeviceListChangeListener> getListeners(ListType listType) {
         if (listeners.containsKey(listType)) return listeners.get(listType);
         Set<DeviceListChangeListener> listListeners = new HashSet<>();
@@ -100,10 +86,10 @@ public class DeviceListManager {
 
     // Methods that access SharedPreferences file.
     private static Map<String, DeviceInfo> getDeviceMap(ListType listType) {
-        checkInitialization();
         if (listTypeMap.containsKey(listType)) return listTypeMap.get(listType);
 
-        SharedPreferences prefs = pluginContext.getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
+        // list hasn't been loaded yet, get it from SharedPreferences file (need main app context for SharedPrefs)
+        SharedPreferences prefs = MapView.getMapView().getContext().getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
         String json = prefs.getString(DEVICE_LIST_ENTRY_NAME, "{}");
         Map<String, DeviceInfo> list = parseDevicesFromJson(json);
         if (list == null) throw new RuntimeException("JSON parsing failed. Gonna bail here.");
@@ -113,8 +99,7 @@ public class DeviceListManager {
 
 
     private static void saveDevicesToPreferences(ListType listType, Map<String, DeviceInfo> devices) {
-        checkInitialization();
-        SharedPreferences listPref = pluginContext.getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
+        SharedPreferences listPref = MapView.getMapView().getContext().getSharedPreferences(listType.sharedPrefsFilename, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = listPref.edit();
         String json = convertDeviceMapToJson(devices);
         if (json == null) throw new RuntimeException("JSON serializing failed. Bailing here.");

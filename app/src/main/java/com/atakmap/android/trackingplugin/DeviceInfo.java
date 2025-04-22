@@ -14,7 +14,8 @@ public class DeviceInfo {
     public final String name;
     public final String macAddress;
     public int rssi;
-    public long lastSeenEpochMillis;
+    public long seenTimeEpochMillis = -1;
+    public String observerDeviceName = null;
     public final boolean mock;
 
     public DeviceInfo(String name, String macAddr, int rssi, boolean mock) {
@@ -22,7 +23,11 @@ public class DeviceInfo {
         this.macAddress = macAddr;
         this.rssi = rssi;
         this.mock = mock;
-        this.lastSeenEpochMillis = Calendar.getInstance().getTimeInMillis();
+    }
+
+    public void setLastSeen(String name) {
+        seenTimeEpochMillis = Calendar.getInstance().getTimeInMillis();
+        observerDeviceName = name;
     }
 
     /// SHOULD ONLY BE CALLED FOR JSON SERIALIZATION.

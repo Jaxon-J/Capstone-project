@@ -14,7 +14,6 @@ import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
-import com.atakmap.android.trackingplugin.DeviceListManager;
 import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
@@ -76,7 +75,6 @@ public class TrackingPlugin implements IPlugin {
         uiService.addToolbarItem(toolbarItem);
 
         // initialize what needs to be initialized
-        DeviceListManager.initialize(pluginContext);
         btReceiver = new BluetoothReceiver(pluginContext);
         AtakBroadcast.DocumentedIntentFilter btIntentFilter = new AtakBroadcast.DocumentedIntentFilter();
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);

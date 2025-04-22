@@ -101,27 +101,18 @@ public class DeviceMapDisplay {
         initialized = false;
     }
 
-    /// Shows device circle on the map if it has been detected. Otherwise does nothing.
-    public static void show(String macAddress) {
+    /// Sets visibility of the circle associated with the MAC address. If it doesn't exist on the map, it will set
+    /// the default visibility once it appears.
+    public static void setVisibility(String macAddress, boolean visible) {
         if (logOnUninitialized()) return;
 
         DrawingCircle circle = foundDevices.get(macAddress);
         if (circle != null)
-            circle.setVisible(true);
+            circle.setVisible(visible);
         if (visibilityMap == null)
             visibilityMap = new HashMap<>();
-        visibilityMap.put(macAddress, true);
-    }
+        visibilityMap.put(macAddress, visible);
 
-    public static void hide(String macAddress) {
-        if (logOnUninitialized()) return;
-
-        DrawingCircle circle = foundDevices.get(macAddress);
-        if (circle != null)
-            circle.setVisible(false);
-        if (visibilityMap == null)
-            visibilityMap = new HashMap<>();
-        visibilityMap.put(macAddress, false);
     }
 
     private static DrawingCircle createCircle(DeviceInfo deviceInfo) {

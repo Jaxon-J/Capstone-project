@@ -19,7 +19,10 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.atakmap.android.maps.MapView;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 // NOTE: phones send BLE advertising signals that are picked up from previously paired phones,
@@ -42,7 +45,11 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
             String name = device.getName();
             if (name == null) name = Constants.DEFAULT_DEVICE_NAME; // name probably irrelevant here, unless we wish to display what we picked up.
             Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", name.substring(0, 12), macAddr));
-            DeviceMapDisplay.addOrRefreshDevice(new DeviceInfo(name, macAddr, result.getRssi(), false));
+            DeviceInfo deviceInfo = new DeviceInfo(name, macAddr, result.getRssi(), false);
+            deviceInfo.setLastSeen(MapView.getDeviceUid());
+            deviceInfo.seenTimeEpochMillis = Calendar.getInstance().getTimeInMillis();
+            deviceInfo.observerDeviceName = MapView.getDeviceUid();
+            DeviceMapDisplay.addOrRefreshDevice(deviceInfo);
         }
 
         @Override
