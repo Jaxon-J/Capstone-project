@@ -26,9 +26,9 @@ import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 
-import org.w3c.dom.Text;
-
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 import gov.tak.api.ui.IHostUIService;
 import gov.tak.api.ui.Pane;
@@ -36,7 +36,6 @@ import gov.tak.api.ui.PaneBuilder;
 
 public class WhitelistTable implements DeviceListManager.DeviceListChangeListener {
     private static final String TAG = Constants.createTag(WhitelistTable.class);
-    private static final String MAC_ADDRESS_REGEX = "(?:[A-F0-9]{2}:){5}[A-F0-9]{2}";
     private final int ROW_DEVICE_UUID_KEY = 538462893; // DO NOT CHANGE KEYS UNLESS YOU ARE ABSOLUTELY SURE.
     private final int FIELD_INVALID_MESSAGE_KEY = 238472837;
     private final IHostUIService uiService;
@@ -47,6 +46,10 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
         this.tabView = tabView;
         DeviceListManager.addChangeListener(DeviceListManager.ListType.WHITELIST, this);
     }
+
+
+    // table setup
+
 
     public void setup() {
         setTableHeight();
@@ -102,15 +105,19 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
             );
 
             // add row click behavior
-//            row.setOnClickListener((View v) -> {
-//                uiService.closePane(TrackingPlugin.primaryPane);
-//                // open up the info panel
-//            });
+            row.setOnClickListener((View v) -> {
+                uiService.closePane(TrackingPlugin.primaryPane);
+                uiService.showPane(constructDeviceInfoPane((String) row.getTag(ROW_DEVICE_UUID_KEY)), null);
+            });
 
             // row is prepared, add it to the table
             tableLayout.addView(row);
         }
     }
+
+
+    // add device pane
+
 
     private Pane constructAddDevicePane(@Nullable String uuid) {
         // TODO: this may be incredibly inefficient. not a big deal in the grand scheme, but if it becomes an issue,
@@ -138,7 +145,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
 
         nameEditText.setText(defaultName);
         macAddressEditText.setText(defaultMacAddress);
-        setAddDeviceFieldValidators(nameEditText, macAddressEditText);
+        setAddDeviceFieldValidators(defaultName, defaultMacAddress, nameEditText, macAddressEditText);
 
         // enter button
         addDeviceView.findViewById(R.id.addDevicePaneEnterButton).setOnClickListener(v -> {
@@ -148,7 +155,11 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
             boolean caughtInvalid = false;
 
             // this is an expensive check (no duplicate mac addresses), doing it here to avoid checking on every keystroke.
-            if (DeviceListManager.getUuid(DeviceListManager.ListType.WHITELIST, enteredMacAddress) != null) {
+            // not in whitelist yet -> check against all duplicates
+            // is in whitelist already -> allow same mac address, but no others that exist
+            DeviceInfo currentDeviceInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, uuid);
+            if ((currentDeviceInfo == null || !enteredMacAddress.equals(currentDeviceInfo.macAddress))
+                    && DeviceListManager.getUuid(DeviceListManager.ListType.WHITELIST, enteredMacAddress) != null) {
                 macAddressEditText.setTag(FIELD_INVALID_MESSAGE_KEY, "MAC address is already in use.");
             }
 
@@ -171,7 +182,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
             // validate mac address field
 
 
-            DeviceInfo enteredDeviceInfo = new DeviceInfo(enteredName, enteredMacAddress, -1, false, null);
+            DeviceInfo enteredDeviceInfo = new DeviceInfo(enteredName, enteredMacAddress, -1, false, uuid);
             // this triggers the onDeviceListChange, no need to manually refresh the table here.
             DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, enteredDeviceInfo);
             uiService.closePane(addDevicePane);
@@ -187,10 +198,8 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
         return addDevicePane;
     }
 
-    public void setAddDeviceFieldValidators(EditText nameField, EditText macAddressField) {
-        nameField.setTag(FIELD_INVALID_MESSAGE_KEY, "Please enter a name.");
-        macAddressField.setTag(FIELD_INVALID_MESSAGE_KEY, "Please enter valid MAC address.");
-        nameField.addTextChangedListener(new TextWatcher() {
+    public void setAddDeviceFieldValidators(String defaultName, String defaultMacAddress, EditText nameField, EditText macAddressField) {
+        TextWatcher nameFieldValidator = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -208,28 +217,91 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
 
             @Override
             public void afterTextChanged(Editable s) {}
-        });
-        macAddressField.addTextChangedListener(new TextWatcher() {
+        };
+        TextWatcher macAddressFieldValidator = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // mac address needs to be an actual mac address
-                if (s.length() == 0 || !s.toString().toUpperCase().matches(MAC_ADDRESS_REGEX)) {
+                if (s.length() == 0 || !s.toString().toUpperCase().matches("(?:[A-F0-9]{2}:){5}[A-F0-9]{2}")) {
                     macAddressField.setTag(FIELD_INVALID_MESSAGE_KEY, "Please enter valid MAC address.");
                 } else {
                     macAddressField.setBackgroundTintList(ColorStateList.valueOf(
                             ContextCompat.getColor(tabView.getContext(), R.color.white)));
-                    nameField.setTag(FIELD_INVALID_MESSAGE_KEY, null);
+                    macAddressField.setTag(FIELD_INVALID_MESSAGE_KEY, null);
                 }
 
             }
 
             @Override
             public void afterTextChanged(Editable s) {}
-        });
+        };
+        nameField.addTextChangedListener(nameFieldValidator);
+        macAddressField.addTextChangedListener(macAddressFieldValidator);
+        nameFieldValidator.onTextChanged(defaultName, 0, 0, 0);
+        macAddressFieldValidator.onTextChanged(defaultMacAddress, 0, 0, 0);
     }
+
+
+    // device info pane
+
+
+    private Pane constructDeviceInfoPane(String uuid) {
+        final Pair<View, Pane> deviceInfoViewPane = getViewPane(R.layout.device_info_pane);
+        final View deviceInfoView = deviceInfoViewPane.first;
+        final Pane deviceInfoPane = deviceInfoViewPane.second;
+        final DeviceInfo deviceInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, uuid);
+        if (deviceInfo == null) {
+            Log.w(TAG, "Tried to bring up a device information pane for a device that does not exist. UUID: " + uuid);
+            return null;
+        }
+        final Map<Integer, String> textInfoMap = Map.of(
+                R.id.deviceInfoPaneNameText, deviceInfo.name,
+                R.id.deviceInfoPaneMacText, deviceInfo.macAddress,
+                R.id.deviceInfoPaneFirstSeenText, "NOT IMPLEMENTED",
+                R.id.deviceInfoPaneFirstSeenByText, "NOT IMPLEMENTED",
+                R.id.deviceInfoPaneLastSeenText, deviceInfo.seenTimeEpochMillis == -1 ? "-" : new Timestamp(deviceInfo.seenTimeEpochMillis).toString(),
+                R.id.deviceInfoPaneLastSeenByText, deviceInfo.observerDeviceName == null ? "-" : deviceInfo.observerDeviceName
+        );
+        for (Map.Entry<Integer, String> entry : textInfoMap.entrySet())
+            ((TextView) deviceInfoView.findViewById(entry.getKey())).setText(entry.getValue());
+
+        // back button
+        deviceInfoView.findViewById(R.id.deviceInfoPaneBackButton).setOnClickListener(v -> {
+            uiService.closePane(deviceInfoPane);
+            uiService.showPane(TrackingPlugin.primaryPane, null);
+        });
+
+        // locate button
+        deviceInfoView.findViewById(R.id.deviceInfoPaneLocateButton).setOnClickListener(v -> {
+            // TODO: get this working
+        });
+
+        // delete button
+        deviceInfoView.findViewById(R.id.deviceInfoPaneDeleteButton).setOnClickListener(v -> {
+            // TODO: FIXME: "Are you sure?" prompt is essential.
+            // (triggers table refresh, see onDeviceListChange)
+            DeviceListManager.removeDevice(DeviceListManager.ListType.WHITELIST, deviceInfo.uuid);
+
+            // back to main plugin pane
+            uiService.closePane(deviceInfoPane);
+            uiService.showPane(TrackingPlugin.primaryPane, null);
+        });
+
+        // edit button
+        deviceInfoView.findViewById(R.id.deviceInfoPaneEditButton).setOnClickListener(v -> {
+            uiService.closePane(deviceInfoPane);
+            uiService.showPane(constructAddDevicePane(deviceInfo.uuid), null);
+        });
+
+        return deviceInfoPane;
+    }
+
+
+    // util/misc methods
+
 
     @Override
     public void onDeviceListChange(List<DeviceInfo> devices) {

@@ -67,6 +67,8 @@ public class DeviceListManager {
     /// Returns device in the device list. If it isn't in the list, it will return null.
     @Nullable
     public static DeviceInfo getDevice(ListType listType, String uuid) {
+        if (uuid == null)
+            uuid = ""; // avoid NullPointerException
         return getDeviceMap(listType).get(uuid);
     }
 
@@ -75,6 +77,7 @@ public class DeviceListManager {
     }
 
     public static String getUuid(ListType listType, String macAddress) {
+        if (macAddress == null) return null;
         for (Map.Entry<String, DeviceInfo> entry : getDeviceMap(listType).entrySet()) {
             DeviceInfo deviceInfo = entry.getValue();
             if (macAddress.equals(deviceInfo.macAddress))
