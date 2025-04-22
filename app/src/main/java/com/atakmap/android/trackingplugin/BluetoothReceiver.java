@@ -41,15 +41,12 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
-            String macAddr = device.getAddress();
-            String name = device.getName();
-            if (name == null) name = Constants.DEFAULT_DEVICE_NAME; // name probably irrelevant here, unless we wish to display what we picked up.
-            Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", name.substring(0, 12), macAddr));
-            String deviceUuid = null;
-            DeviceInfo existingInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, macAddr);
-            if (existingInfo != null) deviceUuid = existingInfo.uuid;
-            DeviceInfo deviceInfo = new DeviceInfo(name, macAddr, result.getRssi(), false, deviceUuid);
-            deviceInfo.setLastSeen(MapView.getDeviceUid());
+            String scannedMacAddress = device.getAddress();
+            String existingUuid = DeviceListManager.getUuid(DeviceListManager.ListType.WHITELIST, scannedMacAddress);
+            DeviceInfo deviceInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, existingUuid);
+            assert deviceInfo != null; // we are getting exclusively whitelist entries. if it's null something's wrong.
+            Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", device.getName().substring(0, 12), scannedMacAddress));
+
             deviceInfo.seenTimeEpochMillis = Calendar.getInstance().getTimeInMillis();
             deviceInfo.observerDeviceName = MapView.getDeviceUid();
             DeviceMapDisplay.addOrRefreshDevice(deviceInfo);

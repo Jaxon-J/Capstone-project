@@ -1,7 +1,6 @@
 package com.atakmap.android.trackingplugin;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -33,10 +32,6 @@ public class DeviceInfo {
         }
     }
 
-    public void setLastSeen(String name) {
-        seenTimeEpochMillis = Calendar.getInstance().getTimeInMillis();
-        observerDeviceName = name;
-    }
 
     /// SHOULD ONLY BE CALLED FOR JSON SERIALIZATION.
     public DeviceInfo() {
