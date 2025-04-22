@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.DeviceListManager;
 import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.plugin.R;
 
@@ -66,8 +67,10 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
             }
             case Constants.WHITELIST_TABNAME: {
                 if (!whitelistTabInitialized) {
-                    WhitelistTabHelper helper = new WhitelistTabHelper(uiService, holder.itemView);
-                    helper.setup();
+                    WhitelistTable whitelistTable = new WhitelistTable(uiService, holder.itemView);
+                    whitelistTable.setup();
+//                    WhitelistTabHelper helper = new WhitelistTabHelper(uiService, holder.itemView);
+//                    helper.setup();
 
                     whitelistTabInitialized = true;
                 }
@@ -114,6 +117,9 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                                 b.setText(R.string.place_circle);
                             }
                         });
+                // clear whitelist button
+                holder.itemView.findViewById(R.id.debugClearWhitelistButton)
+                        .setOnClickListener(v -> DeviceListManager.clearList(DeviceListManager.ListType.WHITELIST));
                 break;
             }
             default: {

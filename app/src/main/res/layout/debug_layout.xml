@@ -1,98 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:theme="@style/ATAKCompatTheme">
 
-    <android.widget.LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+    <TextView
+        android:id="@+id/debugBluetoothLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Bluetooth Scanning"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="HardcodedText" />
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:paddingTop="15dp"
-            android:paddingBottom="15dp"
-            android:text="Bluetooth Scanning"
-            android:textSize="24sp"
-            tools:ignore="HardcodedText" />
+    <Button
+        android:id="@+id/bleScanDebugButton"
+        style="@style/darkButton"
+        android:layout_width="125dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/ble_scan_disabled"
+        app:layout_constraintEnd_toStartOf="@+id/whitelistEnabledCheckBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/debugBluetoothLabel" />
 
-        <android.widget.LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp">
+    <CheckBox
+        android:id="@+id/whitelistEnabledCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_weight="2"
+        android:checked="true"
+        android:text="Enable Whitelist"
+        app:layout_constraintBottom_toBottomOf="@+id/bleScanDebugButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/bleScanDebugButton"
+        app:layout_constraintTop_toTopOf="@+id/bleScanDebugButton"
+        tools:ignore="HardcodedText" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
+    <TextView
+        android:id="@+id/debugMapLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Map interaction"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bleScanDebugButton"
+        tools:ignore="HardcodedText" />
 
-            <Button
-                android:id="@+id/bleScanDebugButton"
-                style="@style/darkButton"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="5"
-                android:text="@string/ble_scan_disabled" />
+    <Button
+        android:id="@+id/debugPlaceCircleButton"
+        style="@style/darkButton"
+        android:layout_width="125dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:text="@string/place_circle"
+        app:layout_constraintEnd_toEndOf="@+id/debugMapLabel"
+        app:layout_constraintStart_toStartOf="@+id/debugMapLabel"
+        app:layout_constraintTop_toBottomOf="@+id/debugMapLabel" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
+    <TextView
+        android:id="@+id/debugWhitelistLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Whitelist"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toTopOf="@+id/debugMapLabel" />
 
-            <CheckBox
-                android:id="@+id/whitelistEnabledCheckBox"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="2"
-                android:checked="true"
-                android:text="Enable Whitelist"
-                tools:ignore="HardcodedText" />
+    <Button
+        android:id="@+id/debugClearWhitelistButton"
+        style="@style/darkButton"
+        android:layout_width="125dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:text="Clear Whitelist"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toBottomOf="@+id/debugWhitelistLabel" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 
-        </android.widget.LinearLayout>
-
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:paddingTop="40dp"
-            android:paddingBottom="15dp"
-            android:text="Map interaction"
-            android:textSize="24sp"
-            tools:ignore="HardcodedText" />
-
-        <android.widget.LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/debugPlaceCircleButton"
-                style="@style/darkButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="@string/place_circle" />
-
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
-        </android.widget.LinearLayout>
-    </android.widget.LinearLayout>
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

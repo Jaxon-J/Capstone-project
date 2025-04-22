@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,8 +11,11 @@
         android:id="@+id/deviceTableHeaderRowTable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TableRow
             android:id="@+id/deviceTableHeaderRow"
@@ -54,10 +58,15 @@
     </TableLayout>
 
     <ScrollView
+        android:id="@+id/whitelistTableScrollContainer"
         android:layout_width="match_parent"
-        android:layout_height="194dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
+        android:layout_height="200dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deviceTableHeaderRowTable">
 
         <TableLayout
             android:id="@+id/whitelistDeviceTable"
@@ -109,8 +118,12 @@
         style="@style/darkButton"
         android:layout_width="275dp"
         android:layout_height="48dp"
-        android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
-        android:text="@string/deviceTabAddDeviceButtonText" />
+        android:layout_marginBottom="8dp"
+        android:text="@string/deviceTabAddDeviceButtonText"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/whitelistTableScrollContainer" />
 
-</android.widget.LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

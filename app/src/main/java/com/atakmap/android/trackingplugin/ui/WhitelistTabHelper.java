@@ -12,6 +12,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.atak.plugins.impl.PluginLayoutInflater;
@@ -30,6 +31,8 @@ import gov.tak.api.ui.Pane;
 import gov.tak.api.ui.PaneBuilder;
 
 // TODO: maybe rename this once it comes together
+// TODO: look into re-architecting this into listener patterns.
+@Deprecated
 public class WhitelistTabHelper {
     private final Context context;
     private final IHostUIService uiService;
@@ -52,27 +55,11 @@ public class WhitelistTabHelper {
         // get the objects we need to
 
         // when add device button is clicked, reset the view to default (no text, no colors, etc)
-        addDeviceButton.setOnClickListener(v ->
-            uiService.showPane(constructAddDevicePane("", "", TrackingPlugin.primaryPane),
-                    null)
-        );
-    }
-
-    public void addOrUpdateWhitelist(DeviceInfo deviceInfo) {
-        // whether or not it exists already, we need to update the data.
-        DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, deviceInfo);
-        // go through all rows (skipping dummy row, start at i=1) to see if mac addr already exists.
-        for (int i = 1; i < tableLayout.getChildCount(); i++) {
-            final TableRow existingRow = (TableRow) tableLayout.getChildAt(i);
-            final String existingMac = ((TextView) existingRow.findViewById(R.id.deviceRowMacAddressText)).getText().toString();
-            if (deviceInfo.macAddress.equals(existingMac)) {
-                // does exist, update the row and return
-                ((TextView) existingRow.findViewById(R.id.deviceRowNameText)).setText(deviceInfo.name);
-                return;
-            }
-        }
-        // device doesn't exist in the table. add it to both table and whitelist.
-        addRowToTable(deviceInfo);
+        addDeviceButton.setOnClickListener(v -> {
+            uiService.closePane(TrackingPlugin.primaryPane);
+            uiService.showPane(constructAddDevicePane("", "", TrackingPlugin.primaryPane, null),
+                    null);
+        });
     }
 
     private void addRowToTable(DeviceInfo deviceInfo) {
@@ -89,57 +76,81 @@ public class WhitelistTabHelper {
         );
 
         // add row click behavior
-        row.setOnClickListener((View v) ->
-            uiService.showPane(constructDeviceInfoPane(deviceInfo), null));
+        row.setOnClickListener((View v) -> {
+            uiService.closePane(TrackingPlugin.primaryPane);
+            uiService.showPane(constructDeviceInfoPane(deviceInfo, row), null);
+        });
 
         // row is prepared, add it to the table
         tableLayout.addView(row);
     }
 
-    private Pane constructAddDevicePane(String name, String macAddress, Pane returnPane) {
+    private Pane constructAddDevicePane(String defaultName, String defaultMacAddress, Pane returnPane, @Nullable TableRow deviceRow) {
         // get all the objects we need for behavior.
         final Pair<View, Pane> addDeviceViewPane = getViewPane(R.layout.add_device_pane);
         final View addDeviceView = addDeviceViewPane.first;
+        final Pane addDevicePane = addDeviceViewPane.second;
         final EditText nameEditText = addDeviceView.findViewById(R.id.addDeviceNameTextEntry);
         final EditText macEditText = addDeviceView.findViewById(R.id.addDeviceMacTextEntry);
 
         // set default text to be shown.
-        nameEditText.setText(name);
-        macEditText.setText(macAddress);
+        nameEditText.setText(defaultName);
+        macEditText.setText(defaultMacAddress);
 
         // enter button click
         addDeviceView.findViewById(R.id.addDevicePaneEnterButton).setOnClickListener(v -> {
             String deviceName = nameEditText.getText().toString();
-            String deviceMac = macEditText.getText().toString();
+            String deviceMac = macEditText.getText().toString().toUpperCase();
 
-            // check if both fields are populated
-            if (!deviceName.isEmpty() && !deviceMac.isEmpty()) {
+            boolean valid = true;
+            // check if mac address is good
+            if (deviceMac.isEmpty() || !deviceMac.matches("(?:[A-F0-9]{2}:){5}[A-F0-9]{2}")) {
+                // FIXME: this turns *black* for some reason. figure out why and fix.
+                macEditText.setBackgroundTintList(ColorStateList.valueOf(
+                        ContextCompat.getColor(context, R.color.empty_string_error)));
+                valid = false;
+            }
+            // check if name is empty
+            if (deviceName.isEmpty()) {
+                // twas empty, turn it red
+                nameEditText.setBackgroundTintList(ColorStateList.valueOf(
+                        ContextCompat.getColor(context, R.color.empty_string_error)));
+                valid = false;
+            }
+            // none of the checks tripped, that means it's valid, add stuff.
+            if (valid) {
                 // they were, add/update table and return to main plugin pane
-                addOrUpdateWhitelist(new DeviceInfo(deviceName, deviceMac, -1, false));
+                DeviceInfo existingEntry = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, deviceMac);
+                String deviceUuid = null;
+                if (existingEntry != null) deviceUuid = existingEntry.uuid;
+                DeviceInfo deviceInfo = new DeviceInfo(deviceName, deviceMac, -1, false, deviceUuid);
+                DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, deviceInfo);
+                if (deviceRow == null) {
+                    // if row wasn't passed in, add a new one
+                    addRowToTable(deviceInfo);
+                } else {
+                    // row was passed in, update that
+                    ((TextView) deviceRow.findViewById(R.id.deviceRowNameText)).setText(defaultName);
+                    ((TextView) deviceRow.findViewById(R.id.deviceRowMacAddressText)).setText(defaultMacAddress);
+                }
+                uiService.closePane(addDevicePane);
                 uiService.showPane(returnPane, null);
-            } else {
-                // check which field wasn't populated, turn it red, don't move on
-                if (deviceName.isEmpty()) {
-                    nameEditText.setBackgroundTintList(ColorStateList.valueOf(
-                            ContextCompat.getColor(context, R.color.empty_string_error)));
-                }
-                if (deviceMac.isEmpty()) {
-                    macEditText.setBackgroundTintList(ColorStateList.valueOf(
-                            ContextCompat.getColor(context, R.color.empty_string_error)));
-                }
             }
         });
 
         // cancel button click, just return to main plugin pane
-        addDeviceView.findViewById(R.id.addDevicePaneCancelButton).setOnClickListener(v ->
-                uiService.showPane(returnPane, null));
+        addDeviceView.findViewById(R.id.addDevicePaneCancelButton).setOnClickListener(v -> {
+            uiService.closePane(addDevicePane);
+            uiService.showPane(returnPane, null);
+        });
 
-        return addDeviceViewPane.second;
+        return addDevicePane;
     }
 
-    private Pane constructDeviceInfoPane(DeviceInfo deviceInfo) {
+    private Pane constructDeviceInfoPane(DeviceInfo deviceInfo, TableRow row) {
         Pair<View, Pane> devInfoViewPane = getViewPane(R.layout.device_info_pane);
         final View deviceInfoView = devInfoViewPane.first;
+        final Pane deviceInfoPane = devInfoViewPane.second;
 
         // populate text fields
         // TODO: get firstSeen stats from a leger where we store device scan hits.
@@ -155,8 +166,10 @@ public class WhitelistTabHelper {
             ((TextView) deviceInfoView.findViewById(entry.getKey())).setText(entry.getValue());
 
         // back button takes us back to main plugin pane
-        deviceInfoView.findViewById(R.id.deviceInfoPaneBackButton).setOnClickListener(v ->
-                uiService.showPane(TrackingPlugin.primaryPane, null));
+        deviceInfoView.findViewById(R.id.deviceInfoPaneBackButton).setOnClickListener(v -> {
+            uiService.closePane(deviceInfoPane);
+            uiService.showPane(TrackingPlugin.primaryPane, null);
+        });
 
         // locate button
         deviceInfoView.findViewById(R.id.deviceInfoPaneLocateButton).setOnClickListener(v -> {
@@ -170,22 +183,18 @@ public class WhitelistTabHelper {
             DeviceListManager.removeDevice(DeviceListManager.ListType.WHITELIST, deviceInfo.macAddress);
 
             // remove table row associated with device
-            for (int i = 1; i < tableLayout.getChildCount(); i++) {
-                TableRow row = (TableRow) tableLayout.getChildAt(i);
-                String rowMacAddress = ((TextView) row.findViewById(R.id.deviceRowMacAddressText)).getText().toString();
-                if (deviceInfo.macAddress.equals(rowMacAddress)) {
-                    tableLayout.removeViewAt(i);
-                    break;
-                }
-            }
+            tableLayout.removeView(row);
+
             // back to main plugin pane
+            uiService.closePane(deviceInfoPane);
             uiService.showPane(TrackingPlugin.primaryPane, null);
         });
 
         // edit button
-        final Pane deviceInfoPane = devInfoViewPane.second;
-        deviceInfoView.findViewById(R.id.deviceInfoPaneEditButton).setOnClickListener(v ->
-            uiService.showPane(constructAddDevicePane(deviceInfo.name, deviceInfo.macAddress, deviceInfoPane), null));
+        deviceInfoView.findViewById(R.id.deviceInfoPaneEditButton).setOnClickListener(v -> {
+            uiService.closePane(deviceInfoPane);
+            uiService.showPane(constructAddDevicePane(deviceInfo.name, deviceInfo.macAddress, deviceInfoPane, row), null);
+        });
         return deviceInfoPane;
     }
 

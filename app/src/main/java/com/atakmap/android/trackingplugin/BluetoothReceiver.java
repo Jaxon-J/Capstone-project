@@ -45,7 +45,10 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
             String name = device.getName();
             if (name == null) name = Constants.DEFAULT_DEVICE_NAME; // name probably irrelevant here, unless we wish to display what we picked up.
             Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", name.substring(0, 12), macAddr));
-            DeviceInfo deviceInfo = new DeviceInfo(name, macAddr, result.getRssi(), false);
+            String deviceUuid = null;
+            DeviceInfo existingInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, macAddr);
+            if (existingInfo != null) deviceUuid = existingInfo.uuid;
+            DeviceInfo deviceInfo = new DeviceInfo(name, macAddr, result.getRssi(), false, deviceUuid);
             deviceInfo.setLastSeen(MapView.getDeviceUid());
             deviceInfo.seenTimeEpochMillis = Calendar.getInstance().getTimeInMillis();
             deviceInfo.observerDeviceName = MapView.getDeviceUid();

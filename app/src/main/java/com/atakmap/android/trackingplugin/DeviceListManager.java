@@ -44,30 +44,43 @@ public class DeviceListManager {
         return Collections.unmodifiableList(new ArrayList<>(getDeviceMap(listType).values()));
     }
 
-    /// FOR WHITELIST: USE {@link com.atakmap.android.trackingplugin.ui.WhitelistTabHelper#addOrUpdateWhitelist(DeviceInfo)}
     /// If device with existing MAC Address exists within list, entry will be overwritten.
     /// Mock devices can be added, but will not be stored.
     public static void addOrUpdateDevice(ListType listType, DeviceInfo deviceInfo) {
         Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
-        deviceList.put(deviceInfo.macAddress, deviceInfo);
+        deviceList.put(deviceInfo.uuid, deviceInfo);
         if (!deviceInfo.mock)
             saveDevicesToPreferences(listType, deviceList);
     }
 
-    public static void removeDevice(ListType listType, String macAddress) {
+    public static void removeDevice(ListType listType, String uuid) {
         Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
-        if (!deviceList.containsKey(macAddress)) return;
-        deviceList.remove(macAddress);
+        if (!deviceList.containsKey(uuid)) return;
+        deviceList.remove(uuid);
         saveDevicesToPreferences(listType, deviceList);
     }
 
-    public static boolean containsDevice(ListType listType, String macAddress) {
-        return getDeviceMap(listType).containsKey(macAddress);
+    public static boolean containsDevice(ListType listType, String uuid) {
+        return getDeviceMap(listType).containsKey(uuid);
     }
 
+    /// Returns device in the device list. If it isn't in the list, it will return null.
     @Nullable
-    public static DeviceInfo getDevice(ListType listType, String macAddress) {
-        return getDeviceMap(listType).get(macAddress);
+    public static DeviceInfo getDevice(ListType listType, String uuid) {
+        return getDeviceMap(listType).get(uuid);
+    }
+
+    public static Set<String> getUuids(ListType listType) {
+        return getDeviceMap(listType).keySet();
+    }
+
+    public static String getUuid(ListType listType, String macAddress) {
+        for (Map.Entry<String, DeviceInfo> entry : getDeviceMap(listType).entrySet()) {
+            DeviceInfo deviceInfo = entry.getValue();
+            if (macAddress.equals(deviceInfo.macAddress))
+                return entry.getKey();
+        }
+        return null;
     }
 
     public static void clearList(ListType listType) {
@@ -127,15 +140,15 @@ public class DeviceListManager {
         }
         Map<String, DeviceInfo> devMap = new HashMap<>();
         for (Iterator<String> it = baseJson.keys(); it.hasNext(); ) {
-            String macAddr = it.next();
+            String devUuid = it.next();
 
             JSONObject devJsonEntry;
             try {
-                devJsonEntry = baseJson.getJSONObject(macAddr);
+                devJsonEntry = baseJson.getJSONObject(devUuid);
             } catch (JSONException e) {
                 // error message is an assumption on the only way I could see this could be reached.
-                String errStr = "Tried to get JSON object associated with mac address %s. Got something else instead.\nJSON: %s";
-                Log.e(TAG, String.format(errStr, macAddr, json));
+                String errStr = "Tried to get JSON object associated with UUID %s. Got something else instead.\nJSON: %s";
+                Log.e(TAG, String.format(errStr, devUuid, json));
                 return null;
             }
 
@@ -163,7 +176,7 @@ public class DeviceListManager {
                     return null;
                 }
             }
-            devMap.put(macAddr, devInfo);
+            devMap.put(devUuid, devInfo);
         }
         return devMap;
     }
