@@ -69,8 +69,6 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 if (!whitelistTabInitialized) {
                     WhitelistTable whitelistTable = new WhitelistTable(uiService, holder.itemView);
                     whitelistTable.setup();
-//                    WhitelistTabHelper helper = new WhitelistTabHelper(uiService, holder.itemView);
-//                    helper.setup();
 
                     whitelistTabInitialized = true;
                 }

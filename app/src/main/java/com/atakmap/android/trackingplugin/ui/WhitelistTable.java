@@ -186,7 +186,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
             // this triggers the onDeviceListChange, no need to manually refresh the table here.
             DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, enteredDeviceInfo);
             uiService.closePane(addDevicePane);
-            // UPDATE: showPane could be passed in to go back to where user was previously.
+            // TODO: showPane could be passed in to go back to where user was previously.
             uiService.showPane(TrackingPlugin.primaryPane, null);
         });
 
@@ -307,9 +307,6 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
     public void onDeviceListChange(List<DeviceInfo> devices) {
         // TODO: in the future, see if we can be a bit more granular with updates
         //  right now it's just full purge and repopulate everything.
-        //  see random UPDATE tags to look for ideas on how to do this
-        //  idea: class var "activeDeviceInfoPane" where we can decide on what to do
-        //    when the time comes
         refreshTable();
     }
 
