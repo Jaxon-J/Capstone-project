@@ -11,7 +11,6 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 import com.atakmap.android.trackingplugin.DeviceInfo;
-import com.atakmap.android.trackingplugin.DeviceListManager;
 ///Test to ensure our deviceInfo test functionality is working. This should be a good indicator that this class
 /// has not been broken with any edits.
 public class DeviceInfoTest {
