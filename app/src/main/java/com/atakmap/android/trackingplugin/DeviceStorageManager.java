@@ -49,8 +49,7 @@ public class DeviceStorageManager {
     public static void addOrUpdateDevice(ListType listType, DeviceInfo deviceInfo) {
         Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
         deviceList.put(deviceInfo.uuid, deviceInfo);
-        if (!deviceInfo.mock)
-            saveDevicesToPreferences(listType, deviceList);
+        saveDevicesToPreferences(listType, deviceList);
     }
 
     public static void removeDevice(ListType listType, String uuid) {
@@ -190,6 +189,7 @@ public class DeviceStorageManager {
         for (Map.Entry<String, DeviceInfo> entry : deviceMap.entrySet()) {
             JSONObject devInfoJson = new JSONObject();
             DeviceInfo devInfo = entry.getValue();
+            if (devInfo.mock) continue;
             try {
                 for (Field field : DeviceInfo.class.getFields()) {
                     int modifiers = field.getModifiers();
