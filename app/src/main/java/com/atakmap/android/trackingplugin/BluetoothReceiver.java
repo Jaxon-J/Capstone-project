@@ -49,7 +49,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             if (whitelistEnabled) {
                 assert deviceInfo != null; // we are getting exclusively whitelist entries. if it's null something's wrong.
             } else {
-                deviceInfo = new DeviceInfo(device.getName(), device.getAddress(), result.getRssi(), true, null);
+                deviceInfo = new DeviceInfo(scannedName, scannedMacAddress, result.getRssi(), true, null);
             }
             if (scannedName.length() >= 12)
                 scannedName = scannedName.substring(0, 12);
