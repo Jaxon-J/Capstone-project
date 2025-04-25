@@ -25,14 +25,14 @@ import java.util.Set;
 // TODO: could maybe rename this to DeviceStorageManger to avoid confusion. If whitelist is the only persistent data,
 //  could also just rename to WhitelistHandler and get rid of "list" abstractions i.e. "ListType"
 /// Class that handles persistent data involving lists of devices, primarily constructed for whitelist and sensor list.
-public class DeviceListManager {
+public class DeviceStorageManager {
     private static final String DEVICE_LIST_ENTRY_NAME = "device_list";
-    private static final String TAG = Constants.createTag(DeviceListManager.class);
+    private static final String TAG = Constants.createTag(DeviceStorageManager.class);
     private static final Map<ListType, Map<String, DeviceInfo>> listTypeMap = new HashMap<>();
     private static final Map<ListType, Set<DeviceListChangeListener>> listeners = new HashMap<>();
 
     // Private constructor to prevent instantiation
-    private DeviceListManager() {
+    private DeviceStorageManager() {
         // No instantiation
     }
 
@@ -44,8 +44,8 @@ public class DeviceListManager {
         return Collections.unmodifiableList(new ArrayList<>(getDeviceMap(listType).values()));
     }
 
-    /// If device with existing MAC Address exists within list, entry will be overwritten.
-    /// Mock devices can be added, but will not be stored.
+    /// If DeviceInfo was constructed with UUID as "null", a new entry will be created.
+    /// If UUID was supplied when constructing DeviceInfo, the entry with that UUID will be overwritten.
     public static void addOrUpdateDevice(ListType listType, DeviceInfo deviceInfo) {
         Map<String, DeviceInfo> deviceList = getDeviceMap(listType);
         deviceList.put(deviceInfo.uuid, deviceInfo);
@@ -227,7 +227,7 @@ public class DeviceListManager {
 
     /**
      * Implemented by classes who want to listen to changes on a device list.
-     * All classes who implement this interface must register with DeviceListManager by calling
+     * All classes who implement this interface must register with DeviceStorageManager by calling
      * {@link #addChangeListener(ListType, DeviceListChangeListener)}, passing itself as the listener a.k.a. "this".
      */
     public interface DeviceListChangeListener {

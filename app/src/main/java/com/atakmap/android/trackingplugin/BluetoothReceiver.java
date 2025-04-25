@@ -32,7 +32,7 @@ import java.util.List;
  * BluetoothReceiver handles all the logic between a bluetooth scan and info retrieval from said scans.
  * This is particularly true for Bluetooth LE scans.
  */
-public class BluetoothReceiver extends BroadcastReceiver implements DeviceListManager.DeviceListChangeListener {
+public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorageManager.DeviceListChangeListener {
     private static final String TAG = Constants.createTag(BluetoothReceiver.class);
 
     /// Object that is called via start/stopScan with the Bluetooth LE scanner to hook in functionality upon events that happen when scan is in progress.
@@ -41,11 +41,19 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
+            String scannedName = device.getName();
+            if (scannedName == null) scannedName = "unknown";
             String scannedMacAddress = device.getAddress();
-            String existingUuid = DeviceListManager.getUuid(DeviceListManager.ListType.WHITELIST, scannedMacAddress);
-            DeviceInfo deviceInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, existingUuid);
-            assert deviceInfo != null; // we are getting exclusively whitelist entries. if it's null something's wrong.
-            Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", device.getName().substring(0, 12), scannedMacAddress));
+            String existingUuid = DeviceStorageManager.getUuid(DeviceStorageManager.ListType.WHITELIST, scannedMacAddress);
+            DeviceInfo deviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, existingUuid);
+            if (whitelistEnabled) {
+                assert deviceInfo != null; // we are getting exclusively whitelist entries. if it's null something's wrong.
+            } else {
+                deviceInfo = new DeviceInfo(device.getName(), device.getAddress(), result.getRssi(), true, null);
+            }
+            if (scannedName.length() >= 12)
+                scannedName = scannedName.substring(0, 12);
+            Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", scannedName, scannedMacAddress));
 
             deviceInfo.seenTimeEpochMillis = Calendar.getInstance().getTimeInMillis();
             deviceInfo.observerDeviceName = MapView.getDeviceUid();
@@ -108,8 +116,8 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
             return;
         }
         this.scanner = btAdapter.getBluetoothLeScanner();
-        whitelistCopy = DeviceListManager.getDeviceList(DeviceListManager.ListType.WHITELIST);
-        DeviceListManager.addChangeListener(DeviceListManager.ListType.WHITELIST, this);
+        whitelistCopy = DeviceStorageManager.getDeviceList(DeviceStorageManager.ListType.WHITELIST);
+        DeviceStorageManager.addChangeListener(DeviceStorageManager.ListType.WHITELIST, this);
     }
 
     @SuppressLint("MissingPermission")
@@ -160,12 +168,14 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceListMa
                 whitelistFilters.add(new ScanFilter.Builder().setDeviceAddress(deviceInfo.macAddress).build());
         }
         this.scanner.startScan(whitelistFilters, scanSettings, scanCallback);
+        DeviceMapDisplay.startPolling();
         isScanning = true;
     }
 
     @SuppressLint("MissingPermission")
     private void stopScan() {
         if (!isScanning) return;
+        DeviceMapDisplay.stopPolling();
         this.scanner.stopScan(scanCallback);
         isScanning = false;
     }

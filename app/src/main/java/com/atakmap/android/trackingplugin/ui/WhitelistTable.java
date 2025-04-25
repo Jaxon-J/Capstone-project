@@ -21,7 +21,7 @@ import androidx.core.content.ContextCompat;
 import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
-import com.atakmap.android.trackingplugin.DeviceListManager;
+import com.atakmap.android.trackingplugin.DeviceStorageManager;
 import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
@@ -34,9 +34,9 @@ import gov.tak.api.ui.IHostUIService;
 import gov.tak.api.ui.Pane;
 import gov.tak.api.ui.PaneBuilder;
 
-public class WhitelistTable implements DeviceListManager.DeviceListChangeListener {
+public class WhitelistTable implements DeviceStorageManager.DeviceListChangeListener {
     private static final String TAG = Constants.createTag(WhitelistTable.class);
-    private final int ROW_DEVICE_UUID_KEY = 538462893; // DO NOT CHANGE KEYS UNLESS YOU ARE ABSOLUTELY SURE.
+    private final int ROW_DEVICE_UUID_KEY = 538462893;
     private final int FIELD_INVALID_MESSAGE_KEY = 238472837;
     private final IHostUIService uiService;
     private final View tabView;
@@ -44,7 +44,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
     public WhitelistTable(IHostUIService uiService, View tabView) {
         this.uiService = uiService;
         this.tabView = tabView;
-        DeviceListManager.addChangeListener(DeviceListManager.ListType.WHITELIST, this);
+        DeviceStorageManager.addChangeListener(DeviceStorageManager.ListType.WHITELIST, this);
     }
 
 
@@ -84,10 +84,10 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
         tableLayout.removeAllViews();
 
         // loop through all UUID's in the whitelist
-        for (String uuid : DeviceListManager.getUuids(DeviceListManager.ListType.WHITELIST)) {
+        for (String uuid : DeviceStorageManager.getUuids(DeviceStorageManager.ListType.WHITELIST)) {
             final TableRow row = (TableRow) LayoutInflater.from(tabView.getContext())
                     .inflate(R.layout.device_table_row_layout, tableLayout, false);
-            DeviceInfo deviceInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, uuid);
+            DeviceInfo deviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, uuid);
             if (deviceInfo == null) {
                 Log.w(TAG, "Device must be in whitelist before adding it to the table. Invalid UUID: " + uuid);
                 return;
@@ -101,7 +101,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
 
             // checkbox will set visibility
             row.findViewById(R.id.deviceRowVisibilityCheckbox).setOnClickListener(v ->
-                    DeviceMapDisplay.setVisibility(deviceInfo.macAddress, ((ToggleButton) v).isChecked())
+                    DeviceMapDisplay.setVisibility(deviceInfo.uuid, ((ToggleButton) v).isChecked())
             );
 
             // add row click behavior
@@ -132,9 +132,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
         String defaultName = "";
         String defaultMacAddress = "";
         if (uuid != null) {
-            // TODO: remove this chunk of code and uuid param if a different function is called for the device edit screen
-            //  if this code is re-used for the device edit screen, remove this comment
-            DeviceInfo whitelistEntry = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, uuid);
+            DeviceInfo whitelistEntry = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, uuid);
             if (whitelistEntry == null) {
                 Log.w(TAG, "Tried to bring up Add Device window with UUID that is not in whitelist. UUID: " + uuid);
             } else {
@@ -155,11 +153,11 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
             boolean caughtInvalid = false;
 
             // this is an expensive check (no duplicate mac addresses), doing it here to avoid checking on every keystroke.
-            // not in whitelist yet -> check against all duplicates
-            // is in whitelist already -> allow same mac address, but no others that exist
-            DeviceInfo currentDeviceInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, uuid);
+            // no entry in whitelist (currentDevice info is null) -> check against all existing MAC addresses
+            // is in whitelist already (currentDeviceInfo is NOT null) -> check against all MAC addresses except the one it already has
+            DeviceInfo currentDeviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, uuid);
             if ((currentDeviceInfo == null || !enteredMacAddress.equals(currentDeviceInfo.macAddress))
-                    && DeviceListManager.getUuid(DeviceListManager.ListType.WHITELIST, enteredMacAddress) != null) {
+                    && DeviceStorageManager.getUuid(DeviceStorageManager.ListType.WHITELIST, enteredMacAddress) != null) {
                 macAddressEditText.setTag(FIELD_INVALID_MESSAGE_KEY, "MAC address is already in use.");
             }
 
@@ -184,7 +182,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
 
             DeviceInfo enteredDeviceInfo = new DeviceInfo(enteredName, enteredMacAddress, -1, false, uuid);
             // this triggers the onDeviceListChange, no need to manually refresh the table here.
-            DeviceListManager.addOrUpdateDevice(DeviceListManager.ListType.WHITELIST, enteredDeviceInfo);
+            DeviceStorageManager.addOrUpdateDevice(DeviceStorageManager.ListType.WHITELIST, enteredDeviceInfo);
             uiService.closePane(addDevicePane);
             // TODO: showPane could be passed in to go back to where user was previously.
             uiService.showPane(TrackingPlugin.primaryPane, null);
@@ -252,7 +250,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
         final Pair<View, Pane> deviceInfoViewPane = getViewPane(R.layout.device_info_pane);
         final View deviceInfoView = deviceInfoViewPane.first;
         final Pane deviceInfoPane = deviceInfoViewPane.second;
-        final DeviceInfo deviceInfo = DeviceListManager.getDevice(DeviceListManager.ListType.WHITELIST, uuid);
+        final DeviceInfo deviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, uuid);
         if (deviceInfo == null) {
             Log.w(TAG, "Tried to bring up a device information pane for a device that does not exist. UUID: " + uuid);
             return null;
@@ -283,7 +281,7 @@ public class WhitelistTable implements DeviceListManager.DeviceListChangeListene
         deviceInfoView.findViewById(R.id.deviceInfoPaneDeleteButton).setOnClickListener(v -> {
             // TODO: FIXME: "Are you sure?" prompt is essential.
             // (triggers table refresh, see onDeviceListChange)
-            DeviceListManager.removeDevice(DeviceListManager.ListType.WHITELIST, deviceInfo.uuid);
+            DeviceStorageManager.removeDevice(DeviceStorageManager.ListType.WHITELIST, deviceInfo.uuid);
 
             // back to main plugin pane
             uiService.closePane(deviceInfoPane);
@@ -329,6 +327,6 @@ set up functionality of table view on setup()
 every time addDevicePane is shown, it is passed a Uuid that tags what device needs to be changed.
 
 every time deviceInfoPane is shown, it is passed a Uuid that tags what device information needs to be grabbed.
-fresh from DeviceListManager every time.
+fresh from DeviceStorageManager every time.
 
  */

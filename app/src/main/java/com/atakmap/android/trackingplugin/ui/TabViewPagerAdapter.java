@@ -15,7 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
-import com.atakmap.android.trackingplugin.DeviceListManager;
+import com.atakmap.android.trackingplugin.DeviceInfo;
+import com.atakmap.android.trackingplugin.DeviceStorageManager;
 import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.plugin.R;
 
@@ -105,19 +106,20 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 // "place circle" button
                 holder.itemView.findViewById(R.id.debugPlaceCircleButton)
                         .setOnClickListener(v -> {
-                            String macAddrDebug = "DEBUG_CIRCLE";
+                            DeviceInfo mockDeviceInfo = new DeviceInfo("DEBUG_DEVICE", "DEBUG_MAC", -1, true, "DEBUG_CIRCLE");
                             Button b = (Button) v;
                             if (b.getText().equals(context.getString(R.string.place_circle))) {
-                                DeviceMapDisplay.setVisibility(macAddrDebug, true);
+                                DeviceMapDisplay.addOrRefreshDevice(mockDeviceInfo);
+                                DeviceMapDisplay.setVisibility(mockDeviceInfo.uuid, true);
                                 b.setText(R.string.remove_circle);
                             } else {
-                                DeviceMapDisplay.setVisibility(macAddrDebug, false);
+                                DeviceMapDisplay.setVisibility(mockDeviceInfo.uuid, false);
                                 b.setText(R.string.place_circle);
                             }
                         });
                 // clear whitelist button
                 holder.itemView.findViewById(R.id.debugClearWhitelistButton)
-                        .setOnClickListener(v -> DeviceListManager.clearList(DeviceListManager.ListType.WHITELIST));
+                        .setOnClickListener(v -> DeviceStorageManager.clearList(DeviceStorageManager.ListType.WHITELIST));
                 break;
             }
             default: {
