@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /// Class that stores information about a device.
 /// Note that only "public final String" fields will be stored persistently if passed to
-/// {@link DeviceListManager#addOrUpdateDevice(DeviceListManager.ListType, DeviceInfo)}
+/// {@link DeviceStorageManager#addOrUpdateDevice(DeviceStorageManager.ListType, DeviceInfo)}
 public class DeviceInfo {
     public final String uuid;
     public final String name;
@@ -20,9 +20,9 @@ public class DeviceInfo {
     public final boolean mock;
     private final static Random rand = new Random();
 
-    public DeviceInfo(String name, String macAddr, int rssi, boolean mock, String uuid) {
+    public DeviceInfo(String name, String macAddress, int rssi, boolean mock, String uuid) {
         this.name = name;
-        this.macAddress = macAddr;
+        this.macAddress = macAddress;
         this.rssi = rssi;
         this.mock = mock;
         if (uuid == null) {
@@ -38,7 +38,7 @@ public class DeviceInfo {
         this(null, null, -1, false, null);
     }
 
-    public static List<DeviceInfo> getMockDevices(int numberOfDevices, DeviceListManager.ListType associatedList) {
+    public static List<DeviceInfo> getMockDevices(int numberOfDevices, DeviceStorageManager.ListType associatedList) {
         List<DeviceInfo> mockDeviceList = new ArrayList<>();
         for (int i = 0; i < numberOfDevices; i++) {
             String macAddr;
@@ -50,7 +50,7 @@ public class DeviceInfo {
                 }
                 macAddr = macBuilder.toString();
             // test data and real data should have mutually exclusive mac addresses.
-            } while (DeviceListManager.getDevice(associatedList, macAddr) != null);
+            } while (DeviceStorageManager.getDevice(associatedList, macAddr) != null);
             mockDeviceList.add(new DeviceInfo("mock" + i, macAddr, (rand.nextInt(20) + 1) * 5, true, null));
         }
         return mockDeviceList;
