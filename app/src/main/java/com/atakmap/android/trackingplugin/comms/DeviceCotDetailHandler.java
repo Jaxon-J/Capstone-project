@@ -38,6 +38,7 @@ public class DeviceCotDetailHandler extends CotDetailHandler {
                     int rssi = Integer.parseInt(child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi));
                     attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi, rssi);
                     mapItem.setMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName, attrSet);
+                    Log.d(TAG, String.format("RECEIVED DEVICE PACKET:\n\tNAME: %s\n\tMAC: %s\n\tRSSI: %d", name, macAddress, rssi));
                     return CommsMapComponent.ImportResult.SUCCESS;
                 }
             }
