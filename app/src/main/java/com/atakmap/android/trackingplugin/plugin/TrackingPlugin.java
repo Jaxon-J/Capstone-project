@@ -11,10 +11,11 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.atak.plugins.impl.PluginContextProvider;
 import com.atak.plugins.impl.PluginLayoutInflater;
+import com.atakmap.android.cot.detail.CotDetailManager;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
-import com.atakmap.android.trackingplugin.DeviceMapDisplay;
+import com.atakmap.android.trackingplugin.comms.DeviceCotDetailHandler;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -45,6 +46,7 @@ public class TrackingPlugin implements IPlugin {
     ToolbarItem toolbarItem;
     public static Pane primaryPane;
     BluetoothReceiver btReceiver;
+    DeviceCotDetailHandler deviceCotDetailHandler;
     boolean primaryPaneInitialized = false;
 
     public TrackingPlugin(IServiceController serviceController) {
@@ -71,6 +73,8 @@ public class TrackingPlugin implements IPlugin {
 
     @Override
     public void onStart() {
+        deviceCotDetailHandler = new DeviceCotDetailHandler();
+        CotDetailManager.getInstance().registerHandler(deviceCotDetailHandler);
         // the plugin is starting, add the button to the toolbar
         uiService.addToolbarItem(toolbarItem);
 
@@ -82,7 +86,6 @@ public class TrackingPlugin implements IPlugin {
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.ENABLE_WHITELIST);
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.DISABLE_WHITELIST);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
-        DeviceMapDisplay.initialize();
     }
 
     @Override
@@ -96,7 +99,7 @@ public class TrackingPlugin implements IPlugin {
             AtakBroadcast.getInstance().unregisterReceiver(btReceiver);
             btReceiver = null;
         }
-        DeviceMapDisplay.destroy();
+        CotDetailManager.getInstance().unregisterHandler(deviceCotDetailHandler);
     }
 
     private void setupPrimaryPane() {

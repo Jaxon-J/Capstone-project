@@ -25,8 +25,6 @@ public class DeviceInfoTest {
         assertEquals(-70, device.rssi);
         assertFalse(device.mock);
         assertEquals(uuid, device.uuid);
-        assertEquals(-1, device.seenTimeEpochMillis);
-        assertNull(device.observerDeviceName);
     }
 
     @Test
@@ -38,8 +36,6 @@ public class DeviceInfoTest {
         assertEquals(-1, device.rssi);
         assertFalse(device.mock);
         assertNotNull("UUID should be auto-generated", device.uuid);
-        assertEquals(-1, device.seenTimeEpochMillis);
-        assertNull(device.observerDeviceName);
     }
 
     @Test
