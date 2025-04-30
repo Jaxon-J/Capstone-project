@@ -30,14 +30,18 @@ public class DeviceCotDetailHandler extends CotDetailHandler {
         for (CotDetail child : rootDetail.getChildren()) {
             switch (child.getElementName()) {
                 case TrackingCotEventTypes.DEVICE_FOUND.eltName: {
-                    AttributeSet attrSet = new AttributeSet();
                     String name = child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name);
-                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name, name);
                     String macAddress = child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress);
-                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress, macAddress);
                     int rssi = Integer.parseInt(child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi));
+
+                    AttributeSet attrSet = new AttributeSet();
+                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name, name);
+                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress, macAddress);
                     attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi, rssi);
+
                     mapItem.setMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName, attrSet);
+                    mapItem.setClickPoint(cotEvent.getGeoPoint());
+
                     Log.d(TAG, String.format("RECEIVED DEVICE PACKET:\n\tNAME: %s\n\tMAC: %s\n\tRSSI: %d", name, macAddress, rssi));
                     return CommsMapComponent.ImportResult.SUCCESS;
                 }
