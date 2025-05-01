@@ -56,6 +56,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
                 deviceInfo = new DeviceInfo(scannedName, scannedMacAddress, result.getRssi(), true, null);
             }
             Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", scannedName, scannedMacAddress));
+            DeviceMapDisplay.addOrRefreshDevice(deviceInfo);
             // DeviceCotEventDispatcher.sendDeviceFound(deviceInfo);
         }
 
@@ -165,12 +166,14 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         // this should be okay for the most part, but might get finicky if something gets interrupted and the flag is left in a desync'd state.
         if (isScanning) return;
         this.scanner.startScan(null, scanSettings, scanCallback);
+        DeviceMapDisplay.startPolling();
         isScanning = true;
     }
 
     @SuppressLint("MissingPermission")
     private void stopScan() {
         if (!isScanning) return;
+        DeviceMapDisplay.stopPolling();
         this.scanner.stopScan(scanCallback);
         isScanning = false;
     }
