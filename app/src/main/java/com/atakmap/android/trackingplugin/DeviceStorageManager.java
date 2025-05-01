@@ -187,9 +187,9 @@ public class DeviceStorageManager {
     private static String convertDeviceMapToJson(Map<String, DeviceInfo> deviceMap) {
         JSONObject baseJson = new JSONObject();
         for (Map.Entry<String, DeviceInfo> entry : deviceMap.entrySet()) {
-            JSONObject devInfoJson = new JSONObject();
             DeviceInfo devInfo = entry.getValue();
-            if (devInfo.mock) continue;
+            if (devInfo.mock) continue; // ignore mock devices
+            JSONObject devInfoJson = new JSONObject();
             try {
                 for (Field field : DeviceInfo.class.getFields()) {
                     int modifiers = field.getModifiers();

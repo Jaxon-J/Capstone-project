@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
@@ -19,11 +18,10 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.atakmap.android.maps.MapView;
-
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 // NOTE: phones send BLE advertising signals that are picked up from previously paired phones,
 //  even when unpaired. Only discontinues after Bluetooth gets reset on advertising device.
@@ -41,23 +39,24 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
+            String scannedMacAddress = device.getAddress();
+            if (!whitelistMacAddresses.contains(scannedMacAddress))
+                return;
             String scannedName = device.getName();
             if (scannedName == null) scannedName = "unknown";
-            String scannedMacAddress = device.getAddress();
+            else if (scannedName.length() >= 12)
+                scannedName = scannedName.substring(0, 12);
+
             String existingUuid = DeviceStorageManager.getUuid(DeviceStorageManager.ListType.WHITELIST, scannedMacAddress);
             DeviceInfo deviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, existingUuid);
             if (whitelistEnabled) {
                 assert deviceInfo != null; // we are getting exclusively whitelist entries. if it's null something's wrong.
+                deviceInfo = new DeviceInfo(deviceInfo, result.getRssi());
             } else {
                 deviceInfo = new DeviceInfo(scannedName, scannedMacAddress, result.getRssi(), true, null);
             }
-            if (scannedName.length() >= 12)
-                scannedName = scannedName.substring(0, 12);
             Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", scannedName, scannedMacAddress));
-
-            deviceInfo.seenTimeEpochMillis = Calendar.getInstance().getTimeInMillis();
-            deviceInfo.observerDeviceName = MapView.getDeviceUid();
-            DeviceMapDisplay.addOrRefreshDevice(deviceInfo);
+            // DeviceCotEventDispatcher.sendDeviceFound(deviceInfo);
         }
 
         @Override
@@ -94,7 +93,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             .build();
 
     private BluetoothLeScanner scanner;
-    private List<DeviceInfo> whitelistCopy;
+    private Set<String> whitelistMacAddresses;
     private static boolean isScanning = false;
     private boolean whitelistEnabled = true;
 
@@ -116,7 +115,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             return;
         }
         this.scanner = btAdapter.getBluetoothLeScanner();
-        whitelistCopy = DeviceStorageManager.getDeviceList(DeviceStorageManager.ListType.WHITELIST);
+        onDeviceListChange(DeviceStorageManager.getDeviceList(DeviceStorageManager.ListType.WHITELIST));
         DeviceStorageManager.addChangeListener(DeviceStorageManager.ListType.WHITELIST, this);
     }
 
@@ -138,7 +137,11 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         switch (action) {
             case ACTIONS.BLE_START_SCAN: {
                 Log.d(TAG, "BLE_START_SCAN");
-                startScan();
+                if (whitelistEnabled && whitelistMacAddresses.isEmpty()) {
+                    Log.w(TAG, "Tried to start scan with no whitelist. Scan will not start.");
+                } else {
+                    startScan();
+                }
                 break;
             }
             case ACTIONS.BLE_STOP_SCAN: {
@@ -161,21 +164,13 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         // starting and stopping scan are gated around isScanning flag, which implicitly assumes calls will always fully execute uninterrupted.
         // this should be okay for the most part, but might get finicky if something gets interrupted and the flag is left in a desync'd state.
         if (isScanning) return;
-        List<ScanFilter> whitelistFilters = null;
-        if (whitelistEnabled) {
-            whitelistFilters = new ArrayList<>();
-            for (DeviceInfo deviceInfo : whitelistCopy)
-                whitelistFilters.add(new ScanFilter.Builder().setDeviceAddress(deviceInfo.macAddress).build());
-        }
-        this.scanner.startScan(whitelistFilters, scanSettings, scanCallback);
-        DeviceMapDisplay.startPolling();
+        this.scanner.startScan(null, scanSettings, scanCallback);
         isScanning = true;
     }
 
     @SuppressLint("MissingPermission")
     private void stopScan() {
         if (!isScanning) return;
-        DeviceMapDisplay.stopPolling();
         this.scanner.stopScan(scanCallback);
         isScanning = false;
     }
@@ -225,7 +220,9 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
 
     @Override
     public void onDeviceListChange(List<DeviceInfo> devices) {
-        whitelistCopy = devices; // this is probably just reassigning the same reference over and over again. oh well.
+        whitelistMacAddresses = new HashSet<>();
+        for (DeviceInfo deviceInfo : devices)
+            whitelistMacAddresses.add(deviceInfo.macAddress);
         if (whitelistEnabled) resetScan();
     }
 

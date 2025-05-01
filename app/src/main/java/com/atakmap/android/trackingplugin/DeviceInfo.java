@@ -15,8 +15,6 @@ public class DeviceInfo {
     public final String name;
     public final String macAddress;
     public int rssi;
-    public long seenTimeEpochMillis = -1;
-    public String observerDeviceName = null;
     public final boolean mock;
     private final static Random rand = new Random();
 
@@ -30,6 +28,11 @@ public class DeviceInfo {
         } else {
             this.uuid = uuid;
         }
+    }
+
+    /// Good constructor to use for updating rssi.
+    public DeviceInfo(DeviceInfo deviceInfo, int rssi) {
+        this(deviceInfo.name, deviceInfo.macAddress, rssi, deviceInfo.mock, deviceInfo.uuid);
     }
 
 
