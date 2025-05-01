@@ -260,8 +260,8 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
                 R.id.deviceInfoPaneMacText, deviceInfo.macAddress,
                 R.id.deviceInfoPaneFirstSeenText, "NOT IMPLEMENTED",
                 R.id.deviceInfoPaneFirstSeenByText, "NOT IMPLEMENTED",
-                R.id.deviceInfoPaneLastSeenText, deviceInfo.seenTimeEpochMillis == -1 ? "-" : new Timestamp(deviceInfo.seenTimeEpochMillis).toString(),
-                R.id.deviceInfoPaneLastSeenByText, deviceInfo.observerDeviceName == null ? "-" : deviceInfo.observerDeviceName
+                R.id.deviceInfoPaneLastSeenText, "NOT IMPLEMENTED",
+                R.id.deviceInfoPaneLastSeenByText, "NOT IMPLEMENTED"
         );
         for (Map.Entry<Integer, String> entry : textInfoMap.entrySet())
             ((TextView) deviceInfoView.findViewById(entry.getKey())).setText(entry.getValue());
