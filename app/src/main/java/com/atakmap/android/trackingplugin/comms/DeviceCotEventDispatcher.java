@@ -39,9 +39,8 @@ public class DeviceCotEventDispatcher {
 
         if (MapView.getDeviceUid().equals(deviceInfo.sensorUid)) {
             CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
-        } else {
-            CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
         }
+        CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
     }
     public static void requestWhitelist(String contact) {
         // null = broadcast, send to everyone

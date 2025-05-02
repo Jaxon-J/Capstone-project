@@ -73,7 +73,6 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
                 deviceInfo = new DeviceInfo(scannedName, scannedMacAddress, result.getRssi(), true, null, MapView.getMapView().getSelfMarker().getUID());
             }
             Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", scannedName, scannedMacAddress));
-//            DeviceCotEventDispatcher.sendDeviceFound(deviceInfo);
             synchronized (currentIntervalDevices) {
                 currentIntervalDevices.put(deviceInfo.uuid, deviceInfo);
             }
