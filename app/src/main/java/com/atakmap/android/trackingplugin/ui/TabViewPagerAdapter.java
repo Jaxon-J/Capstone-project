@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
-import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
 import com.atakmap.android.trackingplugin.plugin.R;
 
@@ -57,7 +56,12 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 pollRateEditText.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        // TODO: UPDATE POLL RATE HERE.
+                        try {
+                            int newPollSeconds = Integer.parseInt(s.toString());
+                            BluetoothReceiver.POLL_RATE_MILLIS = newPollSeconds * 1000;
+                        } catch (NumberFormatException e) {
+                            Log.w(TAG, "Poll time is not a number, did not update. Current: " + BluetoothReceiver.POLL_RATE_MILLIS);
+                        }
                     }
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

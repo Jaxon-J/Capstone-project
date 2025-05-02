@@ -180,7 +180,7 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
             // validate mac address field
 
 
-            DeviceInfo enteredDeviceInfo = new DeviceInfo(enteredName, enteredMacAddress, -1, false, uuid);
+            DeviceInfo enteredDeviceInfo = new DeviceInfo(enteredName, enteredMacAddress, -1, false, uuid, MapView.getDeviceUid());
             // this triggers the onDeviceListChange, no need to manually refresh the table here.
             DeviceStorageManager.addOrUpdateDevice(DeviceStorageManager.ListType.WHITELIST, enteredDeviceInfo);
             uiService.closePane(addDevicePane);

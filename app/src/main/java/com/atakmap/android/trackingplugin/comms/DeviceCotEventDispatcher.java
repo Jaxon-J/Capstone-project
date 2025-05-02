@@ -1,7 +1,10 @@
 package com.atakmap.android.trackingplugin.comms;
 
+import android.util.Log;
+
 import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.android.maps.MapView;
+import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
@@ -11,13 +14,14 @@ import com.atakmap.coremap.maps.time.CoordinatedTime;
 import java.util.UUID;
 
 public class DeviceCotEventDispatcher {
-    public static int TIMEOUT_MILLIS = 5000;
+    private static final String TAG = Constants.createTag(DeviceCotEventDispatcher.class);
     public static void sendDeviceFound(DeviceInfo deviceInfo) {
         CotDetail rootDetail = new CotDetail();
         CotDetail foundDeviceDetail = new CotDetail(TrackingCotEventTypes.DEVICE_FOUND.eltName);
         foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name, deviceInfo.name);
         foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress, deviceInfo.macAddress);
         foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi, Integer.toString(deviceInfo.rssi));
+        foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.sensorUid, deviceInfo.sensorUid);
         rootDetail.addChild(foundDeviceDetail);
 
         CotEvent cotEvent = new CotEvent(
@@ -27,11 +31,17 @@ public class DeviceCotEventDispatcher {
                 new CotPoint(MapView.getMapView().getSelfMarker().getPoint()),
                 new CoordinatedTime(),
                 new CoordinatedTime(),
-                new CoordinatedTime(System.currentTimeMillis()), // UPDATE STALE BASED ON RECEIVER'S TIMEOUT TIME IN IMPORTER
+                new CoordinatedTime(),
                 "m-p",
                 rootDetail,
                 null, null, null);
-        CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
+        Log.d(TAG, "Sending found device CoT Event for: " + deviceInfo.macAddress);
+
+        if (MapView.getDeviceUid().equals(deviceInfo.sensorUid)) {
+            CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
+        } else {
+            CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
+        }
     }
     public static void requestWhitelist(String contact) {
         // null = broadcast, send to everyone
@@ -52,3 +62,25 @@ DEVICE FOUND COTEVENT:
     <device_found rssi='-62' mac_address='F5:6C:69:FB:C0:46' user_given_name='vr lighthouse' />
 </event>
  */
+
+
+
+/*
+
+Sender
+Receiver
+BluetoothScanner - polling
+
+
+
+
+ */
+
+
+
+
+
+
+
+
+

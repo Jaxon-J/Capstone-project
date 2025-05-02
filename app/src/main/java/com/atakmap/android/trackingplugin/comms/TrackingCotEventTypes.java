@@ -7,6 +7,7 @@ public class TrackingCotEventTypes {
             public static final String name = "user_given_name";
             public static final String macAddress = "mac_address";
             public static final String rssi = "rssi";
+            public static final String sensorUid = "sensor_uid";
         }
     }
 //    REQUEST_HISTORY(eltName = "request_device_history"),

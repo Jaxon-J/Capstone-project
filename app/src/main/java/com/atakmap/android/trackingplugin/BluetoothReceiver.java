@@ -18,12 +18,18 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.comms.DeviceCotEventDispatcher;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 // NOTE: phones send BLE advertising signals that are picked up from previously paired phones,
 //  even when unpaired. Only discontinues after Bluetooth gets reset on advertising device.
@@ -35,6 +41,15 @@ import java.util.Set;
 public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorageManager.DeviceListChangeListener {
     private static final String TAG = Constants.createTag(BluetoothReceiver.class);
 
+    private BluetoothLeScanner scanner;
+    private Set<String> whitelistMacAddresses;
+    private static boolean isScanning = false;
+    private boolean whitelistEnabled = true;
+    public static int POLL_RATE_MILLIS = 5000;
+    private static Timer poller;
+    public static final Map<String, DeviceInfo> lastIntervalDevices = Collections.synchronizedMap(new HashMap<>());
+    public static final Map<String, DeviceInfo> currentIntervalDevices = Collections.synchronizedMap(new HashMap<>());
+
     /// Object that is called via start/stopScan with the Bluetooth LE scanner to hook in functionality upon events that happen when scan is in progress.
     private final ScanCallback scanCallback = new ScanCallback() {
         @SuppressLint("MissingPermission")
@@ -42,7 +57,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
             String scannedMacAddress = device.getAddress();
-            if (!whitelistMacAddresses.contains(scannedMacAddress))
+            if (whitelistEnabled && !whitelistMacAddresses.contains(scannedMacAddress))
                 return;
             String scannedName = device.getName();
             if (scannedName == null) scannedName = "unknown";
@@ -55,10 +70,13 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
                 assert deviceInfo != null; // we are getting exclusively whitelist entries. if it's null something's wrong.
                 deviceInfo = new DeviceInfo(deviceInfo, result.getRssi());
             } else {
-                deviceInfo = new DeviceInfo(scannedName, scannedMacAddress, result.getRssi(), true, null);
+                deviceInfo = new DeviceInfo(scannedName, scannedMacAddress, result.getRssi(), true, null, MapView.getMapView().getSelfMarker().getUID());
             }
             Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", scannedName, scannedMacAddress));
-            DeviceCotEventDispatcher.sendDeviceFound(deviceInfo);
+//            DeviceCotEventDispatcher.sendDeviceFound(deviceInfo);
+            synchronized (currentIntervalDevices) {
+                currentIntervalDevices.put(deviceInfo.uuid, deviceInfo);
+            }
         }
 
         @Override
@@ -93,11 +111,6 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             .setNumOfMatches(ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT)
             .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
             .build();
-
-    private BluetoothLeScanner scanner;
-    private Set<String> whitelistMacAddresses;
-    private static boolean isScanning = false;
-    private boolean whitelistEnabled = true;
 
     /// @param context Context for overall plugin.
     public BluetoothReceiver(Context context) {
@@ -167,13 +180,41 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         // this should be okay for the most part, but might get finicky if something gets interrupted and the flag is left in a desync'd state.
         if (isScanning) return;
         this.scanner.startScan(null, scanSettings, scanCallback);
+        poller = new Timer();
+        poller.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                synchronized (currentIntervalDevices) {
+                    synchronized (lastIntervalDevices) {
+                        for (Map.Entry<String, DeviceInfo> entry : currentIntervalDevices.entrySet()) {
+                            if (!lastIntervalDevices.containsKey(entry.getKey())) {
+                                DeviceCotEventDispatcher.sendDeviceFound(entry.getValue());
+                            }
+                        }
+                        lastIntervalDevices.clear();
+                        lastIntervalDevices.putAll(currentIntervalDevices);
+                        currentIntervalDevices.clear();
+                    }
+                }
+            }
+        }, POLL_RATE_MILLIS);
         isScanning = true;
+        /*
+        Polling logic:
+        - if found in this interval, mark down as found.
+        - get difference between lastIntervalDevices and currentIntervalDevices
+        - if in last, not in current: remove
+        - if in current, not in last: add
+        - if in both: no change.
+         */
     }
 
     @SuppressLint("MissingPermission")
     private void stopScan() {
         if (!isScanning) return;
         this.scanner.stopScan(scanCallback);
+        poller.cancel();
+        poller = null;
         isScanning = false;
     }
 

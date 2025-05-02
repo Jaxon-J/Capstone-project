@@ -33,11 +33,13 @@ public class DeviceCotDetailHandler extends CotDetailHandler {
                     String name = child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name);
                     String macAddress = child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress);
                     int rssi = Integer.parseInt(child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi));
+                    String sensorUid = child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.sensorUid);
 
                     AttributeSet attrSet = new AttributeSet();
                     attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name, name);
                     attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress, macAddress);
                     attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi, rssi);
+                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.sensorUid, sensorUid);
 
                     mapItem.setMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName, attrSet);
                     mapItem.setClickPoint(cotEvent.getGeoPoint());
