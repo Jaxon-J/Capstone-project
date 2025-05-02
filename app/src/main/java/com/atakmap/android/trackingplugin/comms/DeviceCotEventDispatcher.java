@@ -44,10 +44,11 @@ public class DeviceCotEventDispatcher {
     }
 
     public static void sendDeviceRemoval(DeviceInfo deviceInfo) {
-        CotDetail rootDetail = new CotDetail();
+        Log.d(TAG, "SENDING DEVICE REMOVE COT EVENT FOR: " + deviceInfo.macAddress);
         CotDetail removeDetail = new CotDetail();
         removeDetail.setElementName(TrackingCotEventTypes.DEVICE_REMOVE.eltName);
         removeDetail.setAttribute(TrackingCotEventTypes.DEVICE_REMOVE.attrs.macAddress, deviceInfo.macAddress);
+        CotDetail rootDetail = new CotDetail();
         rootDetail.addChild(removeDetail);
         CotEvent cotEvent = new CotEvent(
                 UUID.randomUUID().toString(),

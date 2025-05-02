@@ -57,11 +57,13 @@ public class DeviceCotDetailHandler extends CotDetailHandler {
                 }
                 case TrackingCotEventTypes.DEVICE_REMOVE.eltName: {
                     String macAddress = child.getAttribute(TrackingCotEventTypes.DEVICE_REMOVE.attrs.macAddress);
+                    Log.d(TAG, "RECEIVED DEVICE REMOVAL COT EVENT FOR: " + macAddress);
                     for (MapItem item : deviceGroup.getItems()) {
                         AttributeSet attrSet = item.getMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName);
                         String itemMacAddress = attrSet.getStringAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress);
                         if (macAddress.equals(itemMacAddress)) {
                             item.removeFromGroup();
+                            Log.d(TAG, "REMOVED " + macAddress + " FROM MAP");
                             break;
                         }
                     }
