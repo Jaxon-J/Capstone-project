@@ -10,6 +10,13 @@ public class TrackingCotEventTypes {
             public static final String sensorUid = "sensor_uid";
         }
     }
+
+    public static class DEVICE_REMOVE {
+        public static final String eltName = "device_remove";
+        public static class attrs {
+            public static final String macAddress = "mac_address";
+        }
+    }
 //    REQUEST_HISTORY(eltName = "request_device_history"),
 //    DEVICE_HISTORY(eltName = "device_history"),
 //    REQUEST_WHITELIST(eltName = "request_whitelist"),

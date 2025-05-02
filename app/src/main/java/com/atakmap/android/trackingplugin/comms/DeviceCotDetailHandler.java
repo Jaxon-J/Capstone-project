@@ -3,7 +3,9 @@ package com.atakmap.android.trackingplugin.comms;
 import android.util.Log;
 
 import com.atakmap.android.cot.detail.CotDetailHandler;
+import com.atakmap.android.maps.MapGroup;
 import com.atakmap.android.maps.MapItem;
+import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotDetail;
@@ -18,11 +20,15 @@ import gov.tak.api.util.AttributeSet;
 
 public class DeviceCotDetailHandler extends CotDetailHandler {
     private static final String TAG = Constants.createTag(DeviceCotDetailHandler.class);
+    private final MapGroup deviceGroup;
     public DeviceCotDetailHandler() {
         super(Set.of(
-                TrackingCotEventTypes.DEVICE_FOUND.eltName
+                TrackingCotEventTypes.DEVICE_FOUND.eltName,
+                TrackingCotEventTypes.DEVICE_REMOVE.eltName
                 // TrackingCotEventTypes.SOME_OTHER_EVENT.eltName
         ));
+        MapGroup rootGroup = MapView.getMapView().getRootGroup();
+        deviceGroup = rootGroup.addGroup();
     }
 
     @Override
@@ -44,7 +50,21 @@ public class DeviceCotDetailHandler extends CotDetailHandler {
                     mapItem.setMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName, attrSet);
                     mapItem.setClickPoint(cotEvent.getGeoPoint());
 
+                    deviceGroup.addItem(mapItem);
+
                     Log.d(TAG, String.format("RECEIVED DEVICE PACKET:\n\tNAME: %s\n\tMAC: %s\n\tRSSI: %d", name, macAddress, rssi));
+                    return CommsMapComponent.ImportResult.SUCCESS;
+                }
+                case TrackingCotEventTypes.DEVICE_REMOVE.eltName: {
+                    String macAddress = child.getAttribute(TrackingCotEventTypes.DEVICE_REMOVE.attrs.macAddress);
+                    for (MapItem item : deviceGroup.getItems()) {
+                        AttributeSet attrSet = item.getMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName);
+                        String itemMacAddress = attrSet.getStringAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress);
+                        if (macAddress.equals(itemMacAddress)) {
+                            item.removeFromGroup();
+                            break;
+                        }
+                    }
                     return CommsMapComponent.ImportResult.SUCCESS;
                 }
             }

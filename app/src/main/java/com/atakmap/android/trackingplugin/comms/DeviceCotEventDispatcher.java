@@ -32,7 +32,7 @@ public class DeviceCotEventDispatcher {
                 new CoordinatedTime(),
                 new CoordinatedTime(),
                 new CoordinatedTime(),
-                "m-p",
+                CotEvent.HOW_MACHINE_GENERATED,
                 rootDetail,
                 null, null, null);
         Log.d(TAG, "Sending found device CoT Event for: " + deviceInfo.macAddress);
@@ -40,6 +40,30 @@ public class DeviceCotEventDispatcher {
         if (MapView.getDeviceUid().equals(deviceInfo.sensorUid)) {
             CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
         }
+        CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
+    }
+
+    public static void sendDeviceRemoval(DeviceInfo deviceInfo) {
+        CotDetail rootDetail = new CotDetail();
+        CotDetail removeDetail = new CotDetail();
+        removeDetail.setElementName(TrackingCotEventTypes.DEVICE_REMOVE.eltName);
+        removeDetail.setAttribute(TrackingCotEventTypes.DEVICE_REMOVE.attrs.macAddress, deviceInfo.macAddress);
+        rootDetail.addChild(removeDetail);
+        CotEvent cotEvent = new CotEvent(
+                UUID.randomUUID().toString(),
+                "t-a-s",
+                CotEvent.VERSION_2_0,
+                CotPoint.ZERO,
+                new CoordinatedTime(),
+                new CoordinatedTime(),
+                new CoordinatedTime(),
+                CotEvent.HOW_MACHINE_GENERATED,
+                rootDetail,
+                null,
+                null,
+                null
+        );
+        CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
         CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
     }
     public static void requestWhitelist(String contact) {

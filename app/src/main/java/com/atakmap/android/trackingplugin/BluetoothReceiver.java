@@ -190,6 +190,11 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
                                 DeviceCotEventDispatcher.sendDeviceFound(entry.getValue());
                             }
                         }
+                        for (Map.Entry<String, DeviceInfo> entry : lastIntervalDevices.entrySet()) {
+                            if (!currentIntervalDevices.containsKey(entry.getKey())) {
+                                DeviceCotEventDispatcher.sendDeviceRemoval(entry.getValue());
+                            }
+                        }
                         lastIntervalDevices.clear();
                         lastIntervalDevices.putAll(currentIntervalDevices);
                         currentIntervalDevices.clear();
