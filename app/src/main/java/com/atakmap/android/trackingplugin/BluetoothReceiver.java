@@ -40,7 +40,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
             String scannedMacAddress = device.getAddress();
-            if (!whitelistMacAddresses.contains(scannedMacAddress))
+            if (whitelistEnabled && !whitelistMacAddresses.contains(scannedMacAddress))
                 return;
             String scannedName = device.getName();
             if (scannedName == null) scannedName = "unknown";
