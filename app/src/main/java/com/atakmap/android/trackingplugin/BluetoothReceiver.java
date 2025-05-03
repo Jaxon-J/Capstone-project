@@ -18,7 +18,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.comms.DeviceCotEventDispatcher;
 
 import java.util.ArrayList;
@@ -44,7 +43,6 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
     private BluetoothLeScanner scanner;
     private Set<String> whitelistMacAddresses;
     private static boolean isScanning = false;
-    private boolean whitelistEnabled = true;
     public static int POLL_RATE_MILLIS = 5000;
     private static Timer poller;
     public static final Map<String, DeviceInfo> lastIntervalDevices = Collections.synchronizedMap(new HashMap<>());
@@ -57,22 +55,15 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
             String scannedMacAddress = device.getAddress();
-            if (whitelistEnabled && !whitelistMacAddresses.contains(scannedMacAddress))
+            if (!whitelistMacAddresses.contains(scannedMacAddress))
                 return;
-            String scannedName = device.getName();
-            if (scannedName == null) scannedName = "unknown";
-            else if (scannedName.length() >= 12)
-                scannedName = scannedName.substring(0, 12);
 
             String existingUuid = DeviceStorageManager.getUuid(DeviceStorageManager.ListType.WHITELIST, scannedMacAddress);
             DeviceInfo deviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, existingUuid);
-            if (whitelistEnabled) {
-                assert deviceInfo != null; // we are getting exclusively whitelist entries. if it's null something's wrong.
-                deviceInfo = new DeviceInfo(deviceInfo, result.getRssi());
-            } else {
-                deviceInfo = new DeviceInfo(scannedName, scannedMacAddress, result.getRssi(), true, null, MapView.getMapView().getSelfMarker().getUID());
-            }
-            Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", scannedName, scannedMacAddress));
+            assert deviceInfo != null; // if for some reason a non-whitelist entry came through, crash.
+            deviceInfo = new DeviceInfo(deviceInfo, result.getRssi());
+
+//            Log.d(TAG, String.format("BLE Device found - (name: %-12s mac: %s)", scannedName, scannedMacAddress));
             synchronized (currentIntervalDevices) {
                 currentIntervalDevices.put(deviceInfo.uuid, deviceInfo);
             }
@@ -151,7 +142,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         switch (action) {
             case ACTIONS.BLE_START_SCAN: {
                 Log.d(TAG, "BLE_START_SCAN");
-                if (whitelistEnabled && whitelistMacAddresses.isEmpty()) {
+                if (whitelistMacAddresses.isEmpty()) {
                     Log.w(TAG, "Tried to start scan with no whitelist. Scan will not start.");
                 } else {
                     startScan();
@@ -161,13 +152,6 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             case ACTIONS.BLE_STOP_SCAN: {
                 Log.d(TAG, "BLE_STOP_SCAN");
                 stopScan();
-                break;
-            }
-            case ACTIONS.ENABLE_WHITELIST:
-            case ACTIONS.DISABLE_WHITELIST: {
-                whitelistEnabled = action.equals(ACTIONS.ENABLE_WHITELIST);
-                Log.d(TAG, (whitelistEnabled ? "ENABLE" : "DISABLE") + "_SCAN_WHITELIST");
-                resetScan();
                 break;
             }
         }
@@ -186,11 +170,13 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
                 synchronized (currentIntervalDevices) {
                     synchronized (lastIntervalDevices) {
                         for (Map.Entry<String, DeviceInfo> entry : currentIntervalDevices.entrySet()) {
+                            Log.d(TAG, "Current Interval has device: " + entry.getValue().uuid);
                             if (!lastIntervalDevices.containsKey(entry.getKey())) {
                                 DeviceCotEventDispatcher.sendDeviceFound(entry.getValue());
                             }
                         }
                         for (Map.Entry<String, DeviceInfo> entry : lastIntervalDevices.entrySet()) {
+                            Log.d(TAG, "Last Interval has device:    " + entry.getValue().uuid);
                             if (!currentIntervalDevices.containsKey(entry.getKey())) {
                                 DeviceCotEventDispatcher.sendDeviceRemoval(entry.getValue());
                             }
@@ -201,7 +187,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
                     }
                 }
             }
-        }, POLL_RATE_MILLIS);
+        }, 250, POLL_RATE_MILLIS);
         isScanning = true;
         /*
         Polling logic:
@@ -270,15 +256,12 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         whitelistMacAddresses = new HashSet<>();
         for (DeviceInfo deviceInfo : devices)
             whitelistMacAddresses.add(deviceInfo.macAddress);
-        if (whitelistEnabled) resetScan();
+        resetScan();
     }
 
     /// Class made for grouping all the actions that can be registered for {@link BluetoothReceiver}
     public static final class ACTIONS {
         public static final String BLE_START_SCAN = "com.atakmap.android.trackingplugin.BLE_START_SCAN";
         public static final String BLE_STOP_SCAN = "com.atakmap.android.trackingplugin.BLE_STOP_SCAN";
-
-        public static final String ENABLE_WHITELIST = "com.atakmap.android.trackingplugin.ENABLE_SCAN_WHITELIST";
-        public static final String DISABLE_WHITELIST = "com.atakmap.android.trackingplugin.DISABLE_SCAN_WHITELIST";
     }
 }

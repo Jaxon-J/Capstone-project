@@ -83,8 +83,6 @@ public class TrackingPlugin implements IPlugin {
         AtakBroadcast.DocumentedIntentFilter btIntentFilter = new AtakBroadcast.DocumentedIntentFilter();
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
-        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.ENABLE_WHITELIST);
-        btIntentFilter.addAction(BluetoothReceiver.ACTIONS.DISABLE_WHITELIST);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
     }
 

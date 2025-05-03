@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.android.maps.MapView;
+import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.coremap.cot.event.CotDetail;
@@ -16,6 +17,8 @@ import java.util.UUID;
 public class DeviceCotEventDispatcher {
     private static final String TAG = Constants.createTag(DeviceCotEventDispatcher.class);
     public static void sendDeviceFound(DeviceInfo deviceInfo) {
+        Marker marker = new Marker(UUID.randomUUID().toString());
+        marker.setPoint(MapView.getMapView().getSelfMarker().getPoint());
         CotDetail rootDetail = new CotDetail();
         CotDetail foundDeviceDetail = new CotDetail(TrackingCotEventTypes.DEVICE_FOUND.eltName);
         foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name, deviceInfo.name);
@@ -35,7 +38,7 @@ public class DeviceCotEventDispatcher {
                 CotEvent.HOW_MACHINE_GENERATED,
                 rootDetail,
                 null, null, null);
-        Log.d(TAG, "Sending found device CoT Event for: " + deviceInfo.macAddress);
+        Log.d(TAG, "SENDING COT EVENT: " + cotEvent);
 
         if (MapView.getDeviceUid().equals(deviceInfo.sensorUid)) {
             CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
@@ -90,11 +93,6 @@ DEVICE FOUND COTEVENT:
 
 
 /*
-
-Sender
-Receiver
-BluetoothScanner - polling
-
 
 
 

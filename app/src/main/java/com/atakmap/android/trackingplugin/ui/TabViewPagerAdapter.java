@@ -1,7 +1,15 @@
 package com.atakmap.android.trackingplugin.ui;
 
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -9,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -20,6 +27,11 @@ import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
 import com.atakmap.android.trackingplugin.plugin.R;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import gov.tak.api.ui.IHostUIService;
 
@@ -46,6 +58,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
 
 
     /// Main method that is called to initialize UI logic. It is called upon initialization, and all subsequent times the tab is changed.
+    @SuppressLint("MissingPermission")
     @Override
     public void onBindViewHolder(@NonNull TabViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: " + Constants.TAB_LAYOUTS.get(position).first);
@@ -112,14 +125,55 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                             AtakBroadcast.getInstance().sendBroadcast(startScanIntent);
                             b.setText(context.getString(R.string.ble_scan_enabled));
                         });
-                // whitelist enabled button
-                holder.itemView.findViewById(R.id.whitelistEnabledCheckBox)
-                        .setOnClickListener(v ->
-                                AtakBroadcast.getInstance().sendBroadcast(
-                                    new Intent(
-                                        ((CheckBox) v).isChecked()
-                                            ? BluetoothReceiver.ACTIONS.ENABLE_WHITELIST
-                                            : BluetoothReceiver.ACTIONS.DISABLE_WHITELIST)));
+                holder.itemView.findViewById(R.id.debugLogMacButton).setOnClickListener(v -> {
+                    BluetoothAdapter btAdapter;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+                        if (manager == null) {
+                            Log.e(TAG, "Could not get bluetooth manager. Could be the case that Bluetooth is not supported on this device?");
+                            return;
+                        }
+                        btAdapter = manager.getAdapter();
+                    } else {
+                        btAdapter = BluetoothAdapter.getDefaultAdapter();
+                    }
+                    if (btAdapter == null) {
+                        Log.e(TAG, "Could not get bluetooth adapter for some reason.");
+                        return;
+                    }
+                    BluetoothLeScanner scanner = btAdapter.getBluetoothLeScanner();
+                    Map<String, String> foundDevices = new HashMap<>();
+                    ScanCallback scanCallback = new ScanCallback() {
+                        @Override
+                        public void onScanResult(int callbackType, ScanResult result) {
+                            BluetoothDevice device = result.getDevice();
+                            String macAddress = device.getAddress();
+                            String name = device.getName();
+                            String existingName = foundDevices.containsKey(macAddress) ? foundDevices.get(macAddress) : "";
+                            assert existingName != null;
+                            if (!foundDevices.containsKey(macAddress) || existingName.isEmpty()) {
+                                if (name == null) name = "";
+                                foundDevices.put(macAddress, name);
+                            }
+                        }
+                    };
+                    scanner.startScan(scanCallback);
+                    Timer timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            scanner.stopScan(scanCallback);
+                            StringBuilder sb = new StringBuilder();
+                            for (Map.Entry<String, String> entry : foundDevices.entrySet()) {
+                                String name = entry.getValue();
+                                if (name.length() >= 12) name = name.substring(0, 12);
+                                else if (name.isEmpty()) name = "unknown";
+                                sb.append(String.format("    %-12s : %s\n", name, entry.getKey()));
+                            }
+                            Log.d(TAG, "Found Devices:\n" + sb);
+                        }
+                    }, 1000);
+                });
                 // clear whitelist button
                 holder.itemView.findViewById(R.id.debugClearWhitelistButton)
                         .setOnClickListener(v -> DeviceStorageManager.clearList(DeviceStorageManager.ListType.WHITELIST));

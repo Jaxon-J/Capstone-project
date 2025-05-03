@@ -32,43 +32,41 @@ public class DeviceCotDetailHandler extends CotDetailHandler {
     }
 
     @Override
-    public CommsMapComponent.ImportResult toItemMetadata(MapItem mapItem, CotEvent cotEvent, CotDetail rootDetail) {
-        for (CotDetail child : rootDetail.getChildren()) {
-            switch (child.getElementName()) {
-                case TrackingCotEventTypes.DEVICE_FOUND.eltName: {
-                    String name = child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name);
-                    String macAddress = child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress);
-                    int rssi = Integer.parseInt(child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi));
-                    String sensorUid = child.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.sensorUid);
+    public CommsMapComponent.ImportResult toItemMetadata(MapItem mapItem, CotEvent event, CotDetail detail) {
+        Log.d(TAG, "Received detail: " + detail.toString());
+        switch (detail.getElementName()) {
+            case TrackingCotEventTypes.DEVICE_FOUND.eltName: {
+                String name = detail.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name);
+                String macAddress = detail.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress);
+                int rssi = Integer.parseInt(detail.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi));
+                String sensorUid = detail.getAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.sensorUid);
 
-                    AttributeSet attrSet = new AttributeSet();
-                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name, name);
-                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress, macAddress);
-                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi, rssi);
-                    attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.sensorUid, sensorUid);
+                AttributeSet attrSet = new AttributeSet();
+                attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name, name);
+                attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress, macAddress);
+                attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi, rssi);
+                attrSet.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.sensorUid, sensorUid);
 
-                    mapItem.setMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName, attrSet);
-                    mapItem.setClickPoint(cotEvent.getGeoPoint());
+                mapItem.setMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName, attrSet);
 
-                    deviceGroup.addItem(mapItem);
+                deviceGroup.addItem(mapItem);
 
-                    Log.d(TAG, String.format("RECEIVED DEVICE PACKET:\n\tNAME: %s\n\tMAC: %s\n\tRSSI: %d", name, macAddress, rssi));
-                    return CommsMapComponent.ImportResult.SUCCESS;
-                }
-                case TrackingCotEventTypes.DEVICE_REMOVE.eltName: {
-                    String macAddress = child.getAttribute(TrackingCotEventTypes.DEVICE_REMOVE.attrs.macAddress);
-                    Log.d(TAG, "RECEIVED DEVICE REMOVAL COT EVENT FOR: " + macAddress);
-                    for (MapItem item : deviceGroup.getItems()) {
-                        AttributeSet attrSet = item.getMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName);
-                        String itemMacAddress = attrSet.getStringAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress);
-                        if (macAddress.equals(itemMacAddress)) {
-                            item.removeFromGroup();
-                            Log.d(TAG, "REMOVED " + macAddress + " FROM MAP");
-                            break;
-                        }
+                Log.d(TAG, String.format("RECEIVED DEVICE PACKET:\n\tNAME: %s\n\tMAC: %s\n\tRSSI: %d", name, macAddress, rssi));
+                return CommsMapComponent.ImportResult.SUCCESS;
+            }
+            case TrackingCotEventTypes.DEVICE_REMOVE.eltName: {
+                String macAddress = detail.getAttribute(TrackingCotEventTypes.DEVICE_REMOVE.attrs.macAddress);
+                Log.d(TAG, "RECEIVED DEVICE REMOVAL COT EVENT FOR: " + macAddress);
+                for (MapItem item : deviceGroup.getItems()) {
+                    AttributeSet attrSet = item.getMetaAttributeSet(TrackingCotEventTypes.DEVICE_FOUND.eltName);
+                    String itemMacAddress = attrSet.getStringAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress);
+                    if (macAddress.equals(itemMacAddress)) {
+                        item.removeFromGroup();
+                        Log.d(TAG, "REMOVED " + macAddress + " FROM MAP");
+                        break;
                     }
-                    return CommsMapComponent.ImportResult.SUCCESS;
                 }
+                return CommsMapComponent.ImportResult.SUCCESS;
             }
         }
         return CommsMapComponent.ImportResult.IGNORE;
@@ -83,7 +81,7 @@ public class DeviceCotDetailHandler extends CotDetailHandler {
 
     @Override
     public boolean toCotDetail(MapItem mapItem, CotEvent cotEvent, CotDetail rootDetail) {
-        return true;
+        return false;
     }
 }
 
