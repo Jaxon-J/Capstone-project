@@ -2,6 +2,7 @@
 package com.atakmap.android.trackingplugin.plugin;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,11 +12,11 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.atak.plugins.impl.PluginContextProvider;
 import com.atak.plugins.impl.PluginLayoutInflater;
-import com.atakmap.android.cot.detail.CotDetailManager;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.comms.DeviceCotDetailHandler;
+import com.atakmap.android.trackingplugin.comms.DeviceCotListener;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -73,12 +74,16 @@ public class TrackingPlugin implements IPlugin {
 
     @Override
     public void onStart() {
-        deviceCotDetailHandler = new DeviceCotDetailHandler();
-        CotDetailManager.getInstance().registerHandler(deviceCotDetailHandler);
-        // the plugin is starting, add the button to the toolbar
+        // COMMS:
+        DeviceCotListener.initialize();
+//        DeviceCotEventImporter.initialize(pluginContext);
+//        deviceCotDetailHandler = new DeviceCotDetailHandler();
+//        CotDetailManager.getInstance().registerHandler(deviceCotDetailHandler);
+
+        // UI:
         uiService.addToolbarItem(toolbarItem);
 
-        // initialize what needs to be initialized
+        // BT:
         btReceiver = new BluetoothReceiver(pluginContext);
         AtakBroadcast.DocumentedIntentFilter btIntentFilter = new AtakBroadcast.DocumentedIntentFilter();
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
@@ -94,10 +99,15 @@ public class TrackingPlugin implements IPlugin {
         }
         uiService.removeToolbarItem(toolbarItem);
         if (btReceiver != null) {
+            AtakBroadcast.getInstance().sendBroadcast(new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN));
             AtakBroadcast.getInstance().unregisterReceiver(btReceiver);
             btReceiver = null;
         }
-        CotDetailManager.getInstance().unregisterHandler(deviceCotDetailHandler);
+
+        // COMMS:
+//        CotDetailManager.getInstance().unregisterHandler(deviceCotDetailHandler);
+//        DeviceCotEventImporter.unInitialize();
+        DeviceCotListener.uninitialize();
     }
 
     private void setupPrimaryPane() {

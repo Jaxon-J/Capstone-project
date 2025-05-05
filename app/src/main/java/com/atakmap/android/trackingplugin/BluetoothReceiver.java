@@ -18,7 +18,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.atakmap.android.trackingplugin.comms.DeviceCotEventDispatcher;
+import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,7 +57,6 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             String scannedMacAddress = device.getAddress();
             if (!whitelistMacAddresses.contains(scannedMacAddress))
                 return;
-
             String existingUuid = DeviceStorageManager.getUuid(DeviceStorageManager.ListType.WHITELIST, scannedMacAddress);
             DeviceInfo deviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, existingUuid);
             assert deviceInfo != null; // if for some reason a non-whitelist entry came through, crash.
@@ -120,7 +119,8 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             return;
         }
         this.scanner = btAdapter.getBluetoothLeScanner();
-        onDeviceListChange(DeviceStorageManager.getDeviceList(DeviceStorageManager.ListType.WHITELIST));
+        List<DeviceInfo> whitelist = DeviceStorageManager.getDeviceList(DeviceStorageManager.ListType.WHITELIST);
+        onDeviceListChange(whitelist);
         DeviceStorageManager.addChangeListener(DeviceStorageManager.ListType.WHITELIST, this);
     }
 
@@ -170,15 +170,13 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
                 synchronized (currentIntervalDevices) {
                     synchronized (lastIntervalDevices) {
                         for (Map.Entry<String, DeviceInfo> entry : currentIntervalDevices.entrySet()) {
-                            Log.d(TAG, "Current Interval has device: " + entry.getValue().uuid);
                             if (!lastIntervalDevices.containsKey(entry.getKey())) {
-                                DeviceCotEventDispatcher.sendDeviceFound(entry.getValue());
+                                DeviceCotDispatcher.sendDeviceFound(entry.getValue());
                             }
                         }
                         for (Map.Entry<String, DeviceInfo> entry : lastIntervalDevices.entrySet()) {
-                            Log.d(TAG, "Last Interval has device:    " + entry.getValue().uuid);
                             if (!currentIntervalDevices.containsKey(entry.getKey())) {
-                                DeviceCotEventDispatcher.sendDeviceRemoval(entry.getValue());
+                                DeviceCotDispatcher.sendDeviceRemoval(entry.getValue());
                             }
                         }
                         lastIntervalDevices.clear();
@@ -205,6 +203,12 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         this.scanner.stopScan(scanCallback);
         poller.cancel();
         poller = null;
+
+        Set<DeviceInfo> deviceInfos = new HashSet<>(lastIntervalDevices.values());
+        deviceInfos.addAll(currentIntervalDevices.values());
+        DeviceCotDispatcher.sendDeviceRemoval(deviceInfos);
+        currentIntervalDevices.clear();
+        lastIntervalDevices.clear();
         isScanning = false;
     }
 

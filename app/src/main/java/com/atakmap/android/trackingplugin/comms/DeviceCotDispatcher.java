@@ -12,24 +12,25 @@ import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
 
+import java.util.Set;
 import java.util.UUID;
 
-public class DeviceCotEventDispatcher {
-    private static final String TAG = Constants.createTag(DeviceCotEventDispatcher.class);
+public class DeviceCotDispatcher {
+    private static final String TAG = Constants.createTag(DeviceCotDispatcher.class);
     public static void sendDeviceFound(DeviceInfo deviceInfo) {
         Marker marker = new Marker(UUID.randomUUID().toString());
         marker.setPoint(MapView.getMapView().getSelfMarker().getPoint());
         CotDetail rootDetail = new CotDetail();
-        CotDetail foundDeviceDetail = new CotDetail(TrackingCotEventTypes.DEVICE_FOUND.eltName);
-        foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.name, deviceInfo.name);
-        foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.macAddress, deviceInfo.macAddress);
-        foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.rssi, Integer.toString(deviceInfo.rssi));
-        foundDeviceDetail.setAttribute(TrackingCotEventTypes.DEVICE_FOUND.attrs.sensorUid, deviceInfo.sensorUid);
+        CotDetail foundDeviceDetail = new CotDetail(CotDetailTypes.DEVICE_FOUND.eltName);
+        foundDeviceDetail.setAttribute(CotDetailTypes.DEVICE_FOUND.attrs.name, deviceInfo.name);
+        foundDeviceDetail.setAttribute(CotDetailTypes.DEVICE_FOUND.attrs.macAddress, deviceInfo.macAddress);
+        foundDeviceDetail.setAttribute(CotDetailTypes.DEVICE_FOUND.attrs.rssi, Integer.toString(deviceInfo.rssi));
+        foundDeviceDetail.setAttribute(CotDetailTypes.DEVICE_FOUND.attrs.sensorUid, deviceInfo.sensorUid);
         rootDetail.addChild(foundDeviceDetail);
 
         CotEvent cotEvent = new CotEvent(
                 UUID.randomUUID().toString(),
-                "a-u-G",
+                CotDetailTypes.DEVICE_FOUND.typeName,
                 CotEvent.VERSION_2_0,
                 new CotPoint(MapView.getMapView().getSelfMarker().getPoint()),
                 new CoordinatedTime(),
@@ -46,16 +47,21 @@ public class DeviceCotEventDispatcher {
         CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
     }
 
+    public static void sendDeviceFound(Set<DeviceInfo> deviceInfoSet) {
+        for (DeviceInfo deviceInfo : deviceInfoSet)
+            sendDeviceFound(deviceInfo);
+    }
+
     public static void sendDeviceRemoval(DeviceInfo deviceInfo) {
         Log.d(TAG, "SENDING DEVICE REMOVE COT EVENT FOR: " + deviceInfo.macAddress);
         CotDetail removeDetail = new CotDetail();
-        removeDetail.setElementName(TrackingCotEventTypes.DEVICE_REMOVE.eltName);
-        removeDetail.setAttribute(TrackingCotEventTypes.DEVICE_REMOVE.attrs.macAddress, deviceInfo.macAddress);
+        removeDetail.setElementName(CotDetailTypes.DEVICE_REMOVE.eltName);
+        removeDetail.setAttribute(CotDetailTypes.DEVICE_REMOVE.attrs.macAddress, deviceInfo.macAddress);
         CotDetail rootDetail = new CotDetail();
         rootDetail.addChild(removeDetail);
         CotEvent cotEvent = new CotEvent(
                 UUID.randomUUID().toString(),
-                "t-a-s",
+                CotDetailTypes.DEVICE_REMOVE.typeName,
                 CotEvent.VERSION_2_0,
                 CotPoint.ZERO,
                 new CoordinatedTime(),
@@ -67,9 +73,16 @@ public class DeviceCotEventDispatcher {
                 null,
                 null
         );
+        Log.d(TAG, "SENDING REMOVAL COT EVENT: " + cotEvent);
         CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
         CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
     }
+
+    public static void sendDeviceRemoval(Set<DeviceInfo> deviceInfoSet) {
+        for (DeviceInfo deviceInfo : deviceInfoSet)
+            sendDeviceRemoval(deviceInfo);
+    }
+
     public static void requestWhitelist(String contact) {
         // null = broadcast, send to everyone
     }
