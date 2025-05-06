@@ -55,7 +55,7 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
             String scannedMacAddress = device.getAddress();
-            if (whitelistEnabled && !whitelistMacAddresses.contains(scannedMacAddress))
+            if (!whitelistMacAddresses.contains(scannedMacAddress))
                 return;
             String existingUuid = DeviceStorageManager.getUuid(DeviceStorageManager.ListType.WHITELIST, scannedMacAddress);
             DeviceInfo deviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, existingUuid);
