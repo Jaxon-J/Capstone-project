@@ -10,6 +10,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
+import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 ///Test to ensure our deviceInfo test functionality is working. This should be a good indicator that this class
 /// has not been broken with any edits.
@@ -18,7 +19,7 @@ public class DeviceInfoTest {
     @Test
     public void testDeviceInfoConstructor() {
         String uuid = "123e4567-e89b-12d3-a456-426614174000";
-        DeviceInfo device = new DeviceInfo("Test Device", "00:11:22:33:44:55", -70, false, uuid);
+        DeviceInfo device = new DeviceInfo("Test Device", "00:11:22:33:44:55", -70, false, uuid, MapView.getDeviceUid());
 
         assertEquals("Test Device", device.name);
         assertEquals("00:11:22:33:44:55", device.macAddress);
@@ -40,8 +41,8 @@ public class DeviceInfoTest {
 
     @Test
     public void testGeneratedUUIDIsUnique() {
-        DeviceInfo d1 = new DeviceInfo("A", "01:02:03:04:05:06", -40, true, null);
-        DeviceInfo d2 = new DeviceInfo("B", "06:05:04:03:02:01", -40, true, null);
+        DeviceInfo d1 = new DeviceInfo("A", "01:02:03:04:05:06", -40, true, null, MapView.getDeviceUid());
+        DeviceInfo d2 = new DeviceInfo("B", "06:05:04:03:02:01", -40, true, null, MapView.getDeviceUid());
         assertNotEquals("UUIDs should be auto-generated and unique", d1.uuid, d2.uuid);
     }
 
@@ -77,7 +78,7 @@ public class DeviceInfoTest {
             } while (usedMacs.contains(macAddr));
             usedMacs.add(macAddr);
 
-            devices.add(new DeviceInfo("mock" + i, macAddr, rand.nextInt(100), true, null));
+            devices.add(new DeviceInfo("mock" + i, macAddr, rand.nextInt(100), true, null, MapView.getDeviceUid()));
         }
         return devices;
     }

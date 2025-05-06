@@ -13,20 +13,20 @@ import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.atak.plugins.impl.PluginLayoutInflater;
+import com.atakmap.android.maps.MapItem;
+import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
-import com.atakmap.android.trackingplugin.DeviceMapDisplay;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
+import com.atakmap.android.util.ATAKUtilities;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -100,9 +100,9 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
             ((TextView) row.findViewById(R.id.deviceRowMacAddressText)).setText(deviceInfo.macAddress);
 
             // checkbox will set visibility
-            row.findViewById(R.id.deviceRowVisibilityCheckbox).setOnClickListener(v ->
-                    DeviceMapDisplay.setVisibility(deviceInfo.uuid, ((ToggleButton) v).isChecked())
-            );
+            row.findViewById(R.id.deviceRowVisibilityCheckbox).setOnClickListener(v -> {
+                // TODO: SET VISIBILITY HERE.
+            });
 
             // add row click behavior
             row.setOnClickListener((View v) -> {
@@ -180,7 +180,7 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
             // validate mac address field
 
 
-            DeviceInfo enteredDeviceInfo = new DeviceInfo(enteredName, enteredMacAddress, -1, false, uuid);
+            DeviceInfo enteredDeviceInfo = new DeviceInfo(enteredName, enteredMacAddress, -1, false, uuid, MapView.getDeviceUid());
             // this triggers the onDeviceListChange, no need to manually refresh the table here.
             DeviceStorageManager.addOrUpdateDevice(DeviceStorageManager.ListType.WHITELIST, enteredDeviceInfo);
             uiService.closePane(addDevicePane);
@@ -275,6 +275,8 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
         // locate button
         deviceInfoView.findViewById(R.id.deviceInfoPaneLocateButton).setOnClickListener(v -> {
             // TODO: get this working
+            MapItem deviceMapItem = MapView.getMapView().getRootGroup().deepFindUID(deviceInfo.uuid);
+            ATAKUtilities.scaleToFit(deviceMapItem);
         });
 
         // delete button
