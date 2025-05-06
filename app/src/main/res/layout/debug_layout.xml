@@ -26,24 +26,20 @@
         android:layout_height="48dp"
         android:layout_marginTop="8dp"
         android:text="@string/ble_scan_disabled"
-        app:layout_constraintEnd_toStartOf="@+id/whitelistEnabledCheckBox"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toStartOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/debugBluetoothLabel" />
 
-    <CheckBox
-        android:id="@+id/whitelistEnabledCheckBox"
-        android:layout_width="wrap_content"
+    <Button
+        android:id="@+id/debugLogMacButton"
+        style="@style/darkButton"
+        android:layout_width="125dp"
         android:layout_height="48dp"
-        android:layout_weight="2"
-        android:checked="true"
-        android:text="Enable Whitelist"
+        android:text="MAC Log"
         app:layout_constraintBottom_toBottomOf="@+id/bleScanDebugButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/bleScanDebugButton"
-        app:layout_constraintTop_toTopOf="@+id/bleScanDebugButton"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toTopOf="@+id/bleScanDebugButton" />
 
     <TextView
         android:id="@+id/debugMapLabel"
