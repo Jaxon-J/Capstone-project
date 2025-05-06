@@ -15,7 +15,6 @@ import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
-import com.atakmap.android.trackingplugin.comms.DeviceCotDetailHandler;
 import com.atakmap.android.trackingplugin.comms.DeviceCotListener;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
@@ -47,7 +46,6 @@ public class TrackingPlugin implements IPlugin {
     ToolbarItem toolbarItem;
     public static Pane primaryPane;
     BluetoothReceiver btReceiver;
-    DeviceCotDetailHandler deviceCotDetailHandler;
     boolean primaryPaneInitialized = false;
 
     public TrackingPlugin(IServiceController serviceController) {

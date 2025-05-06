@@ -1,14 +1,11 @@
 package com.atakmap.android.trackingplugin.comms;
 
-import java.util.Set;
-
 public class CotDetailTypes {
     public static class MAPITEM_INFO {
         public static final String attrSetName = "tracked_info";
         public static class attrs {
             public static final String name = "name";
             public static final String macAddress = "mac_address";
-            public static final String sensorUid = "sensor_uid";
             public static final String rssi = "rssi";
         }
     }
@@ -29,6 +26,7 @@ public class CotDetailTypes {
         public static final String typeName = "t-x-device-remove";
         public static class attrs {
             public static final String macAddress = "mac_address";
+            public static final String sensorUid = "sensor_uid";
         }
     }
 //    REQUEST_HISTORY(eltName = "request_device_history"),

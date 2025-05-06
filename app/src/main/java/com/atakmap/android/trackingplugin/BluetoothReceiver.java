@@ -169,16 +169,23 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             public void run() {
                 synchronized (currentIntervalDevices) {
                     synchronized (lastIntervalDevices) {
-                        for (Map.Entry<String, DeviceInfo> entry : currentIntervalDevices.entrySet()) {
-                            if (!lastIntervalDevices.containsKey(entry.getKey())) {
-                                DeviceCotDispatcher.sendDeviceFound(entry.getValue());
-                            }
-                        }
-                        for (Map.Entry<String, DeviceInfo> entry : lastIntervalDevices.entrySet()) {
-                            if (!currentIntervalDevices.containsKey(entry.getKey())) {
-                                DeviceCotDispatcher.sendDeviceRemoval(entry.getValue());
-                            }
-                        }
+                        Set<DeviceInfo> deviceSet = new HashSet<>();
+
+                        // gather devices in current and not in last (i.e. new finds)
+                        for (Map.Entry<String, DeviceInfo> entry : currentIntervalDevices.entrySet())
+                            if (!lastIntervalDevices.containsKey(entry.getKey()))
+                                deviceSet.add(entry.getValue());
+                        DeviceCotDispatcher.sendDeviceFound(deviceSet);
+                        deviceSet.clear();
+
+                        // gather devices in last and not in current (i.e. fell out of tracking)
+                        for (Map.Entry<String, DeviceInfo> entry : lastIntervalDevices.entrySet())
+                            if (!currentIntervalDevices.containsKey(entry.getKey()))
+                                deviceSet.add(entry.getValue());
+
+                        DeviceCotDispatcher.sendDeviceRemoval(deviceSet);
+
+                        // swap contents from current to last and clear current
                         lastIntervalDevices.clear();
                         lastIntervalDevices.putAll(currentIntervalDevices);
                         currentIntervalDevices.clear();
@@ -187,14 +194,6 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
             }
         }, 250, POLL_RATE_MILLIS);
         isScanning = true;
-        /*
-        Polling logic:
-        - if found in this interval, mark down as found.
-        - get difference between lastIntervalDevices and currentIntervalDevices
-        - if in last, not in current: remove
-        - if in current, not in last: add
-        - if in both: no change.
-         */
     }
 
     @SuppressLint("MissingPermission")

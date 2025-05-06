@@ -1,7 +1,5 @@
 package com.atakmap.android.trackingplugin.comms;
 
-import android.util.Log;
-
 import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
@@ -17,6 +15,7 @@ import java.util.UUID;
 
 public class DeviceCotDispatcher {
     private static final String TAG = Constants.createTag(DeviceCotDispatcher.class);
+
     public static void sendDeviceFound(DeviceInfo deviceInfo) {
         Marker marker = new Marker(UUID.randomUUID().toString());
         marker.setPoint(MapView.getMapView().getSelfMarker().getPoint());
@@ -39,7 +38,6 @@ public class DeviceCotDispatcher {
                 CotEvent.HOW_MACHINE_GENERATED,
                 rootDetail,
                 null, null, null);
-        Log.d(TAG, "SENDING COT EVENT: " + cotEvent);
 
         if (MapView.getDeviceUid().equals(deviceInfo.sensorUid)) {
             CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
@@ -53,10 +51,10 @@ public class DeviceCotDispatcher {
     }
 
     public static void sendDeviceRemoval(DeviceInfo deviceInfo) {
-        Log.d(TAG, "SENDING DEVICE REMOVE COT EVENT FOR: " + deviceInfo.macAddress);
         CotDetail removeDetail = new CotDetail();
         removeDetail.setElementName(CotDetailTypes.DEVICE_REMOVE.eltName);
         removeDetail.setAttribute(CotDetailTypes.DEVICE_REMOVE.attrs.macAddress, deviceInfo.macAddress);
+        removeDetail.setAttribute(CotDetailTypes.DEVICE_REMOVE.attrs.sensorUid, deviceInfo.sensorUid);
         CotDetail rootDetail = new CotDetail();
         rootDetail.addChild(removeDetail);
         CotEvent cotEvent = new CotEvent(
@@ -73,7 +71,6 @@ public class DeviceCotDispatcher {
                 null,
                 null
         );
-        Log.d(TAG, "SENDING REMOVAL COT EVENT: " + cotEvent);
         CotMapComponent.getExternalDispatcher().dispatch(cotEvent);
         CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
     }
@@ -81,14 +78,6 @@ public class DeviceCotDispatcher {
     public static void sendDeviceRemoval(Set<DeviceInfo> deviceInfoSet) {
         for (DeviceInfo deviceInfo : deviceInfoSet)
             sendDeviceRemoval(deviceInfo);
-    }
-
-    public static void requestWhitelist(String contact) {
-        // null = broadcast, send to everyone
-    }
-
-    public static void sendWhitelist(String contact) {
-        // null = broadcast, send to everyone
     }
 }
 /*
