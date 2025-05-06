@@ -279,6 +279,7 @@ def getCommandFlavor() {
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.10.3'
     //noinspection GradleDependency
     implementation 'com.google.android.material:material:1.9.0'
 }
