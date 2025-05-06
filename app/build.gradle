@@ -281,6 +281,8 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.10.3'
     //noinspection GradleDependency
+    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
     implementation 'com.google.android.material:material:1.9.0'
 }
 
