@@ -61,7 +61,7 @@ public class DeviceInfoTest {
         }
     }
 
-    // Local test-safe version of mock generator (bypasses DeviceListManager)
+    // Local test-safe version of mock generator (bypasses DeviceStorageManager)
     private List<DeviceInfo> generateMockDevicesForTest(int count) {
         List<DeviceInfo> devices = new ArrayList<>();
         Set<String> usedMacs = new HashSet<>();
