@@ -10,6 +10,8 @@ import com.atakmap.android.maps.MapItem;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.DeviceInfo;
+import com.atakmap.android.trackingplugin.DeviceStorageManager;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.comms.CotServiceRemote;
 import com.atakmap.coremap.cot.event.CotDetail;
@@ -18,6 +20,7 @@ import com.atakmap.coremap.maps.coords.GeoPoint;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -25,8 +28,9 @@ import java.util.UUID;
 import gov.tak.api.util.AttributeSet;
 
 public class DeviceCotListener {
-    private static final MapGroup deviceGroup = MapView.getMapView().getRootGroup().addGroup("devices");
+    public static final MapGroup deviceGroup = MapView.getMapView().getRootGroup().addGroup("devices");
     private static final Map<String, Set<Pair<String, GeoPoint>>> devicePositions = new HashMap<>();
+    private static final Map<String, Boolean> visibilityMap = new HashMap<>();
     private static final String TAG = Constants.createTag(DeviceCotListener.class);
 
     private static final CotServiceRemote.CotEventListener cotEventListener = (cotEvent, bundle) -> {
@@ -44,10 +48,15 @@ public class DeviceCotListener {
 
     public static void initialize() {
         CommsMapComponent.getInstance().addOnCotEventListener(cotEventListener);
+        List<DeviceInfo> whitelist = DeviceStorageManager.getDeviceList(DeviceStorageManager.ListType.WHITELIST);
+        for (DeviceInfo deviceInfo : whitelist) {
+            visibilityMap.put(deviceInfo.macAddress, false);
+        }
     }
 
     public static void uninitialize() {
         CommsMapComponent.getInstance().removeOnCotEventListener(cotEventListener);
+        visibilityMap.clear();
     }
 
     private static void onDeviceFound(CotEvent cotEvent) {
@@ -56,9 +65,10 @@ public class DeviceCotListener {
         CotDetail detail = cotEvent.findDetail(CotDetailTypes.DEVICE_FOUND.eltName);
 
         // TODO: would you like to add this to your whitelist? prompt
-
-        String name = detail.getAttribute(CotDetailTypes.DEVICE_FOUND.attrs.name);
         String macAddress = detail.getAttribute(CotDetailTypes.DEVICE_FOUND.attrs.macAddress);
+        if (DeviceStorageManager.getUuid(DeviceStorageManager.ListType.WHITELIST, macAddress) == null)
+            return; // not in whitelist, ignore.
+        String name = detail.getAttribute(CotDetailTypes.DEVICE_FOUND.attrs.name);
         String sensorUid = detail.getAttribute(CotDetailTypes.DEVICE_FOUND.attrs.sensorUid);
         String rssi = detail.getAttribute(CotDetailTypes.DEVICE_FOUND.attrs.rssi);
 
@@ -78,6 +88,7 @@ public class DeviceCotListener {
         }
         GeoPoint position = addPosition(macAddress, new Pair<>(sensorUid, cotEvent.getGeoPoint()));
         marker.setPoint(position);
+        marker.setVisible(Boolean.TRUE.equals(visibilityMap.get(macAddress)));
         if (deviceGroup.getItemById(marker.getSerialId()) == null) {
             deviceGroup.addItem(marker);
         }
@@ -146,5 +157,9 @@ public class DeviceCotListener {
         latitude /= uidPositions.size();
         longitude /= uidPositions.size();
         return new GeoPoint(latitude, longitude);
+    }
+
+    public static void setVisibility(String macAddress, boolean visible) {
+        visibilityMap.put(macAddress, visible);
     }
 }

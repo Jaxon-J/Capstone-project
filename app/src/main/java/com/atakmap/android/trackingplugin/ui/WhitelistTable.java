@@ -8,6 +8,7 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
@@ -23,6 +24,8 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
+import com.atakmap.android.trackingplugin.comms.CotDetailTypes;
+import com.atakmap.android.trackingplugin.comms.DeviceCotListener;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 import com.atakmap.android.util.ATAKUtilities;
@@ -101,7 +104,14 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
 
             // checkbox will set visibility
             row.findViewById(R.id.deviceRowVisibilityCheckbox).setOnClickListener(v -> {
-                // TODO: SET VISIBILITY HERE.
+                for (MapItem item : DeviceCotListener.deviceGroup.getItems()) {
+                    String macAddress = item.getMetaAttributeSet(CotDetailTypes.MAPITEM_INFO.attrSetName)
+                            .getStringAttribute(CotDetailTypes.MAPITEM_INFO.attrs.macAddress);
+                    if (deviceInfo.macAddress.equals(macAddress)) {
+                        DeviceCotListener.setVisibility(macAddress, ((CheckBox) v).isChecked());
+                        break;
+                    }
+                }
             });
 
             // add row click behavior
