@@ -29,6 +29,42 @@ public class CotDetailTypes {
             public static final String sensorUid = "sensor_uid";
         }
     }
+
+    public static class WHITELIST_REQUEST {
+        public static final String eltName = "whitelist_request";
+        public static final String typeName = "t-x-whitelist-request";
+        public static class attrs {
+            public static final String reqUid = "request_uid";
+        }
+    }
+
+    public static class WHITELIST_RESPONSE {
+        public static final String eltName = "whitelist_reply";
+        public static final String typeName = "t-x-whitelist-response";
+        public static class deviceElt {
+            public static final String eltName = "device";
+            public static class attrs {
+                public static final String name = "name";
+                public static final String macAddress = "mac_address";
+            }
+        }
+    }
+
+    public static class DISCOVERY_REQUEST {
+        public static final String eltName = "track_discovery_request";
+        public static final String typeName = "t-x-tracking-disc-req";
+        public static class attrs {
+            public static final String reqUid = "request_uid";
+        }
+    }
+
+    public static class DISCOVERY_RESPONSE {
+        public static final String eltName = "track_discovery_response";
+        public static final String typeName = "t-x-tracking-disc-res";
+        public static class attrs {
+            public static final String resUid = "response_uid";
+        }
+    }
 //    REQUEST_HISTORY(eltName = "request_device_history"),
 //    DEVICE_HISTORY(eltName = "device_history"),
 //    REQUEST_WHITELIST(eltName = "request_whitelist"),

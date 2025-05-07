@@ -38,7 +38,7 @@
         android:layout_width="175dp"
         android:layout_height="60dp"
         android:text="@string/tracking_start_scan"
-        android:textSize="24sp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

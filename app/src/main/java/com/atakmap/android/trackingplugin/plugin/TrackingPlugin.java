@@ -15,10 +15,16 @@ import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.DeviceInfo;
+import com.atakmap.android.trackingplugin.DeviceStorageManager;
 import com.atakmap.android.trackingplugin.comms.DeviceCotListener;
+import com.atakmap.android.trackingplugin.ui.SensorsTable;
 import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
+import com.atakmap.android.trackingplugin.ui.WhitelistTable;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+
+import java.util.List;
 
 import gov.tak.api.commons.graphics.Bitmap;
 import gov.tak.api.plugin.IPlugin;
@@ -47,6 +53,8 @@ public class TrackingPlugin implements IPlugin {
     public static Pane primaryPane;
     BluetoothReceiver btReceiver;
     boolean primaryPaneInitialized = false;
+    public static WhitelistTable whitelistTable; // FIXME: completely re-architect the plugin so we don't have a memory leak here pls thx
+    public static SensorsTable sensorsTable; // FIXME: completely re-architect the plugin so we don't have a memory leak here pls thx
 
     public TrackingPlugin(IServiceController serviceController) {
         this.serviceController = serviceController;
@@ -74,9 +82,6 @@ public class TrackingPlugin implements IPlugin {
     public void onStart() {
         // COMMS:
         DeviceCotListener.initialize();
-//        DeviceCotEventImporter.initialize(pluginContext);
-//        deviceCotDetailHandler = new DeviceCotDetailHandler();
-//        CotDetailManager.getInstance().registerHandler(deviceCotDetailHandler);
 
         // UI:
         uiService.addToolbarItem(toolbarItem);
@@ -87,6 +92,11 @@ public class TrackingPlugin implements IPlugin {
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_START_SCAN);
         btIntentFilter.addAction(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN);
         AtakBroadcast.getInstance().registerReceiver(btReceiver, btIntentFilter);
+
+        List<DeviceInfo> whitelist = DeviceStorageManager.getDeviceList(DeviceStorageManager.ListType.WHITELIST);
+        for (DeviceInfo deviceInfo : whitelist)
+            if (WhitelistTable.visibilityMap.containsKey(deviceInfo.uuid))
+                WhitelistTable.visibilityMap.put(deviceInfo.uuid, false);
     }
 
     @Override
@@ -96,15 +106,13 @@ public class TrackingPlugin implements IPlugin {
             uiService.closePane(primaryPane);
         }
         uiService.removeToolbarItem(toolbarItem);
+        whitelistTable = null;
+        sensorsTable = null;
         if (btReceiver != null) {
             AtakBroadcast.getInstance().sendBroadcast(new Intent(BluetoothReceiver.ACTIONS.BLE_STOP_SCAN));
             AtakBroadcast.getInstance().unregisterReceiver(btReceiver);
             btReceiver = null;
         }
-
-        // COMMS:
-//        CotDetailManager.getInstance().unregisterHandler(deviceCotDetailHandler);
-//        DeviceCotEventImporter.unInitialize();
         DeviceCotListener.uninitialize();
     }
 

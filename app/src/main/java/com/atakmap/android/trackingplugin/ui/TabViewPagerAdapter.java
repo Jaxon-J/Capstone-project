@@ -26,7 +26,9 @@ import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
+import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;
 import com.atakmap.android.trackingplugin.plugin.R;
+import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +41,6 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
     private final IHostUIService uiService;
-    private boolean whitelistTabInitialized = false; // TODO: maybe make this a list for all tabs if there's other necessary init logic.
 
     public TabViewPagerAdapter(Context context, IHostUIService uiService) {
         this.context = context;
@@ -97,15 +98,17 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 break;
             }
             case Constants.WHITELIST_TABNAME: {
-                if (!whitelistTabInitialized) {
-                    WhitelistTable whitelistTable = new WhitelistTable(uiService, holder.itemView);
-                    whitelistTable.setup();
-
-                    whitelistTabInitialized = true;
+                if (TrackingPlugin.whitelistTable == null) {
+                    TrackingPlugin.whitelistTable = new WhitelistTable(uiService, holder.itemView);
+                    TrackingPlugin.whitelistTable.setup();
                 }
-
             }
             case Constants.SENSORS_TABNAME: {
+                DeviceCotDispatcher.discoverPluginContacts();
+                if (TrackingPlugin.sensorsTable == null) {
+                    TrackingPlugin.sensorsTable = new SensorsTable(uiService, holder.itemView);
+                    TrackingPlugin.sensorsTable.setup();
+                }
                 break;
             }
             case Constants.DEBUG_TABNAME: {
