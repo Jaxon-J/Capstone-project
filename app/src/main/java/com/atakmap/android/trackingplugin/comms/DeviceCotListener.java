@@ -84,8 +84,8 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
     }
 
     private static void onWhitelistResponse(CotEvent cotEvent) {
-        CotDetail whitelistDetial = cotEvent.getDetail().getChild(CotDetailTypes.WHITELIST_RESPONSE.eltName);
-        for(CotDetail deviceDetail : whitelistDetial.getChildren()) {
+        CotDetail whitelistDetail = cotEvent.getDetail().getChild(CotDetailTypes.WHITELIST_RESPONSE.eltName);
+        for(CotDetail deviceDetail : whitelistDetail.getChildren()) {
             String deviceMacAddress = deviceDetail.getAttribute(CotDetailTypes.WHITELIST_RESPONSE.deviceElt.attrs.macAddress);
             if (DeviceStorageManager.getUuid(DeviceStorageManager.ListType.WHITELIST, deviceMacAddress) != null)
                 continue; // already exists in whitelist, skip it.

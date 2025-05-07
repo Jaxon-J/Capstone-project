@@ -8,6 +8,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.atakmap.android.contact.Contact;
 import com.atakmap.android.contact.Contacts;
 import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;
 import com.atakmap.android.trackingplugin.plugin.R;
@@ -25,6 +26,9 @@ public class SensorsTable implements Contacts.OnContactsChangedListener {
     public SensorsTable(IHostUIService uiService, View tabView) {
         this.uiService = uiService;
         this.tabView = tabView;
+        for (Contact contact : Contacts.getInstance().getAllContacts()) {
+            nameUidSensorMap.put(contact.getName(), contact.getUid());
+        }
         Contacts.getInstance().addListener(this);
     }
 
