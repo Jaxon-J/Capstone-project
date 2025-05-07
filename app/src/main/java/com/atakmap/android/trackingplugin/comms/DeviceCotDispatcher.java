@@ -1,6 +1,7 @@
 package com.atakmap.android.trackingplugin.comms;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.android.maps.MapView;
@@ -30,6 +31,7 @@ public class DeviceCotDispatcher {
 
         CotEvent foundEvent = embedDetail(foundDeviceDetail, CotDetailTypes.DEVICE_FOUND.typeName);
         foundEvent.setPoint(new CotPoint(MapView.getMapView().getSelfMarker().getPoint()));
+        Log.d(TAG, "SENDING DEVICE FOUND: " + foundEvent);
 
         if (MapView.getDeviceUid().equals(deviceInfo.sensorUid)) {
             CotMapComponent.getExternalDispatcher().dispatch(foundEvent);
@@ -48,6 +50,7 @@ public class DeviceCotDispatcher {
         removeDetail.setAttribute(CotDetailTypes.DEVICE_REMOVE.attrs.macAddress, deviceInfo.macAddress);
         removeDetail.setAttribute(CotDetailTypes.DEVICE_REMOVE.attrs.sensorUid, deviceInfo.sensorUid);
         CotEvent removeEvent = embedDetail(removeDetail, CotDetailTypes.DEVICE_REMOVE.typeName);
+        Log.d(TAG, "SENDING DEVICE REMOVED: " + removeEvent);
         CotMapComponent.getExternalDispatcher().dispatch(removeEvent);
         CotMapComponent.getInternalDispatcher().dispatch(removeEvent);
     }
@@ -63,7 +66,8 @@ public class DeviceCotDispatcher {
         CotEvent requestEvent = embedDetail(whitelistRequestDetail, CotDetailTypes.WHITELIST_REQUEST.typeName);
         Bundle uidFilter = new Bundle();
         uidFilter.putStringArray("toUIDs", new String[]{requestUid});
-        CotMapComponent.getExternalDispatcher().dispatch(requestEvent);
+        Log.d(TAG, "SENDING WHITELIST REQUEST TO: " + requestUid);
+        CotMapComponent.getExternalDispatcher().dispatch(requestEvent, uidFilter);
     }
 
     public static void sendWhitelistResponse(String responseUid) {
@@ -77,6 +81,7 @@ public class DeviceCotDispatcher {
         CotEvent sendEvent = embedDetail(whitelistResponseDetail, CotDetailTypes.WHITELIST_RESPONSE.typeName);
         Bundle uidFilter = new Bundle();
         uidFilter.putStringArray("toUIDs", new String[]{responseUid});
+        Log.d(TAG, "SEND WHITELIST RESPONSE TO: " + responseUid);
         CotMapComponent.getExternalDispatcher().dispatch(sendEvent, uidFilter);
     }
 
@@ -84,6 +89,7 @@ public class DeviceCotDispatcher {
         CotDetail reqDetail = new CotDetail(CotDetailTypes.DISCOVERY_REQUEST.eltName);
         reqDetail.setAttribute(CotDetailTypes.DISCOVERY_REQUEST.attrs.reqUid, MapView.getDeviceUid());
         CotEvent reqEvent = embedDetail(reqDetail, CotDetailTypes.DISCOVERY_REQUEST.typeName);
+        Log.d(TAG, "SEND DISCOVERY EVENT: " + reqEvent);
         CotMapComponent.getExternalDispatcher().dispatch(reqEvent);
     }
 
@@ -93,6 +99,7 @@ public class DeviceCotDispatcher {
         CotEvent resEvent = embedDetail(resDetail, CotDetailTypes.DISCOVERY_RESPONSE.typeName);
         Bundle uidFilter = new Bundle();
         uidFilter.putStringArray("toUIDs", new String[]{requestUid});
+        Log.d(TAG, "SEND DISCOVERY RESPONSE: " + requestUid);
         CotMapComponent.getExternalDispatcher().dispatch(resEvent, uidFilter);
     }
 

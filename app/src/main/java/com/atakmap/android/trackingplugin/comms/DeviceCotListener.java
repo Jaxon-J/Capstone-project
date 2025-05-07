@@ -51,6 +51,7 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
         cotEventListener = (cotEvent, bundle) -> {
             Consumer<CotEvent> cotFunc = eventFnMap.get(cotEvent.getType());
             if (cotFunc == null) return;
+            Log.d(TAG, "RECEIVED " + cotEvent.getType() + " EVENT: " + cotEvent);
             cotFunc.accept(cotEvent);
         };
         CommsMapComponent.getInstance().addOnCotEventListener(cotEventListener);
@@ -95,7 +96,6 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
     }
 
     private static void onDeviceFound(CotEvent cotEvent) {
-        Log.d(TAG, "RECEIVED FOUND EVENT: " + cotEvent);
         // grab attributes from CotDetail
         CotDetail detail = cotEvent.findDetail(CotDetailTypes.DEVICE_FOUND.eltName);
 
@@ -134,7 +134,6 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
     }
 
     private static void onDeviceRemove(CotEvent cotEvent) {
-        Log.d(TAG, "RECEIVED REMOVE EVENT: " + cotEvent);
         CotDetail detail = cotEvent.findDetail(CotDetailTypes.DEVICE_REMOVE.eltName);
         String macAddress = detail.getAttribute(CotDetailTypes.DEVICE_REMOVE.attrs.macAddress);
         String sensorUid = detail.getAttribute(CotDetailTypes.DEVICE_REMOVE.attrs.sensorUid);
