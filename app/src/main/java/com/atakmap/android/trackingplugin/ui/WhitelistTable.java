@@ -24,7 +24,6 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
-import com.atakmap.android.trackingplugin.comms.CotDetailTypes;
 import com.atakmap.android.trackingplugin.comms.DeviceCotListener;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
