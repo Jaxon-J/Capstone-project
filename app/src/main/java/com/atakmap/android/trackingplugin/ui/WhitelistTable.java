@@ -103,16 +103,8 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
             ((TextView) row.findViewById(R.id.deviceRowMacAddressText)).setText(deviceInfo.macAddress);
 
             // checkbox will set visibility
-            row.findViewById(R.id.deviceRowVisibilityCheckbox).setOnClickListener(v -> {
-                for (MapItem item : DeviceCotListener.deviceGroup.getItems()) {
-                    String macAddress = item.getMetaAttributeSet(CotDetailTypes.MAPITEM_INFO.attrSetName)
-                            .getStringAttribute(CotDetailTypes.MAPITEM_INFO.attrs.macAddress);
-                    if (deviceInfo.macAddress.equals(macAddress)) {
-                        DeviceCotListener.setVisibility(macAddress, ((CheckBox) v).isChecked());
-                        break;
-                    }
-                }
-            });
+            row.findViewById(R.id.deviceRowVisibilityCheckbox).setOnClickListener(v ->
+                DeviceCotListener.setVisibility(deviceInfo.macAddress, ((CheckBox) v).isChecked()));
 
             // add row click behavior
             row.setOnClickListener((View v) -> {
