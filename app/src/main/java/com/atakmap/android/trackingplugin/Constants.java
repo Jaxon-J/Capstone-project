@@ -23,7 +23,7 @@ public final class Constants {
     public static final List<Pair<String, Integer>> TAB_LAYOUTS = List.of(
             new Pair<>(TRACKING_TABNAME, R.layout.tracking_layout),
             new Pair<>(WHITELIST_TABNAME, R.layout.whitelist_layout),
-            new Pair<>(SENSORS_TABNAME, R.layout.sensors_layout),
+//            new Pair<>(SENSORS_TABNAME, R.layout.sensors_layout),
             new Pair<>(DEBUG_TABNAME, R.layout.debug_layout));
     public static final int TAB_COUNT = TAB_LAYOUTS.size();
 
