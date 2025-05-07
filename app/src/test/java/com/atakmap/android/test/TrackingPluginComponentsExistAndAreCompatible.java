@@ -9,6 +9,8 @@ import static org.junit.Assert.*;
 
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
+import com.atakmap.android.trackingplugin.DeviceInfo;
+import com.atakmap.android.trackingplugin.DeviceStorageManager;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 
 
@@ -26,6 +28,14 @@ public class TrackingPluginComponentsExistAndAreCompatible {
         String expectedReceiverTag = "TrackPlug.BluetoothReceiver";
         String actualReceiverTag = Constants.createTag(BluetoothReceiver.class);
         assertEquals(expectedReceiverTag, actualReceiverTag);
+
+        String expectedDITag = "TrackPlug.DeviceInfo";
+        String actualDITag = Constants.createTag(DeviceInfo.class);
+        assertEquals(expectedDITag, actualDITag);
+
+        String expectedStorageTag = "TrackPlug.DeviceStorageManager";
+        String actualStorageTag = Constants.createTag(DeviceStorageManager.class);
+        assertEquals(expectedStorageTag, actualStorageTag);
     }
 }
 
