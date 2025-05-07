@@ -64,6 +64,9 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
     private static void onDiscoverRequest(CotEvent cotEvent) {
         String requestUid = cotEvent.getDetail().getChild(CotDetailTypes.DISCOVERY_REQUEST.eltName)
                 .getAttribute(CotDetailTypes.DISCOVERY_REQUEST.attrs.reqUid);
+        if (TrackingPlugin.sensorsTable != null) {
+            TrackingPlugin.sensorsTable.addSensor(Contacts.getInstance().getContactByUuid(requestUid).getName(), requestUid);
+        }
         DeviceCotDispatcher.sendDiscoveryResponse(requestUid);
     }
 
