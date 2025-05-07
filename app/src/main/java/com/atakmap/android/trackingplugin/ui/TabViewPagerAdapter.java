@@ -102,6 +102,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                     TrackingPlugin.whitelistTable = new WhitelistTable(uiService, holder.itemView);
                     TrackingPlugin.whitelistTable.setup();
                 }
+                break;
             }
             case Constants.SENSORS_TABNAME: {
                 DeviceCotDispatcher.discoverPluginContacts();
