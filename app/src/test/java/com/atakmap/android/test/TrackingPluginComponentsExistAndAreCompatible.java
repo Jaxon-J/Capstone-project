@@ -16,6 +16,8 @@ import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;
 import com.atakmap.android.trackingplugin.comms.DeviceCotListener;
 import com.atakmap.android.trackingplugin.plugin.PluginNativeLoader;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
+import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;
+import com.atakmap.android.trackingplugin.ui.WhitelistTable;
 
 
 public class TrackingPluginComponentsExistAndAreCompatible {
@@ -60,6 +62,14 @@ public class TrackingPluginComponentsExistAndAreCompatible {
         String expectedTrackPluginTag = "TrackPlug.TrackingPlugin";
         String actualTrackPluginTag = Constants.createTag(TrackingPlugin.class);
         assertEquals(expectedTrackPluginTag, actualTrackPluginTag);
+
+        String expectedTabViewTag = "TrackPlug.TabViewPagerAdapter";
+        String actualTabViewTag = Constants.createTag(TabViewPagerAdapter.class);
+        assertEquals(expectedTabViewTag, actualTabViewTag);
+
+        String expectedWhitelistTableTag = "TrackPlug.WhitelistTable";
+        String actualWhitelistTableTag = Constants.createTag(WhitelistTable.class);
+        assertEquals(expectedWhitelistTableTag, actualWhitelistTableTag);
     }
 }
 
