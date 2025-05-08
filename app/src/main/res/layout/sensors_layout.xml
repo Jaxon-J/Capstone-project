@@ -91,4 +91,17 @@
         </TableLayout>
     </ScrollView>
 
+    <Button
+        android:id="@+id/sensorRefreshButton"
+        style="@style/darkButton"
+        android:layout_width="175dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="16dp"
+        android:text="Refresh"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.95"
+        app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

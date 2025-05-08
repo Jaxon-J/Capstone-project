@@ -3,6 +3,8 @@ package com.atakmap.android.trackingplugin.comms;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
@@ -85,12 +87,18 @@ public class DeviceCotDispatcher {
         CotMapComponent.getExternalDispatcher().dispatch(sendEvent, uidFilter);
     }
 
-    public static void discoverPluginContacts() {
+    public static void discoverPluginContacts(@Nullable String[] contactUids) {
         CotDetail reqDetail = new CotDetail(CotDetailTypes.DISCOVERY_REQUEST.eltName);
         reqDetail.setAttribute(CotDetailTypes.DISCOVERY_REQUEST.attrs.reqUid, MapView.getDeviceUid());
         CotEvent reqEvent = embedDetail(reqDetail, CotDetailTypes.DISCOVERY_REQUEST.typeName);
         Log.d(TAG, "SEND DISCOVERY EVENT: " + reqEvent);
-        CotMapComponent.getExternalDispatcher().dispatch(reqEvent);
+        if (contactUids == null) {
+            CotMapComponent.getExternalDispatcher().dispatch(reqEvent);
+            return;
+        }
+        Bundle uidFilter = new Bundle();
+        uidFilter.putStringArray("toUIDs", contactUids);
+        CotMapComponent.getExternalDispatcher().dispatch(reqEvent, uidFilter);
     }
 
     public static void sendDiscoveryResponse(String requestUid) {

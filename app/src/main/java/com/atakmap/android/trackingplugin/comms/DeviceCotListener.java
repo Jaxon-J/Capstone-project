@@ -65,16 +65,16 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
     private static void onDiscoverRequest(CotEvent cotEvent) {
         String requestUid = cotEvent.getDetail().getChild(CotDetailTypes.DISCOVERY_REQUEST.eltName)
                 .getAttribute(CotDetailTypes.DISCOVERY_REQUEST.attrs.reqUid);
-        if (TrackingPlugin.sensorsTable != null) {
+        if (TrackingPlugin.sensorsTable != null)
             TrackingPlugin.sensorsTable.addSensor(Contacts.getInstance().getContactByUuid(requestUid).getName(), requestUid);
-        }
         DeviceCotDispatcher.sendDiscoveryResponse(requestUid);
     }
 
     private static void onDiscoverResponse(CotEvent cotEvent) {
         String responseUid = cotEvent.getDetail().getChild(CotDetailTypes.DISCOVERY_RESPONSE.eltName)
                 .getAttribute(CotDetailTypes.DISCOVERY_RESPONSE.attrs.resUid);
-        TrackingPlugin.sensorsTable.addSensor(Contacts.getInstance().getContactByUuid(responseUid).getName(), responseUid);
+        if (TrackingPlugin.sensorsTable != null)
+            TrackingPlugin.sensorsTable.addSensor(Contacts.getInstance().getContactByUuid(responseUid).getName(), responseUid);
     }
 
     private static void onWhitelistRequest(CotEvent cotEvent) {
