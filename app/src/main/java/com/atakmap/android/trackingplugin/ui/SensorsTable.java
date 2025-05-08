@@ -33,7 +33,7 @@ public class SensorsTable implements Contacts.OnContactsChangedListener {
         this.uiService = uiService;
         this.tabView = tabView;
         for (Contact contact : Contacts.getInstance().getAllContacts()) {
-            nameUidSensorMap.put(contact.getName(), contact.getUid());
+            contactUids.add(contact.getUid());
         }
         Contacts.getInstance().addListener(this);
     }

@@ -5,12 +5,15 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.atakmap.android.contact.Contact;
+import com.atakmap.android.contact.Contacts;
 import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.maps.Marker;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
+import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
@@ -108,6 +111,9 @@ public class DeviceCotDispatcher {
         Bundle uidFilter = new Bundle();
         uidFilter.putStringArray("toUIDs", new String[]{requestUid});
         Log.d(TAG, "SEND DISCOVERY RESPONSE: " + requestUid);
+        Contact reqContact = Contacts.getInstance().getContactByUuid(requestUid);
+        if (reqContact != null && TrackingPlugin.sensorsTable != null)
+            TrackingPlugin.sensorsTable.addSensor(reqContact.getName(), requestUid);
         CotMapComponent.getExternalDispatcher().dispatch(resEvent, uidFilter);
     }
 
