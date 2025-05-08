@@ -11,6 +11,10 @@ import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
+import com.atakmap.android.trackingplugin.comms.CotDetailTypes;
+import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;
+import com.atakmap.android.trackingplugin.comms.DeviceCotListener;
+import com.atakmap.android.trackingplugin.plugin.PluginNativeLoader;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 
 
@@ -36,6 +40,26 @@ public class TrackingPluginComponentsExistAndAreCompatible {
         String expectedStorageTag = "TrackPlug.DeviceStorageManager";
         String actualStorageTag = Constants.createTag(DeviceStorageManager.class);
         assertEquals(expectedStorageTag, actualStorageTag);
+
+        String expectedCotDetailTag = "TrackPlug.CotDetailTypes";
+        String actualCotDetailTag = Constants.createTag(CotDetailTypes.class);
+        assertEquals(expectedCotDetailTag, actualCotDetailTag);
+
+        String expectedCotDispatcherTag = "TrackPlug.DeviceCotDispatcher";
+        String actualCotDispatcherTag = Constants.createTag(DeviceCotDispatcher.class);
+        assertEquals(expectedCotDispatcherTag, actualCotDispatcherTag);
+
+        String expectedCotListenerTag = "TrackPlug.DeviceCotListener";
+        String actualCotListenerTag = Constants.createTag(DeviceCotListener.class);
+        assertEquals(expectedCotListenerTag, actualCotListenerTag);
+
+        String expectedPlugInNativeLoaderTag = "TrackPlug.PluginNativeLoader";
+        String actualPlugInNativeLoaderTag = Constants.createTag(PluginNativeLoader.class);
+        assertEquals(expectedPlugInNativeLoaderTag, actualPlugInNativeLoaderTag);
+
+        String expectedTrackPluginTag = "TrackPlug.TrackingPlugin";
+        String actualTrackPluginTag = Constants.createTag(TrackingPlugin.class);
+        assertEquals(expectedTrackPluginTag, actualTrackPluginTag);
     }
 }
 
