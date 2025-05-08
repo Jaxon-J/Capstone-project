@@ -1,6 +1,9 @@
 package com.atakmap.android.test;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,6 +17,8 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 ///Test to ensure our deviceInfo test functionality is working. This should be a good indicator that this class
 /// has not been broken with any edits.
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = 28)
 public class DeviceInfoTest {
 
     @Test
