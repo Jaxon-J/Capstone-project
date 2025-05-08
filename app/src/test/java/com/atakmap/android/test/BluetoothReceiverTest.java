@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 public class BluetoothReceiverTest {
 
     @Test
-    public void testHasAllBtPermissions_withMissingPermissions_returnsFalse() {
+    public void BtPermissionsreturnsFalse() {
         Context mockContext = mock(Context.class);
         when(mockContext.checkSelfPermission(anyString())).thenReturn(PackageManager.PERMISSION_DENIED);
 
@@ -38,7 +38,7 @@ public class BluetoothReceiverTest {
     }
 
     @Test
-    public void testHasAllBtPermissions_withAllPermissions_returnsTrue() {
+    public void BtPermissionsreturnsTrue() {
         Context mockContext = mock(Context.class);
         when(mockContext.checkSelfPermission(anyString())).thenReturn(PackageManager.PERMISSION_GRANTED);
 
@@ -47,7 +47,7 @@ public class BluetoothReceiverTest {
     }
 
     @Test
-    public void testOnDeviceListChange_setsWhitelist_withoutStorageCall() throws Exception {
+    public void SetWhitelistwithoutStorageCall() throws Exception {
         // Manually set up the static map so that BluetoothReceiver constructor doesn't crash
         Field mapField = DeviceStorageManager.class.getDeclaredField("listTypeMap");
         mapField.setAccessible(true);
@@ -86,7 +86,7 @@ public class BluetoothReceiverTest {
     }
 
     @Test
-    public void testOnReceive_withNullAction_doesNotCrash() {
+    public void nullActions() {
         Context mockContext = mock(Context.class);
         BluetoothReceiver receiver = mock(BluetoothReceiver.class, Mockito.withSettings()
                 .useConstructor(mockContext)

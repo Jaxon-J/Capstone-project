@@ -52,7 +52,7 @@ public class DeviceInfoTest {
     }
 
     @Test
-    public void testMacFormatAndUniquenessInMock() {
+    public void testMacFormat() {
         List<DeviceInfo> mockDevices = generateMockDevicesForTest(10);
         Set<String> macSet = new HashSet<>();
         for (DeviceInfo device : mockDevices) {

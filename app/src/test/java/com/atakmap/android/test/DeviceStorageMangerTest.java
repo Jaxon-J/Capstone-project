@@ -7,16 +7,13 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.robolectric.RobolectricTestRunner;
 
-import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
