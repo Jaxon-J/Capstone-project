@@ -192,11 +192,14 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
         if (existingPositions == null || existingPositions.isEmpty())
             return null;
         // TODO: after deleting the marker, it got here and spat an error after stopped scanning. worth investigating.
+        Set<Pair<String, GeoPoint>> toRemove = new HashSet<>();
         for (Pair<String, GeoPoint> pos : existingPositions) {
             if (sensorUid.equals(pos.first)) {
-                existingPositions.remove(pos);
+                toRemove.add(pos);
             }
         }
+        for (Pair<String, GeoPoint> pos : toRemove)
+            existingPositions.remove(pos);
         return getDevicePosition(macAddress);
     }
 

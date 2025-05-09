@@ -9,54 +9,38 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.atakmap.android.contact.Contact;
 import com.atakmap.android.contact.Contacts;
-import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;
 import com.atakmap.android.trackingplugin.plugin.R;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import gov.tak.api.ui.IHostUIService;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SensorsTable implements Contacts.OnContactsChangedListener {
     private static final Map<String, String> nameUidSensorMap = new HashMap<>();
-    private static final Set<String> contactUids = new HashSet<>();
-    private final IHostUIService uiService;
-    private static boolean heightSet = false;
     private final View tabView;
 
-    public SensorsTable(IHostUIService uiService, View tabView) {
-        this.uiService = uiService;
+    public SensorsTable(View tabView) {
         this.tabView = tabView;
-        for (Contact contact : Contacts.getInstance().getAllContacts()) {
-            contactUids.add(contact.getUid());
-        }
         Contacts.getInstance().addListener(this);
     }
 
-    public void refreshTable() {
-        setTableHeight();
-        TableLayout tableLayout = tabView.findViewById(R.id.sensorTable);
-        tableLayout.removeAllViews();
-//        for (String contactUid : Contacts.getInstance().getAllIndividualContactUuids()) {
-//            MapView.getMapView().getRootGroup().deepFindUID(contactUid);
-//            Contact contact = Contacts.getInstance().getContactByUuid(contactUid);
-//            Contacts.getInstance().getAllContactsWithRole("tracker");
-//        }
-        for (Map.Entry<String, String> nameUid : nameUidSensorMap.entrySet()) {
-            TableRow row = (TableRow) LayoutInflater.from(tabView.getContext())
-                    .inflate(R.layout.sensor_table_row_layout, tableLayout, false);
-            ((TextView) row.findViewById(R.id.sensorTableNameLabel)).setText(nameUid.getKey());
-            row.findViewById(R.id.sensorTableRequestWhitelistButton).setOnClickListener(v ->
-                    DeviceCotDispatcher.sendWhitelistRequest(nameUid.getValue()));
-            tableLayout.addView(row);
-        }
+    public void refreshUi() {
+        tabView.post(() -> {
+            TableLayout tableLayout = tabView.findViewById(R.id.sensorTable);
+            tableLayout.removeAllViews();
+            for (Map.Entry<String, String> nameUid : nameUidSensorMap.entrySet()) {
+                TableRow row = (TableRow) LayoutInflater.from(tabView.getContext())
+                        .inflate(R.layout.sensor_table_row_layout, tableLayout, false);
+                ((TextView) row.findViewById(R.id.sensorTableNameLabel)).setText(nameUid.getKey());
+                row.findViewById(R.id.sensorTableRequestWhitelistButton)
+                        .setOnClickListener(v -> DeviceCotDispatcher.sendWhitelistRequest(nameUid.getValue()));
+                tableLayout.addView(row);
+            }
+            setTableHeight();
+        });
     }
 
     private void setTableHeight() {
@@ -65,8 +49,7 @@ public class SensorsTable implements Contacts.OnContactsChangedListener {
             View tableHeader = tabView.findViewById(R.id.sensorTableHeaderRowTable);
             Button refreshButton = tabView.findViewById(R.id.sensorRefreshButton);
             ViewGroup.MarginLayoutParams buttonMargins = (ViewGroup.MarginLayoutParams) refreshButton.getLayoutParams();
-            int tableHeight =
-                    tabView.getMeasuredHeight() -
+            int tableHeight = tabView.getMeasuredHeight() -
                     tableHeader.getMeasuredHeight() -
                     buttonMargins.topMargin -
                     refreshButton.getMeasuredHeight() -
@@ -79,36 +62,28 @@ public class SensorsTable implements Contacts.OnContactsChangedListener {
 
     public void addSensor(String name, String uid) {
         nameUidSensorMap.put(name, uid);
-        refreshTable();
+        refreshUi();
     }
 
-    public void userInvokedRefresh() {
-        onContactsSizeChange(Contacts.getInstance());
+    public void refreshData() {
+        nameUidSensorMap.clear();
+        DeviceCotDispatcher.discoverPluginContacts(null);
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                refreshUi();
+            }
+        }, 500);
     }
 
     @Override
-    public void onContactsSizeChange(Contacts contacts) {
-        List<String> newUids = new ArrayList<>();
-        List<String> allContactUids = contacts.getAllContactUuids();
-        for (String uid : allContactUids) {
-            if (!contactUids.contains(uid)) {
-                newUids.add(uid);
-            }
-        }
-        contactUids.addAll(newUids);
-        DeviceCotDispatcher.discoverPluginContacts(newUids.toArray(new String[0]));
-        for (String uid : contactUids) {
-            if (!allContactUids.contains(uid)) {
-                contactUids.remove(uid);
-            }
-        }
-        refreshTable();
-    }
+    public void onContactsSizeChange(Contacts contacts) {}
 
     @Override
     public void onContactChanged(String uuid) {
         if (!nameUidSensorMap.containsKey(uuid)) return;
         nameUidSensorMap.put(uuid, Contacts.getInstance().getContactByUuid(uuid).getName());
-        refreshTable();
+        refreshUi();
     }
 }

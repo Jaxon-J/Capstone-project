@@ -4,6 +4,7 @@ package com.atakmap.android.trackingplugin.plugin;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -52,11 +53,15 @@ public class TrackingPlugin implements IPlugin {
     ToolbarItem toolbarItem;
     public static Pane primaryPane;
     BluetoothReceiver btReceiver;
+    ViewPager2 pager;
+    View mainTemplate;
+    TabLayout tabLayout;
     boolean primaryPaneInitialized = false;
     public static WhitelistTable whitelistTable; // FIXME: completely re-architect the plugin so we don't have a memory leak here pls thx
     public static SensorsTable sensorsTable; // FIXME: completely re-architect the plugin so we don't have a memory leak here pls thx
 
     public TrackingPlugin(IServiceController serviceController) {
+        Log.d(TAG, "Tracking plugin instantiated");
         this.serviceController = serviceController;
         final PluginContextProvider ctxProvider = serviceController
                 .getService(PluginContextProvider.class);
@@ -80,6 +85,7 @@ public class TrackingPlugin implements IPlugin {
 
     @Override
     public void onStart() {
+        Log.d(TAG, "Tracking plugin started");
         // COMMS:
         DeviceCotListener.initialize();
 
@@ -114,19 +120,15 @@ public class TrackingPlugin implements IPlugin {
             btReceiver = null;
         }
         DeviceCotListener.uninitialize();
+        Log.d(TAG, "Tracking plugin stopped");
     }
 
     private void setupPrimaryPane() {
-        View mainTemplate = PluginLayoutInflater.inflate(pluginContext, R.layout.main_layout, null);
-        ViewPager2 pager = mainTemplate.findViewById(R.id.viewPager);
-        TabLayout tabLayout = mainTemplate.findViewById(R.id.tabLayout);
+        mainTemplate = PluginLayoutInflater.inflate(pluginContext, R.layout.main_layout, null);
+        pager = mainTemplate.findViewById(R.id.viewPager);
+        tabLayout = mainTemplate.findViewById(R.id.tabLayout);
         pager.setAdapter(new TabViewPagerAdapter(pluginContext, uiService));
         // set correct height for the tabs (difference between plugin height and tabs height)
-        pager.post(() -> {
-            ViewGroup.LayoutParams params = pager.getLayoutParams();
-            params.height = mainTemplate.getMeasuredHeight() - tabLayout.getMeasuredHeight();
-            pager.setLayoutParams(params);
-        });
         TabLayoutMediator mediator = new TabLayoutMediator(tabLayout, pager, (tab, position) -> tab.setText(Constants.TAB_LAYOUTS.get(position).first));
         mediator.attach();
         primaryPane = new PaneBuilder(mainTemplate)
@@ -146,7 +148,13 @@ public class TrackingPlugin implements IPlugin {
     public void showPane() {
         if (!primaryPaneInitialized)
             setupPrimaryPane();
-        if (!uiService.isPaneVisible(primaryPane))
+        if (!uiService.isPaneVisible(primaryPane)) {
+            pager.post(() -> {
+                ViewGroup.LayoutParams params = pager.getLayoutParams();
+                params.height = mainTemplate.getMeasuredHeight() - tabLayout.getMeasuredHeight();
+                pager.setLayoutParams(params);
+            });
             uiService.showPane(primaryPane, null);
+        }
     }
 }
