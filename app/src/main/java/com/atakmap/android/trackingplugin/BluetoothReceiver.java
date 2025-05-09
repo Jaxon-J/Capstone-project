@@ -167,33 +167,37 @@ public class BluetoothReceiver extends BroadcastReceiver implements DeviceStorag
         poller.schedule(new TimerTask() {
             @Override
             public void run() {
-                synchronized (currentIntervalDevices) {
-                    synchronized (lastIntervalDevices) {
-                        Set<DeviceInfo> deviceSet = new HashSet<>();
-
-                        // gather devices in current and not in last (i.e. new finds)
-                        for (Map.Entry<String, DeviceInfo> entry : currentIntervalDevices.entrySet())
-                            if (!lastIntervalDevices.containsKey(entry.getKey()))
-                                deviceSet.add(entry.getValue());
-                        DeviceCotDispatcher.sendDeviceFound(deviceSet);
-                        deviceSet.clear();
-
-                        // gather devices in last and not in current (i.e. fell out of tracking)
-                        for (Map.Entry<String, DeviceInfo> entry : lastIntervalDevices.entrySet())
-                            if (!currentIntervalDevices.containsKey(entry.getKey()))
-                                deviceSet.add(entry.getValue());
-
-                        DeviceCotDispatcher.sendDeviceRemoval(deviceSet);
-
-                        // swap contents from current to last and clear current
-                        lastIntervalDevices.clear();
-                        lastIntervalDevices.putAll(currentIntervalDevices);
-                        currentIntervalDevices.clear();
-                    }
-                }
+                onPoll();
             }
         }, 250, POLL_RATE_MILLIS);
         isScanning = true;
+    }
+
+    public void onPoll() {
+        synchronized (currentIntervalDevices) {
+            synchronized (lastIntervalDevices) {
+                Set<DeviceInfo> deviceSet = new HashSet<>();
+
+                // gather devices in current and not in last (i.e. new finds)
+                for (Map.Entry<String, DeviceInfo> entry : currentIntervalDevices.entrySet())
+                    if (!lastIntervalDevices.containsKey(entry.getKey()))
+                        deviceSet.add(entry.getValue());
+                DeviceCotDispatcher.sendDeviceFound(deviceSet);
+                deviceSet.clear();
+
+                // gather devices in last and not in current (i.e. fell out of tracking)
+                for (Map.Entry<String, DeviceInfo> entry : lastIntervalDevices.entrySet())
+                    if (!currentIntervalDevices.containsKey(entry.getKey()))
+                        deviceSet.add(entry.getValue());
+
+                DeviceCotDispatcher.sendDeviceRemoval(deviceSet);
+
+                // swap contents from current to last and clear current
+                lastIntervalDevices.clear();
+                lastIntervalDevices.putAll(currentIntervalDevices);
+                currentIntervalDevices.clear();
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")

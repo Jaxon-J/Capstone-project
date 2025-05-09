@@ -13,6 +13,7 @@ import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -23,10 +24,12 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceInfo;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
+import com.atakmap.android.trackingplugin.comms.DeviceCotListener;
 import com.atakmap.android.trackingplugin.plugin.R;
 import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 import com.atakmap.android.util.ATAKUtilities;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +38,7 @@ import gov.tak.api.ui.Pane;
 import gov.tak.api.ui.PaneBuilder;
 
 public class WhitelistTable implements DeviceStorageManager.DeviceListChangeListener {
+    public final static Map<String, Boolean> visibilityMap = new HashMap<>();
     private static final String TAG = Constants.createTag(WhitelistTable.class);
     private final int ROW_DEVICE_UUID_KEY = 538462893;
     private final int FIELD_INVALID_MESSAGE_KEY = 238472837;
@@ -49,7 +53,6 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
 
 
     // table setup
-
 
     public void setup() {
         setTableHeight();
@@ -85,6 +88,9 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
 
         // loop through all UUID's in the whitelist
         for (String uuid : DeviceStorageManager.getUuids(DeviceStorageManager.ListType.WHITELIST)) {
+            if (!visibilityMap.containsKey(uuid))
+                visibilityMap.put(uuid, false);
+
             final TableRow row = (TableRow) LayoutInflater.from(tabView.getContext())
                     .inflate(R.layout.device_table_row_layout, tableLayout, false);
             DeviceInfo deviceInfo = DeviceStorageManager.getDevice(DeviceStorageManager.ListType.WHITELIST, uuid);
@@ -100,8 +106,12 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
             ((TextView) row.findViewById(R.id.deviceRowMacAddressText)).setText(deviceInfo.macAddress);
 
             // checkbox will set visibility
-            row.findViewById(R.id.deviceRowVisibilityCheckbox).setOnClickListener(v -> {
-                // TODO: SET VISIBILITY HERE.
+            ToggleButton visibleButton = row.findViewById(R.id.deviceRowVisibilityCheckbox);
+            visibleButton.setChecked(Boolean.TRUE.equals(visibilityMap.get(deviceInfo.uuid)));
+            visibleButton.setOnClickListener(v -> {
+                boolean checked = ((ToggleButton) v).isChecked();
+                visibilityMap.put(deviceInfo.uuid, checked);
+                DeviceCotListener.setVisibility(deviceInfo.macAddress, checked);
             });
 
             // add row click behavior
@@ -223,7 +233,9 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // mac address needs to be an actual mac address
-                if (s.length() == 0 || !s.toString().toUpperCase().matches("(?:[A-F0-9]{2}:){5}[A-F0-9]{2}")) {
+                if (s.length() == 0 || !s.toString()
+                        .toUpperCase()
+                        .matches("(?:[A-F0-9]{2}:){5}[A-F0-9]{2}")) {
                     macAddressField.setTag(FIELD_INVALID_MESSAGE_KEY, "Please enter valid MAC address.");
                 } else {
                     macAddressField.setBackgroundTintList(ColorStateList.valueOf(
@@ -275,7 +287,8 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
         // locate button
         deviceInfoView.findViewById(R.id.deviceInfoPaneLocateButton).setOnClickListener(v -> {
             // TODO: get this working
-            MapItem deviceMapItem = MapView.getMapView().getRootGroup().deepFindUID(deviceInfo.uuid);
+            MapItem deviceMapItem = DeviceCotListener.getMarkerByMacAddress(deviceInfo.macAddress);
+            if (deviceMapItem == null) return;
             ATAKUtilities.scaleToFit(deviceMapItem);
         });
 
@@ -322,13 +335,3 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
         return new Pair<>(view, pane);
     }
 }
-
-/*
-set up functionality of table view on setup()
-
-every time addDevicePane is shown, it is passed a Uuid that tags what device needs to be changed.
-
-every time deviceInfoPane is shown, it is passed a Uuid that tags what device information needs to be grabbed.
-fresh from DeviceStorageManager every time.
-
- */

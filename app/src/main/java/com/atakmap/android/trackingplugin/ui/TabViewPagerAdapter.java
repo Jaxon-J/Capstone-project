@@ -26,7 +26,9 @@ import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.trackingplugin.BluetoothReceiver;
 import com.atakmap.android.trackingplugin.Constants;
 import com.atakmap.android.trackingplugin.DeviceStorageManager;
+import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;
 import com.atakmap.android.trackingplugin.plugin.R;
+import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +41,6 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
     private static final String TAG = Constants.createTag(TabViewPagerAdapter.class);
     private final Context context;
     private final IHostUIService uiService;
-    private boolean whitelistTabInitialized = false; // TODO: maybe make this a list for all tabs if there's other necessary init logic.
 
     public TabViewPagerAdapter(Context context, IHostUIService uiService) {
         this.context = context;
@@ -56,7 +57,6 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         return new TabViewHolder(tabLayout, Constants.TAB_LAYOUTS.get(position).first);
     }
 
-
     /// Main method that is called to initialize UI logic. It is called upon initialization, and all subsequent times the tab is changed.
     @SuppressLint("MissingPermission")
     @Override
@@ -70,8 +70,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         try {
-                            int newPollSeconds = Integer.parseInt(s.toString());
-                            BluetoothReceiver.POLL_RATE_MILLIS = newPollSeconds * 1000;
+                            BluetoothReceiver.POLL_RATE_MILLIS = s.length() > 0 ? (int)(Math.floor(Float.parseFloat(s.toString()) * 1000)) : 500;
                         } catch (NumberFormatException e) {
                             Log.w(TAG, "Poll time is not a number, did not update. Current: " + BluetoothReceiver.POLL_RATE_MILLIS);
                         }
@@ -97,15 +96,20 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 break;
             }
             case Constants.WHITELIST_TABNAME: {
-                if (!whitelistTabInitialized) {
-                    WhitelistTable whitelistTable = new WhitelistTable(uiService, holder.itemView);
-                    whitelistTable.setup();
-
-                    whitelistTabInitialized = true;
+                if (TrackingPlugin.whitelistTable == null) {
+                    TrackingPlugin.whitelistTable = new WhitelistTable(uiService, holder.itemView);
+                    TrackingPlugin.whitelistTable.setup();
                 }
-
+                break;
             }
             case Constants.SENSORS_TABNAME: {
+                DeviceCotDispatcher.discoverPluginContacts(null);
+                if (TrackingPlugin.sensorsTable == null) {
+                    TrackingPlugin.sensorsTable = new SensorsTable(holder.itemView);
+                    TrackingPlugin.sensorsTable.refreshUi();
+                    holder.itemView.findViewById(R.id.sensorRefreshButton).setOnClickListener(v ->
+                            TrackingPlugin.sensorsTable.refreshData());
+                }
                 break;
             }
             case Constants.DEBUG_TABNAME: {

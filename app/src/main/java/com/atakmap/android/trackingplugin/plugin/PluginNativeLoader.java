@@ -14,7 +14,7 @@ import com.atakmap.android.trackingplugin.Constants;
  */
 public class PluginNativeLoader {
 
-    private static final String TAG = Constants.TAG_PREFIX + "Loader";
+    private static final String TAG = Constants.createTag(PluginNativeLoader.class);
     private static String ndl = null;
 
     /**
@@ -33,7 +33,6 @@ public class PluginNativeLoader {
                 throw new IllegalArgumentException(
                         "native library loading will fail, unable to grab the nativeLibraryDir from the package name");
             }
-
         }
     }
 
@@ -55,7 +54,5 @@ public class PluginNativeLoader {
         } else {
             throw new IllegalArgumentException("NativeLoader not initialized");
         }
-
     }
-
 }
