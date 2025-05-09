@@ -37,13 +37,6 @@ import gov.tak.api.ui.ToolbarItem;
 import gov.tak.platform.marshal.MarshalManager;
 import gov.tak.platform.ui.MotionEvent;
 
-/*
-Implement notes:
-- Listen for other people that are actively tracking, add/remove from Sensor list accordingly.
-  - Sensor list should be symmetric to whitelist
-
- */
-
 public class TrackingPlugin implements IPlugin {
 
     public static final String TAG = Constants.createTag(TrackingPlugin.class);

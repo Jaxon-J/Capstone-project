@@ -57,7 +57,6 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
         return new TabViewHolder(tabLayout, Constants.TAB_LAYOUTS.get(position).first);
     }
 
-
     /// Main method that is called to initialize UI logic. It is called upon initialization, and all subsequent times the tab is changed.
     @SuppressLint("MissingPermission")
     @Override
@@ -71,8 +70,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         try {
-                            int newPollSeconds = Integer.parseInt(s.toString());
-                            BluetoothReceiver.POLL_RATE_MILLIS = newPollSeconds * 1000;
+                            BluetoothReceiver.POLL_RATE_MILLIS = s.length() > 0 ? (int)(Math.floor(Float.parseFloat(s.toString()) * 1000)) : 500;
                         } catch (NumberFormatException e) {
                             Log.w(TAG, "Poll time is not a number, did not update. Current: " + BluetoothReceiver.POLL_RATE_MILLIS);
                         }

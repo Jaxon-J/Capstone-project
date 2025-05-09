@@ -74,7 +74,7 @@ public class SensorsTable implements Contacts.OnContactsChangedListener {
             public void run() {
                 refreshUi();
             }
-        }, 500);
+        }, 1000);
     }
 
     @Override

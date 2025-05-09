@@ -38,12 +38,12 @@ import gov.tak.api.ui.Pane;
 import gov.tak.api.ui.PaneBuilder;
 
 public class WhitelistTable implements DeviceStorageManager.DeviceListChangeListener {
+    public final static Map<String, Boolean> visibilityMap = new HashMap<>();
     private static final String TAG = Constants.createTag(WhitelistTable.class);
     private final int ROW_DEVICE_UUID_KEY = 538462893;
     private final int FIELD_INVALID_MESSAGE_KEY = 238472837;
     private final IHostUIService uiService;
     private final View tabView;
-    public final static Map<String, Boolean> visibilityMap = new HashMap<>();
 
     public WhitelistTable(IHostUIService uiService, View tabView) {
         this.uiService = uiService;
@@ -233,7 +233,9 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // mac address needs to be an actual mac address
-                if (s.length() == 0 || !s.toString().toUpperCase().matches("(?:[A-F0-9]{2}:){5}[A-F0-9]{2}")) {
+                if (s.length() == 0 || !s.toString()
+                        .toUpperCase()
+                        .matches("(?:[A-F0-9]{2}:){5}[A-F0-9]{2}")) {
                     macAddressField.setTag(FIELD_INVALID_MESSAGE_KEY, "Please enter valid MAC address.");
                 } else {
                     macAddressField.setBackgroundTintList(ColorStateList.valueOf(
@@ -333,13 +335,3 @@ public class WhitelistTable implements DeviceStorageManager.DeviceListChangeList
         return new Pair<>(view, pane);
     }
 }
-
-/*
-set up functionality of table view on setup()
-
-every time addDevicePane is shown, it is passed a Uuid that tags what device needs to be changed.
-
-every time deviceInfoPane is shown, it is passed a Uuid that tags what device information needs to be grabbed.
-fresh from DeviceStorageManager every time.
-
- */

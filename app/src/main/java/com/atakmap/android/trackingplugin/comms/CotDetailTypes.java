@@ -66,8 +66,4 @@ public class CotDetailTypes {
             public static final String resUid = "response_uid";
         }
     }
-//    REQUEST_HISTORY(eltName = "request_device_history"),
-//    DEVICE_HISTORY(eltName = "device_history"),
-//    REQUEST_WHITELIST(eltName = "request_whitelist"),
-//    SEND_WHITELIST(eltName = "send_whitelist");
 }
