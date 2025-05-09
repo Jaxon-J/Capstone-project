@@ -36,6 +36,7 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
     private static final Map<String, Set<Pair<String, GeoPoint>>> devicePositions = new HashMap<>();
     /// Key is the whitelist UID, value is the associated Marker's UID.
     private static final Map<String, String> whitelistMarkerUidMap = new HashMap<>();
+    private static boolean initialized = false;
     private static final String TAG = Constants.createTag(DeviceCotListener.class);
     private static CotServiceRemote.CotEventListener cotEventListener;
     private static final Map<String, Consumer<CotEvent>> eventFnMap = Map.of(
@@ -48,6 +49,10 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
     );
 
     public static void initialize() {
+        if (initialized) return;
+        Marker selfMarker = MapView.getMapView().getSelfMarker();
+        selfMarker.setMetaBoolean(CotDetailTypes.MAPITEM_INFO.hasPluginTag, true);
+
         cotEventListener = (cotEvent, bundle) -> {
             Consumer<CotEvent> cotFunc = eventFnMap.get(cotEvent.getType());
             if (cotFunc == null) return;
@@ -55,11 +60,21 @@ public class DeviceCotListener implements DeviceStorageManager.DeviceListChangeL
             cotFunc.accept(cotEvent);
         };
         CommsMapComponent.getInstance().addOnCotEventListener(cotEventListener);
+        initialized = true;
+        MapView.getMapView().getRootGroup().deepForEachItem(mapItem -> {
+            if (mapItem.getMetaBoolean(CotDetailTypes.MAPITEM_INFO.hasPluginTag, false)
+                    && !mapItem.getUID().equals(MapView.getDeviceUid())) {
+                Log.d(TAG, "ITEM HAS PLUGIN: " + mapItem.getUID());
+            }
+            return false;
+        });
     }
 
     public static void uninitialize() {
+        if (!initialized) return;
         CommsMapComponent.getInstance().removeOnCotEventListener(cotEventListener);
         cotEventListener = null;
+        initialized = false;
     }
 
     private static void onDiscoverRequest(CotEvent cotEvent) {

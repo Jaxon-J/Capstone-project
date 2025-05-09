@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.atakmap.android.contact.Contact;
 import com.atakmap.android.contact.Contacts;
+import com.atakmap.android.maps.MapView;
 import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;
 import com.atakmap.android.trackingplugin.plugin.R;
 
@@ -43,6 +44,11 @@ public class SensorsTable implements Contacts.OnContactsChangedListener {
         setTableHeight();
         TableLayout tableLayout = tabView.findViewById(R.id.sensorTable);
         tableLayout.removeAllViews();
+//        for (String contactUid : Contacts.getInstance().getAllIndividualContactUuids()) {
+//            MapView.getMapView().getRootGroup().deepFindUID(contactUid);
+//            Contact contact = Contacts.getInstance().getContactByUuid(contactUid);
+//            Contacts.getInstance().getAllContactsWithRole("tracker");
+//        }
         for (Map.Entry<String, String> nameUid : nameUidSensorMap.entrySet()) {
             TableRow row = (TableRow) LayoutInflater.from(tabView.getContext())
                     .inflate(R.layout.sensor_table_row_layout, tableLayout, false);

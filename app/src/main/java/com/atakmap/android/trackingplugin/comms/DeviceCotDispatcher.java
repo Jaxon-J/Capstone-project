@@ -94,7 +94,7 @@ public class DeviceCotDispatcher {
         CotDetail reqDetail = new CotDetail(CotDetailTypes.DISCOVERY_REQUEST.eltName);
         reqDetail.setAttribute(CotDetailTypes.DISCOVERY_REQUEST.attrs.reqUid, MapView.getDeviceUid());
         CotEvent reqEvent = embedDetail(reqDetail, CotDetailTypes.DISCOVERY_REQUEST.typeName);
-        Log.d(TAG, "SEND DISCOVERY EVENT: " + reqEvent);
+        Log.d(TAG, "SEND DISCOVERY REQUEST: " + reqEvent);
         if (contactUids == null) {
             CotMapComponent.getExternalDispatcher().dispatch(reqEvent);
             return;
@@ -105,15 +105,15 @@ public class DeviceCotDispatcher {
     }
 
     public static void sendDiscoveryResponse(String requestUid) {
-        CotDetail resDetail = new CotDetail(CotDetailTypes.DISCOVERY_RESPONSE.eltName);
-        resDetail.setAttribute(CotDetailTypes.DISCOVERY_RESPONSE.attrs.resUid, MapView.getDeviceUid());
-        CotEvent resEvent = embedDetail(resDetail, CotDetailTypes.DISCOVERY_RESPONSE.typeName);
-        Bundle uidFilter = new Bundle();
-        uidFilter.putStringArray("toUIDs", new String[]{requestUid});
-        Log.d(TAG, "SEND DISCOVERY RESPONSE: " + requestUid);
         Contact reqContact = Contacts.getInstance().getContactByUuid(requestUid);
         if (reqContact != null && TrackingPlugin.sensorsTable != null)
             TrackingPlugin.sensorsTable.addSensor(reqContact.getName(), requestUid);
+        CotDetail resDetail = new CotDetail(CotDetailTypes.DISCOVERY_RESPONSE.eltName);
+        resDetail.setAttribute(CotDetailTypes.DISCOVERY_RESPONSE.attrs.resUid, MapView.getDeviceUid());
+        Log.d(TAG, "SEND DISCOVERY RESPONSE: " + requestUid);
+        CotEvent resEvent = embedDetail(resDetail, CotDetailTypes.DISCOVERY_RESPONSE.typeName);
+        Bundle uidFilter = new Bundle();
+        uidFilter.putStringArray("toUIDs", new String[]{requestUid});
         CotMapComponent.getExternalDispatcher().dispatch(resEvent, uidFilter);
     }
 
@@ -136,31 +136,3 @@ public class DeviceCotDispatcher {
         );
     }
 }
-/*
-DEVICE FOUND COTEVENT:
-- device_found element: user_given_name, mac_address, rssi
-- (utilize time/stale for timeout logic)
-<event version='2.0' uid='4276a749-d7cb-fefa-b8a4-e3f2825ba57f' type='a-u-G'
-    time='2025-04-27T12:48:31.173Z' start='2025-04-27T12:48:31.173Z'
-    stale='2025-04-27T12:48:36.149Z' how='m-p' access='Undefined'>
-    <point lat='41.257342' lon='-96.102356' hae='297.04' ce='25.9' le='9999999.0' />
-    <device_found rssi='-62' mac_address='F5:6C:69:FB:C0:46' user_given_name='vr lighthouse' />
-</event>
- */
-
-
-
-/*
-
-
-
- */
-
-
-
-
-
-
-
-
-
