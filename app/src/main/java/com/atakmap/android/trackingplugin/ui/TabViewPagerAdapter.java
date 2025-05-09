@@ -108,7 +108,7 @@ public class TabViewPagerAdapter extends RecyclerView.Adapter<TabViewPagerAdapte
                 DeviceCotDispatcher.discoverPluginContacts(null);
                 if (TrackingPlugin.sensorsTable == null) {
                     TrackingPlugin.sensorsTable = new SensorsTable(uiService, holder.itemView);
-                    TrackingPlugin.sensorsTable.setup();
+                    TrackingPlugin.sensorsTable.refreshTable();
                     holder.itemView.findViewById(R.id.sensorRefreshButton).setOnClickListener(v ->
                             TrackingPlugin.sensorsTable.userInvokedRefresh());
                 }

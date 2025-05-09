@@ -27,6 +27,7 @@ public class SensorsTable implements Contacts.OnContactsChangedListener {
     private static final Map<String, String> nameUidSensorMap = new HashMap<>();
     private static final Set<String> contactUids = new HashSet<>();
     private final IHostUIService uiService;
+    private static boolean heightSet = false;
     private final View tabView;
 
     public SensorsTable(IHostUIService uiService, View tabView) {
@@ -38,12 +39,8 @@ public class SensorsTable implements Contacts.OnContactsChangedListener {
         Contacts.getInstance().addListener(this);
     }
 
-    public void setup() {
-        setTableHeight();
-        refreshTable();
-    }
-
     public void refreshTable() {
+        setTableHeight();
         TableLayout tableLayout = tabView.findViewById(R.id.sensorTable);
         tableLayout.removeAllViews();
         for (Map.Entry<String, String> nameUid : nameUidSensorMap.entrySet()) {
