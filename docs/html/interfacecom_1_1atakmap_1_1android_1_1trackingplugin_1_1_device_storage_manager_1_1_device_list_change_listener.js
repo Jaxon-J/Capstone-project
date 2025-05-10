@@ -1,0 +1,4 @@
+var interfacecom_1_1atakmap_1_1android_1_1trackingplugin_1_1_device_storage_manager_1_1_device_list_change_listener =
+[
+    [ "onDeviceListChange", "interfacecom_1_1atakmap_1_1android_1_1trackingplugin_1_1_device_storage_manager_1_1_device_list_change_listener.html#ad80124bae77b4093fb4b67da0b0c5d09", null ]
+];

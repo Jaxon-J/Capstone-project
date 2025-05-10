@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "ATAK Capstone", "index.html", [
+  [ "Capstone", "index.html", [
     [ "Packages", "namespaces.html", [
       [ "Package List", "namespaces.html", "namespaces_dup" ]
     ] ],

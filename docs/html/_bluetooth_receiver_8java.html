@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.13.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ATAK Capstone: app/src/main/java/com/atakmap/android/trackingplugin/BluetoothReceiver.java File Reference</title>
+<title>Capstone: app/src/main/java/com/atakmap/android/trackingplugin/BluetoothReceiver.java File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -32,7 +32,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">ATAK Capstone
+   <div id="projectname">Capstone
    </div>
   </td>
     <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -116,6 +116,7 @@ $(function(){initNavTree('_bluetooth_receiver_8java.html',''); initResizable(tru
 <code>import android.bluetooth.le.BluetoothLeScanner;</code><br />
 <code>import android.bluetooth.le.ScanCallback;</code><br />
 <code>import android.bluetooth.le.ScanResult;</code><br />
+<code>import android.bluetooth.le.ScanSettings;</code><br />
 <code>import android.content.BroadcastReceiver;</code><br />
 <code>import android.content.Context;</code><br />
 <code>import android.content.Intent;</code><br />
@@ -123,12 +124,16 @@ $(function(){initNavTree('_bluetooth_receiver_8java.html',''); initResizable(tru
 <code>import android.os.Build;</code><br />
 <code>import android.util.Log;</code><br />
 <code>import androidx.annotation.NonNull;</code><br />
-<code>import androidx.annotation.Nullable;</code><br />
+<code>import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;</code><br />
 <code>import java.util.ArrayList;</code><br />
+<code>import java.util.Collections;</code><br />
 <code>import java.util.HashMap;</code><br />
+<code>import java.util.HashSet;</code><br />
 <code>import java.util.List;</code><br />
 <code>import java.util.Map;</code><br />
-<code>import java.util.Objects;</code><br />
+<code>import java.util.Set;</code><br />
+<code>import java.util.Timer;</code><br />
+<code>import java.util.TimerTask;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>

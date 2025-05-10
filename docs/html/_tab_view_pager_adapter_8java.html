@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.13.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ATAK Capstone: app/src/main/java/com/atakmap/android/trackingplugin/ui/TabViewPagerAdapter.java File Reference</title>
+<title>Capstone: app/src/main/java/com/atakmap/android/trackingplugin/ui/TabViewPagerAdapter.java File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -32,7 +32,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">ATAK Capstone
+   <div id="projectname">Capstone
    </div>
   </td>
     <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -108,31 +108,42 @@ $(function(){initNavTree('_tab_view_pager_adapter_8java.html',''); initResizable
   <div class="headertitle"><div class="title">TabViewPagerAdapter.java File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>import android.bluetooth.BluetoothAdapter;</code><br />
+<div class="textblock"><code>import android.annotation.SuppressLint;</code><br />
+<code>import android.bluetooth.BluetoothAdapter;</code><br />
 <code>import android.bluetooth.BluetoothDevice;</code><br />
+<code>import android.bluetooth.BluetoothManager;</code><br />
+<code>import android.bluetooth.le.BluetoothLeScanner;</code><br />
+<code>import android.bluetooth.le.ScanCallback;</code><br />
+<code>import android.bluetooth.le.ScanResult;</code><br />
 <code>import android.content.Context;</code><br />
 <code>import android.content.Intent;</code><br />
+<code>import android.os.Build;</code><br />
+<code>import android.text.Editable;</code><br />
+<code>import android.text.TextWatcher;</code><br />
 <code>import android.util.Log;</code><br />
 <code>import android.view.LayoutInflater;</code><br />
 <code>import android.view.View;</code><br />
 <code>import android.view.ViewGroup;</code><br />
 <code>import android.widget.Button;</code><br />
+<code>import android.widget.EditText;</code><br />
 <code>import androidx.annotation.NonNull;</code><br />
 <code>import androidx.recyclerview.widget.RecyclerView;</code><br />
 <code>import com.atakmap.android.ipc.AtakBroadcast;</code><br />
-<code>import com.atakmap.android.maps.MapView;</code><br />
-<code>import com.atakmap.android.maps.Marker;</code><br />
 <code>import com.atakmap.android.trackingplugin.BluetoothReceiver;</code><br />
 <code>import com.atakmap.android.trackingplugin.Constants;</code><br />
 <code>import com.atakmap.android.trackingplugin.DeviceStorageManager;</code><br />
+<code>import com.atakmap.android.trackingplugin.comms.DeviceCotDispatcher;</code><br />
 <code>import com.atakmap.android.trackingplugin.plugin.R;</code><br />
-<code>import com.atakmap.android.user.PlacePointTool;</code><br />
-<code>import com.atakmap.coremap.maps.coords.GeoPoint;</code><br />
+<code>import com.atakmap.android.trackingplugin.plugin.TrackingPlugin;</code><br />
+<code>import java.util.HashMap;</code><br />
+<code>import java.util.Map;</code><br />
+<code>import java.util.Timer;</code><br />
+<code>import java.util.TimerTask;</code><br />
+<code>import gov.tak.api.ui.IHostUIService;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1atakmap_1_1android_1_1trackingplugin_1_1ui_1_1_tab_view_pager_adapter.html">com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main class that handles Tabs and most subsequent UI logic implementation.  <a href="classcom_1_1atakmap_1_1android_1_1trackingplugin_1_1ui_1_1_tab_view_pager_adapter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter.TabViewHolder</b></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add data here that will be relevant to tab logic, that can be accessed in <code><a class="el" href="">onBindViewHolder(TabViewHolder, int)</a></code> via the first argument. <br /></td></tr>

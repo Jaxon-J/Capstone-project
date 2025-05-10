@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.13.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ATAK Capstone: app/src/main/java/com/atakmap/android/trackingplugin/old/TrackingPlugin.java File Reference</title>
+<title>Capstone: app/src/main/java/com/atakmap/android/trackingplugin/plugin/TrackingPlugin.java File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -32,7 +32,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">ATAK Capstone
+   <div id="projectname">Capstone
    </div>
   </td>
     <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -109,28 +109,45 @@ $(function(){initNavTree('_tracking_plugin_8java.html',''); initResizable(true);
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>import android.content.Context;</code><br />
+<code>import android.content.Intent;</code><br />
+<code>import android.graphics.drawable.Drawable;</code><br />
 <code>import android.util.Log;</code><br />
+<code>import android.view.View;</code><br />
+<code>import android.view.ViewGroup;</code><br />
+<code>import androidx.core.content.res.ResourcesCompat;</code><br />
+<code>import androidx.viewpager2.widget.ViewPager2;</code><br />
 <code>import com.atak.plugins.impl.PluginContextProvider;</code><br />
 <code>import com.atak.plugins.impl.PluginLayoutInflater;</code><br />
+<code>import com.atakmap.android.ipc.AtakBroadcast;</code><br />
+<code>import com.atakmap.android.trackingplugin.BluetoothReceiver;</code><br />
 <code>import com.atakmap.android.trackingplugin.Constants;</code><br />
-<code>import com.atakmap.android.trackingplugin.plugin.R;</code><br />
+<code>import com.atakmap.android.trackingplugin.DeviceInfo;</code><br />
+<code>import com.atakmap.android.trackingplugin.DeviceStorageManager;</code><br />
+<code>import com.atakmap.android.trackingplugin.comms.DeviceCotListener;</code><br />
+<code>import com.atakmap.android.trackingplugin.ui.SensorsTable;</code><br />
+<code>import com.atakmap.android.trackingplugin.ui.TabViewPagerAdapter;</code><br />
+<code>import com.atakmap.android.trackingplugin.ui.WhitelistTable;</code><br />
+<code>import com.google.android.material.tabs.TabLayout;</code><br />
+<code>import com.google.android.material.tabs.TabLayoutMediator;</code><br />
+<code>import java.util.List;</code><br />
+<code>import gov.tak.api.commons.graphics.Bitmap;</code><br />
 <code>import gov.tak.api.plugin.IPlugin;</code><br />
 <code>import gov.tak.api.plugin.IServiceController;</code><br />
 <code>import gov.tak.api.ui.IHostUIService;</code><br />
 <code>import gov.tak.api.ui.Pane;</code><br />
 <code>import gov.tak.api.ui.PaneBuilder;</code><br />
 <code>import gov.tak.api.ui.ToolbarItem;</code><br />
-<code>import gov.tak.api.ui.ToolbarItemAdapter;</code><br />
 <code>import gov.tak.platform.marshal.MarshalManager;</code><br />
+<code>import gov.tak.platform.ui.MotionEvent;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1atakmap_1_1android_1_1trackingplugin_1_1old_1_1_tracking_plugin.html">com.atakmap.android.trackingplugin.old.TrackingPlugin</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1atakmap_1_1android_1_1trackingplugin_1_1plugin_1_1_tracking_plugin.html">com.atakmap.android.trackingplugin.plugin.TrackingPlugin</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Packages</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">package &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecom_1_1atakmap_1_1android_1_1trackingplugin_1_1old.html">com.atakmap.android.trackingplugin.old</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">package &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecom_1_1atakmap_1_1android_1_1trackingplugin_1_1plugin.html">com.atakmap.android.trackingplugin.plugin</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
@@ -138,7 +155,7 @@ Packages</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_d422163b96683743ed3963d4aac17747.html">app</a></li><li class="navelem"><a class="el" href="dir_a8f641299cfea9f7461c2df1141b7786.html">src</a></li><li class="navelem"><a class="el" href="dir_82a1580e18717db72c05fda59883f1c3.html">main</a></li><li class="navelem"><a class="el" href="dir_29a654fef9ee522348956763c377cb52.html">java</a></li><li class="navelem"><a class="el" href="dir_520f01a69ba2ae0241ea16752726d997.html">com</a></li><li class="navelem"><a class="el" href="dir_5b629e4366a23808766551223bbd625b.html">atakmap</a></li><li class="navelem"><a class="el" href="dir_0140444a159a57f98924174e6ac99456.html">android</a></li><li class="navelem"><a class="el" href="dir_9e8bb4a0a771b06f9393c9fe6538d853.html">trackingplugin</a></li><li class="navelem"><a class="el" href="dir_4e6f36bb83120354816c49ae231b1e87.html">old</a></li><li class="navelem"><a class="el" href="_tracking_plugin_8java.html">TrackingPlugin.java</a></li>
+    <li class="navelem"><a class="el" href="dir_d422163b96683743ed3963d4aac17747.html">app</a></li><li class="navelem"><a class="el" href="dir_a8f641299cfea9f7461c2df1141b7786.html">src</a></li><li class="navelem"><a class="el" href="dir_82a1580e18717db72c05fda59883f1c3.html">main</a></li><li class="navelem"><a class="el" href="dir_29a654fef9ee522348956763c377cb52.html">java</a></li><li class="navelem"><a class="el" href="dir_520f01a69ba2ae0241ea16752726d997.html">com</a></li><li class="navelem"><a class="el" href="dir_5b629e4366a23808766551223bbd625b.html">atakmap</a></li><li class="navelem"><a class="el" href="dir_0140444a159a57f98924174e6ac99456.html">android</a></li><li class="navelem"><a class="el" href="dir_9e8bb4a0a771b06f9393c9fe6538d853.html">trackingplugin</a></li><li class="navelem"><a class="el" href="dir_395df8262df003efe096aa5c8cf9f9cd.html">plugin</a></li><li class="navelem"><a class="el" href="_tracking_plugin_8java.html">TrackingPlugin.java</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
