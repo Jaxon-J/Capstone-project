@@ -139,6 +139,20 @@ Milestone 3
   - Implemented a way to define, store, and view device objects across the plugin
   - Refactored code to simplify processes and remove dead code
 
+____________________________________________________________________________________________________________________________________________________________
+Milestone 4
+
+UI improvements, input validation, white list visibility toggle.
+Implemented displaying of devices on ATAK map.
+
+____________________________________________________________________________________________________________________________________________________________
+Milestone 5
+
+Inter-device connectivity configured.
+Final touches and tweaks.
+
+
+
 Features for the future:
 - User Interface and Experience Enhancements 
   - Future iterations of the plugin could focus on refining the user interface and overall user experience based on comprehensive user testing and feedback. This may involve optimizing button layouts and improving visual clarity to make the plugin more intuitive and accessible to a broader range of users. 
