@@ -1,3 +1,6 @@
+Documentation:
+https://jaxon-j.github.io/Capstone-project/html/
+
 DEVELOPER NOTES
 
 Setting up dev environment
